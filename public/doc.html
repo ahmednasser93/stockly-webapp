@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stockly API Explorer</title>
+    <style>
+      :root {
+        font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+        color: #111827;
+        background: #f8fafc;
+      }
+      body {
+        margin: 0;
+        padding: 2rem;
+        line-height: 1.5;
+      }
+      h1,
+      h2 {
+        margin-top: 0;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 2rem;
+      }
+      th,
+      td {
+        border: 1px solid #e5e7eb;
+        padding: 0.75rem;
+        text-align: left;
+      }
+      th {
+        background: #f1f5f9;
+      }
+      code {
+        background: #e2e8f0;
+        padding: 0.1rem 0.25rem;
+        border-radius: 4px;
+      }
+      .tester {
+        background: #ffffff;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+      }
+      label {
+        display: block;
+        margin-bottom: 0.25rem;
+        font-weight: 600;
+      }
+      input,
+      select,
+      button,
+      textarea {
+        width: 100%;
+        padding: 0.65rem;
+        margin-bottom: 1rem;
+        border: 1px solid #cbd5f5;
+        border-radius: 6px;
+        font-size: 1rem;
+      }
+      button {
+        width: auto;
+        cursor: pointer;
+        background: #2563eb;
+        color: #fff;
+        border: none;
+        font-weight: 600;
+      }
+      pre {
+        background: #0f172a;
+        color: #e2e8f0;
+        padding: 1rem;
+        border-radius: 6px;
+        min-height: 140px;
+        overflow: auto;
+      }
+      .inline-inputs {
+        display: grid;
+        gap: 1rem;
+      }
+      .auth-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 999;
+        backdrop-filter: blur(4px);
+      }
+      .auth-card {
+        background: #fff;
+        border-radius: 8px;
+        padding: 2rem;
+        width: min(360px, 90%);
+        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.25);
+      }
+      .auth-card h2 {
+        margin-top: 0;
+      }
+      .auth-error {
+        color: #dc2626;
+        min-height: 1.25rem;
+        margin-top: 0.5rem;
+        font-size: 0.95rem;
+      }
+      @media (min-width: 640px) {
+        .inline-inputs {
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="authOverlay" class="auth-overlay">
+      <form id="authForm" class="auth-card">
+        <h2>Stockly Docs Login</h2>
+        <label for="usernameInput">Username</label>
+        <input id="usernameInput" name="username" required autocomplete="username" />
+        <label for="passwordInput">Password</label>
+        <input
+          id="passwordInput"
+          type="password"
+          name="password"
+          required
+          autocomplete="current-password"
+        />
+        <button type="submit">Unlock</button>
+        <div id="authError" class="auth-error"></div>
+      </form>
+    </div>
+    <div id="protectedContent" hidden>
+      <h1>Stockly API Explorer</h1>
+      <p>
+        This page lists every available endpoint in the worker along with a testing
+        harness so you can send sample requests with one click. Adjust the base URL
+        if you deployed the worker to a custom domain.
+      </p>
+
+      <h2>Endpoints</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Method</th>
+            <th>Path</th>
+            <th>Description</th>
+            <th>Sample Query</th>
+          </tr>
+        </thead>
+        <tbody id="endpoint-table"></tbody>
+      </table>
+
+      <section class="tester">
+        <h2>Interactive Tester</h2>
+        <label for="baseUrlSelect">Base URL</label>
+        <select id="baseUrlSelect">
+          <option value="https://stockly-api.ahmednasser1993.workers.dev">
+            Production (Workers.dev)
+          </option>
+          <option value="http://localhost:8787">Local Wrangler Dev</option>
+        </select>
+
+        <label for="endpointSelect">Endpoint</label>
+        <select id="endpointSelect"></select>
+
+        <div class="inline-inputs" id="paramFields"></div>
+        <button id="sendButton">Send Test Request</button>
+
+        <label for="output">Response</label>
+        <pre id="output">Ready to test…</pre>
+      </section>
+    </div>
+
+    <script>
+      const overlay = document.getElementById("authOverlay");
+      const protectedContent = document.getElementById("protectedContent");
+      const authForm = document.getElementById("authForm");
+      const authError = document.getElementById("authError");
+
+      const showContent = () => {
+        overlay.style.display = "none";
+        protectedContent.hidden = false;
+      };
+
+      const verifyToken = async (token) => {
+        try {
+          const response = await fetch("auth-check", {
+            headers: {
+              Authorization: `Basic ${token}`,
+            },
+          });
+          if (response.ok) {
+            sessionStorage.setItem("docsBasicToken", token);
+            showContent();
+            return true;
+          }
+        } catch (err) {
+          console.error("Auth validation failed", err);
+        }
+        return false;
+      };
+
+      const storedToken = sessionStorage.getItem("docsBasicToken");
+      if (storedToken) {
+        verifyToken(storedToken);
+      }
+
+      authForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        authError.textContent = "";
+        const formData = new FormData(authForm);
+        const username = formData.get("username");
+        const password = formData.get("password");
+        if (typeof username !== "string" || typeof password !== "string") {
+          authError.textContent = "Please enter credentials.";
+          return;
+        }
+        const token = btoa(`${username}:${password}`);
+        const ok = await verifyToken(token);
+        if (!ok) {
+          authError.textContent = "Invalid credentials.";
+        }
+      });
+
+      const endpoints = [
+        {
+          name: "Health Check",
+          method: "GET",
+          path: "/v1/api/health",
+          description: "Returns a simple heartbeat response",
+          sampleQuery: "",
+          params: {},
+        },
+        {
+          name: "Get Stock Quote",
+          method: "GET",
+          path: "/v1/api/get-stock",
+          description: "Fetches the latest quote for a specific symbol",
+          sampleQuery: "?symbol=AAPL",
+          params: {
+            symbol: {
+              label: "Ticker Symbol",
+              value: "AAPL",
+            },
+          },
+        },
+        {
+          name: "Search Stock",
+          method: "GET",
+          path: "/v1/api/search-stock",
+          description: "Searches for matching ticker symbols (cached in D1 for 20 minutes)",
+          sampleQuery: "?query=AP",
+          params: {
+            query: {
+              label: "Partial Symbol or Name",
+              value: "AP",
+            },
+          },
+        },
+        {
+          name: "Get Multiple Stocks",
+          method: "GET",
+          path: "/v1/api/get-stocks",
+          description: "Fetches multiple symbols in one request (30s cache per symbol)",
+          sampleQuery: "?symbols=AMZN,AAPL,TSLA",
+          params: {
+            symbols: {
+              label: "Comma separated symbols",
+              value: "AMZN,AAPL,TSLA",
+            },
+          },
+        },
+      ];
+
+      const baseUrlSelect = document.getElementById("baseUrlSelect");
+      if (
+        [...baseUrlSelect.options].some(
+          (option) => option.value === window.location.origin
+        )
+      ) {
+        baseUrlSelect.value = window.location.origin;
+      }
+      const endpointSelect = document.getElementById("endpointSelect");
+      const paramFields = document.getElementById("paramFields");
+      const output = document.getElementById("output");
+
+      const renderTable = () => {
+        const tbody = document.getElementById("endpoint-table");
+        endpoints.forEach((endpoint) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${endpoint.name}</td>
+            <td><code>${endpoint.method}</code></td>
+            <td><code>${endpoint.path}</code></td>
+            <td>${endpoint.description}</td>
+            <td><code>${endpoint.sampleQuery || "—"}</code></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      };
+
+      const renderSelect = () => {
+        endpoints.forEach((endpoint, index) => {
+          const option = document.createElement("option");
+          option.value = index;
+          option.textContent = `${endpoint.name} (${endpoint.path})`;
+          endpointSelect.appendChild(option);
+        });
+      };
+
+      const renderParams = (endpoint) => {
+        paramFields.innerHTML = "";
+        Object.entries(endpoint.params).forEach(([key, config]) => {
+          const wrapper = document.createElement("div");
+          const label = document.createElement("label");
+          label.textContent = config.label;
+          label.setAttribute("for", `param-${key}`);
+          const input = document.createElement("input");
+          input.id = `param-${key}`;
+          input.name = key;
+          input.value = config.value;
+          input.placeholder = config.label;
+          wrapper.appendChild(label);
+          wrapper.appendChild(input);
+          paramFields.appendChild(wrapper);
+        });
+        if (!Object.keys(endpoint.params).length) {
+          const note = document.createElement("p");
+          note.textContent = "This endpoint does not take any query parameters.";
+          note.style.margin = "0";
+          note.style.color = "#4b5563";
+          paramFields.appendChild(note);
+        }
+      };
+
+      endpointSelect.addEventListener("change", (event) => {
+        const endpoint = endpoints[event.target.value];
+        renderParams(endpoint);
+      });
+
+      document
+        .getElementById("sendButton")
+        .addEventListener("click", async () => {
+          const endpoint = endpoints[endpointSelect.value];
+          const baseUrl = baseUrlSelect.value.replace(/\/$/, "");
+          const url = new URL(baseUrl + endpoint.path);
+
+          Object.keys(endpoint.params).forEach((key) => {
+            const input = document.getElementById(`param-${key}`);
+            if (input?.value) {
+              url.searchParams.set(key, input.value);
+            }
+          });
+
+          output.textContent = "Sending request…";
+          try {
+            const response = await fetch(url.toString(), {
+              method: endpoint.method,
+            });
+            const text = await response.text();
+            let parsed;
+            try {
+              parsed = JSON.parse(text);
+              output.textContent = JSON.stringify(parsed, null, 2);
+            } catch (err) {
+              output.textContent = text || `[${response.status}] Empty response`;
+            }
+          } catch (error) {
+            output.textContent = `Request failed: ${error}`;
+          }
+        });
+
+      renderTable();
+      renderSelect();
+      renderParams(endpoints[0]);
+    </script>
+  </body>
+</html>
