@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchStocks, searchSymbols } from "../api/client";
 import type { StockQuote } from "../types";
@@ -6,13 +7,15 @@ import { SearchBar } from "../components/SearchBar";
 import { TrackedSymbols } from "../components/TrackedSymbols";
 import { StockCard } from "../components/StockCard";
 import { useSettings } from "../state/SettingsContext";
+import { AuroraBackground } from "../components/reactbits/AuroraBackground";
+import { useGsapFadeIn } from "../hooks/useGsapFadeIn";
+import { useGsapStaggerList } from "../hooks/useGsapStaggerList";
+import { NeonStat } from "../components/reactbits/NeonStat";
 
 const TRACKED_STORAGE_KEY = "stockly-webapp-tracked";
-type Tab = "dashboard" | "docs";
 
 export function HomePage() {
   const [query, setQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<Tab>("dashboard");
   const [trackedSymbols, setTrackedSymbols] = useState<string[]>(() => {
     try {
       const stored = localStorage.getItem(TRACKED_STORAGE_KEY);
@@ -26,6 +29,10 @@ export function HomePage() {
   });
 
   const { refreshInterval } = useSettings();
+  const heroRef = useRef<HTMLDivElement>(null);
+  const statsRef = useRef<HTMLDivElement>(null);
+  useGsapFadeIn(heroRef);
+  useGsapStaggerList(statsRef);
 
   useEffect(() => {
     localStorage.setItem(TRACKED_STORAGE_KEY, JSON.stringify(trackedSymbols));
@@ -83,8 +90,56 @@ export function HomePage() {
     });
   }, [stocksQuery.data, trackedSymbols]);
 
-  const dashboardContent = (
-    <>
+  const heroStats = [
+    {
+      label: "Tracked assets",
+      value: trackedSymbols.length ? `${trackedSymbols.length} symbols` : "None yet",
+      accent: trackedSymbols.length ? "Tap chips to reorder" : "Start searching",
+    },
+    {
+      label: "Auto refresh",
+      value: `${refreshInterval}s`,
+      accent: "Settings tab to tweak",
+    },
+    {
+      label: "Live quotes",
+      value:
+        stocksQuery.data && stocksQuery.data.length
+          ? `${stocksQuery.data.length} cards`
+          : "Waiting for selections",
+      accent: stocksQuery.isFetching ? "Updating…" : "Idle",
+    },
+  ];
+
+  return (
+    <section className="page">
+      <AuroraBackground variant="dashboard">
+        <div className="hero-panel" ref={heroRef}>
+          <div>
+            <p className="eyebrow">Mission control</p>
+            <h1>Personalized stock intelligence.</h1>
+          </div>
+          <div className="hero-actions">
+            <button type="button">
+              Focus dashboard
+            </button>
+            <Link to="/docs" className="ghost button-link">
+              Jump to docs
+            </Link>
+          </div>
+        </div>
+        <div className="hero-stats" ref={statsRef}>
+          {heroStats.map((stat) => (
+            <div key={stat.label} data-animate-item>
+              <NeonStat
+                label={stat.label}
+                value={stat.value}
+                accent={<span>{stat.accent}</span>}
+              />
+            </div>
+          ))}
+        </div>
+      </AuroraBackground>
       <div className="card">
         <h2>Track Stocks</h2>
         <SearchBar
@@ -135,43 +190,6 @@ export function HomePage() {
           </div>
         )}
       </div>
-    </>
-  );
-
-  const docsContent = (
-    <div className="card docs-card">
-      <h2>Stockly API docs</h2>
-      <p className="muted">
-        Use the embedded Swagger reference to explore requests without
-        leaving the dashboard.
-      </p>
-      <iframe
-        src="/doc.html"
-        title="Stockly API documentation"
-        className="doc-frame"
-      />
-    </div>
-  );
-
-  return (
-    <section className="page">
-      <div className="card tab-bar">
-        <button
-          type="button"
-          className={activeTab === "dashboard" ? "active" : ""}
-          onClick={() => setActiveTab("dashboard")}
-        >
-          Dashboard
-        </button>
-        <button
-          type="button"
-          className={activeTab === "docs" ? "active" : ""}
-          onClick={() => setActiveTab("docs")}
-        >
-          API Docs
-        </button>
-      </div>
-      {activeTab === "dashboard" ? dashboardContent : docsContent}
     </section>
   );
 }

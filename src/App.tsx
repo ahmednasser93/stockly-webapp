@@ -5,6 +5,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { HomePage } from "./pages/HomePage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { LoginPage } from "./pages/LoginPage";
+import { DocsPage } from "./pages/DocsPage";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         }
       >
         <Route path="/" element={<HomePage />} />
+        <Route path="/docs" element={<DocsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

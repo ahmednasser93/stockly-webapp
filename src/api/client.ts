@@ -2,7 +2,7 @@ import type { SearchResult, StockQuote } from "../types";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ??
-  "http://localhost:8787";
+  "https://stockly-api.ahmednasser1993.workers.dev";
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {

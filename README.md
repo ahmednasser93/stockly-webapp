@@ -1,52 +1,112 @@
 # Stockly Web App
 
-A lightweight stock dashboard for the Stockly platform. It mirrors the mobile experience with a login screen, searchable ticker list, detailed quote cards, settings for refresh cadence, and manual refresh support. Built with Vite, React, TypeScript, React Query, and React Router so it can be deployed as a Cloudflare Pages application that calls the existing Stockly backend.
+## Project Summary
+- Guarded React dashboard for tracking custom stock watchlists.
+- Built-in Swagger docs tab rendered directly from `public/doc.html`.
+- GSAP/ReactBits inspired animations plus Aurora/Sunrise theme toggle.
+- Auth + settings stored in `localStorage` with Cloudflare Pages Functions enforcing secrets.
+- Hits the production backend at `https://stockly-api.ahmednasser1993.workers.dev`.
 
-## Features
+## Tech Stack
+- React 19 + React Router 7 + TanStack Query 5.
+- Vite 7 build system + TypeScript 5.
+- Cloudflare Pages for hosting + Functions for login validation.
+- GSAP for entrance animations.
 
-- Auth gate that reuses the `STOCKLY_USERNAME` / `STOCKLY_PASS` credentials already present on the backend
-- Autocomplete search backed by `/v1/api/search-stock` with instant add-to-watchlist behavior
-- Quote board that polls `/v1/api/get-stocks` for all tracked tickers and shows price/high/low/volume widgets
-- Manual refresh button plus adjustable auto-refresh interval stored in local storage
-- Responsive layout with cards and chips to match the existing product look-and-feel
+## Folder / Component Overview
+- `src/main.tsx` – Bootstraps React, router, and providers.
+- `src/App.tsx` – Defines `/login`, protected dashboard routes, and catch-all redirect.
+- `src/pages/LoginPage.tsx` – Animated hero + secure form that hits `/api/login`.
+- `src/pages/HomePage.tsx` – Tabbed dashboard/docs view plus neon hero stats.
+- `src/pages/SettingsPage.tsx` – Controls auto-refresh cadence via `SettingsContext`.
+- `src/state/AuthContext.tsx` – Handles session persistence and fallback credential check.
+- `src/state/SettingsContext.tsx` – Stores refresh interval in `localStorage`.
+- `src/api/client.ts` – REST helpers for `/v1/api/search-stock` and `/v1/api/get-stocks`.
+- `src/components/DocsViewer.tsx` – Fetches and renders `public/doc.html` inline (no iframe login loops).
+- `functions/api/login.ts` – Cloudflare Pages Function validating `STOCKLY_*` secrets.
+- `public/doc.html` – Swagger/HTML docs copied from backend repo.
 
-## Getting Started
-
+## How to Run Locally
 ```bash
 cd stockly-webapp
-cp .env.example .env # update values for your environment
+cp .env.example .env    # edit credentials + base URL if needed
 npm install
 npm run dev
 ```
+Run checks/builds:
+```bash
+npm run lint
+npm run build
+npm run preview   # serves dist locally
+```
 
-Environment variables (all prefixed with `VITE_` so they are exposed at build time):
+## Environment Variables / Secrets
+- `.env` (Vite dev/build):
+  - `VITE_API_BASE_URL` (required) – defaults to `https://stockly-api.ahmednasser1993.workers.dev`.
+  - `VITE_STOCKLY_USERNAME` / `VITE_STOCKLY_PASS` (required for local fallback auth).
+- Cloudflare Pages secrets (production + preview):
+  ```bash
+  wrangler pages secret put STOCKLY_USERNAME --project-name stockly-webapp
+  wrangler pages secret put STOCKLY_PASS --project-name stockly-webapp
+  wrangler pages secret put VITE_API_BASE_URL --project-name stockly-webapp
+  ```
+  These are consumed by `/api/login` and made available at build time if you mirror them with `VITE_*`.
 
-- `VITE_API_BASE_URL` – Fully-qualified base URL for the Stockly backend (e.g. the deployed Cloudflare Worker origin)
-- `VITE_STOCKLY_USERNAME` – Username that should unlock the dashboard
-- `VITE_STOCKLY_PASS` – Password paired with the username above
+## How to Deploy
+Build + deploy to Pages (production):
+```bash
+npm run build
+wrangler pages deploy dist --project-name stockly-webapp --functions functions --branch production
+```
+Preview deploys (per-branch):
+```bash
+npm run build
+wrangler pages deploy dist --project-name stockly-webapp --functions functions --branch main
+```
+Ensure `functions/` is included so `/api/login` runs in production.
 
-## Testing the Flows
+## How to Update / Maintain
+```bash
+git pull origin main        # grab latest changes
+npm install                 # refresh deps
+npm run lint && npm run build
+wrangler pages deploy dist --project-name stockly-webapp --functions functions
+```
+- When backend docs change, overwrite `public/doc.html` with the new file.
+- Update dependencies carefully; after editing `package.json`, run the build before deploying.
 
-1. Launch `npm run dev` and open the printed URL
-2. Sign in with the credentials listed in `.env`
-3. Use the search field to add a symbol or choose one from the autocomplete suggestions
-4. Watchlist entries appear as cards; use the “Refresh now” button any time or rely on the timer shown in the footer
-5. Adjust the auto-refresh cadence on the Settings page
+## Database & Migrations
+- No local DB is bundled; the UI relies on the Stockly Worker API.
+- Fetching data example (acts like a DB select):
+  ```ts
+  import { fetchStocks } from "./src/api/client";
 
-## Deploying on Cloudflare Pages
+  const quotes = await fetchStocks(["AAPL", "MSFT"]);
+  const apple = quotes.find((quote) => quote.symbol === "AAPL");
+  console.log(apple?.price);
+  ```
+- Backend migrations (if any) live in the backend repo; this project just consumes its endpoints.
 
-1. Create a new Pages project that points to the `stockly-webapp` folder (repo does **not** need to be coupled to the backend)
-2. Configure the build command (`npm run build`) and output directory (`dist`)
-3. Add the 3 environment variables above to the Pages project (production + preview) so the login gate and API base URL match production
-4. Deploy; the `npm run preview` script can be used locally to test the production build if desired
+## API / Usage Examples
+- cURL search example:
+  ```bash
+  curl "https://stockly-api.ahmednasser1993.workers.dev/v1/api/search-stock?query=AAPL"
+  ```
+- UI component usage (adding to watchlist):
+  ```tsx
+  <SearchBar
+    query={query}
+    onQueryChange={setQuery}
+    onSubmit={handleAddSymbol}
+    suggestions={searchQuery.data ?? []}
+    onSelectSuggestion={handleSelectSuggestion}
+    loading={searchQuery.isFetching}
+  />
+  ```
 
-> When hosting on Cloudflare, keep the backend as a separate project (Stockly Worker) and simply reference its public URL via `VITE_API_BASE_URL` to keep deployments decoupled.
-
-## Tech Stack
-
-- [Vite](https://vitejs.dev/) for bundling
-- [React Router](https://reactrouter.com/) for navigation
-- [TanStack Query](https://tanstack.com/query/latest) for data fetching and cache management
-- CSS modules written with custom properties for a clean neon look
-
-Feel free to tailor the branding or component styling to match any updated design assets you may have.
+## Troubleshooting
+- **API Docs tab shows login again** – ensure `public/doc.html` exists; the inlined `DocsViewer` now fetches it directly. Redeploy if you recently copied new docs.
+- **401 during login** – set `STOCKLY_USERNAME`/`STOCKLY_PASS` secrets via Wrangler and redeploy so `/api/login` can validate.
+- **Quotes not refreshing** – confirm `VITE_API_BASE_URL` points to a reachable backend; test with `curl` as shown above.
+- **Env changes ignored in dev** – restart `npm run dev`; Vite only loads env vars on startup.
+- **Functions not running** – include the `--functions functions` flag in the deploy command so Cloudflare picks up `/api/login`.
