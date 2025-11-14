@@ -32,6 +32,7 @@ cd stockly-webapp
 cp .env.example .env    # edit credentials + base URL if needed
 npm install
 npm run dev
+npm run test             # run unit tests (Vitest)
 ```
 Run checks/builds:
 ```bash
@@ -110,3 +111,4 @@ wrangler pages deploy dist --project-name stockly-webapp --functions functions
 - **Quotes not refreshing** – confirm `VITE_API_BASE_URL` points to a reachable backend; test with `curl` as shown above.
 - **Env changes ignored in dev** – restart `npm run dev`; Vite only loads env vars on startup.
 - **Functions not running** – include the `--functions functions` flag in the deploy command so Cloudflare picks up `/api/login`.
+- **Unit tests fail before build** – `npm run build` runs `npm run test` automatically; fix failing Vitest suites before shipping.
