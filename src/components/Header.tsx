@@ -17,10 +17,19 @@ export function Header() {
         <NavLink to="/" end>
           Dashboard
         </NavLink>
+        <NavLink to="/alerts" end>
+          Alerts
+        </NavLink>
         <NavLink to="/docs" end>
           Docs
         </NavLink>
         <NavLink to="/settings">Settings</NavLink>
+        <div className="nav-dropdown">
+          <span className="nav-dropdown-label">Admin ▾ Will be removed soon</span>
+          <div className="nav-dropdown-menu">
+            <NavLink to="/admin/docs">Docs</NavLink>
+          </div>
+        </div>
       </nav>
       <ThemeToggle />
       <button type="button" className="ghost logout-button" onClick={logout}>

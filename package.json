@@ -10,14 +10,15 @@
     "preview": "vite preview",
     "test": "vitest run",
     "deploy": "wrangler pages deploy dist",
-    "deploy:prod": "npm run build && wrangler pages deploy dist --project-name stockly-webapp --branch production"
+    "deploy:prod": "bash scripts/deploy-prod.sh"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.9",
     "gsap": "^3.13.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-router-dom": "^7.9.6"
+    "react-router-dom": "^7.9.6",
+    "swagger-ui-react": "^5.30.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
@@ -26,6 +27,7 @@
     "@types/node": "^24.10.0",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
+    "@types/swagger-ui-react": "^5.18.0",
     "@vitejs/plugin-react": "^5.1.0",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",

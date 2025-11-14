@@ -1,8 +1,11 @@
 import type { SearchResult, StockQuote } from "../types";
 
+// Use localhost in development, production URL in builds
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ??
-  "https://stockly-api.ahmednasser1993.workers.dev";
+  (import.meta.env.DEV
+    ? "http://localhost:8787"
+    : "https://stockly-api.ahmednasser1993.workers.dev");
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {

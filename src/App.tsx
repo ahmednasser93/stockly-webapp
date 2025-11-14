@@ -6,6 +6,12 @@ import { HomePage } from "./pages/HomePage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { LoginPage } from "./pages/LoginPage";
 import { DocsPage } from "./pages/DocsPage";
+import { AlertsPage } from "./pages/AlertsPage";
+import { PreferencesPage } from "./pages/PreferencesPage";
+import { AdminSettingsPage } from "./pages/AdminSettingsPage";
+import { AdminMonitoringPage } from "./pages/AdminMonitoringPage";
+import { AdminDocsPage } from "./pages/AdminDocsPage";
+import { AdminNotificationsPage } from "./pages/AdminNotificationsPage";
 
 function App() {
   return (
@@ -19,8 +25,14 @@ function App() {
         }
       >
         <Route path="/" element={<HomePage />} />
+        <Route path="/alerts" element={<AlertsPage />} />
         <Route path="/docs" element={<DocsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/preferences" element={<PreferencesPage />} />
+        <Route path="/admin/settings" element={<AdminSettingsPage />} />
+        <Route path="/admin/monitoring" element={<AdminMonitoringPage />} />
+        <Route path="/admin/notifications" element={<AdminNotificationsPage />} />
+        <Route path="/admin/docs" element={<AdminDocsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

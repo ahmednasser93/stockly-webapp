@@ -1,0 +1,399 @@
+openapi: 3.0.0
+info:
+  title: Stockly API - Alerts Feature
+  version: 1.0.0
+  description: |
+    Stock price alerts API for the Stockly platform.
+    Get notified when stocks reach your target prices via email or webhook.
+  contact:
+    name: Stockly API Support
+    url: https://stockly-api.ahmednasser1993.workers.dev
+
+servers:
+  - url: https://stockly-api.ahmednasser1993.workers.dev
+    description: Production server
+  - url: http://localhost:8787
+    description: Local development server
+
+tags:
+  - name: Alerts
+    description: Price alert management endpoints
+
+paths:
+  /v1/api/alerts:
+    get:
+      summary: List all alerts
+      description: Returns all configured price alerts for the user.
+      tags:
+        - Alerts
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  alerts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Alert'
+              example:
+                alerts:
+                  - id: "550e8400-e29b-41d4-a716-446655440000"
+                    symbol: "AAPL"
+                    direction: "above"
+                    threshold: 200.50
+                    status: "active"
+                    channel: "email"
+                    target: "user@example.com"
+                    notes: "Watch for breakout"
+                    createdAt: "2025-11-14T10:30:00.000Z"
+                    updatedAt: "2025-11-14T10:30:00.000Z"
+
+    post:
+      summary: Create new alert
+      description: Creates a new price alert with the specified configuration.
+      tags:
+        - Alerts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAlertRequest'
+            example:
+              symbol: "AAPL"
+              direction: "above"
+              threshold: 200.50
+              channel: "email"
+              target: "user@example.com"
+              notes: "Optional note"
+      responses:
+        '201':
+          description: Alert created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Alert'
+              example:
+                id: "550e8400-e29b-41d4-a716-446655440000"
+                symbol: "AAPL"
+                direction: "above"
+                threshold: 200.50
+                status: "active"
+                channel: "email"
+                target: "user@example.com"
+                notes: "Optional note"
+                createdAt: "2025-11-14T10:30:00.000Z"
+                updatedAt: "2025-11-14T10:30:00.000Z"
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidDirection:
+                  value:
+                    error: "direction must be 'above' or 'below'"
+                invalidThreshold:
+                  value:
+                    error: "threshold must be a positive number"
+                invalidChannel:
+                  value:
+                    error: "channel must be 'email' or 'webhook'"
+
+  /v1/api/alerts/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Alert UUID
+        schema:
+          type: string
+          format: uuid
+        example: "550e8400-e29b-41d4-a716-446655440000"
+
+    get:
+      summary: Get alert by ID
+      description: Retrieves a specific alert by its UUID.
+      tags:
+        - Alerts
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Alert'
+              example:
+                id: "550e8400-e29b-41d4-a716-446655440000"
+                symbol: "AAPL"
+                direction: "above"
+                threshold: 200.50
+                status: "active"
+                channel: "email"
+                target: "user@example.com"
+                notes: "Watch for breakout"
+                createdAt: "2025-11-14T10:30:00.000Z"
+                updatedAt: "2025-11-14T10:30:00.000Z"
+        '404':
+          description: Alert not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "alert not found"
+
+    put:
+      summary: Update alert
+      description: |
+        Updates an existing alert. All fields are optional (partial updates supported).
+        Only the fields provided in the request body will be updated.
+      tags:
+        - Alerts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAlertRequest'
+            examples:
+              updateThreshold:
+                summary: Update threshold only
+                value:
+                  threshold: 210.00
+              updateStatus:
+                summary: Pause alert
+                value:
+                  status: "paused"
+              updateMultiple:
+                summary: Update multiple fields
+                value:
+                  symbol: "MSFT"
+                  direction: "below"
+                  threshold: 150.00
+                  status: "paused"
+                  channel: "webhook"
+                  target: "https://hooks.example.com/alert"
+                  notes: "Updated note"
+      responses:
+        '200':
+          description: Alert updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Alert'
+              example:
+                id: "550e8400-e29b-41d4-a716-446655440000"
+                symbol: "MSFT"
+                direction: "below"
+                threshold: 150.00
+                status: "paused"
+                channel: "webhook"
+                target: "https://hooks.example.com/alert"
+                notes: "Updated note"
+                createdAt: "2025-11-14T10:30:00.000Z"
+                updatedAt: "2025-11-14T15:45:00.000Z"
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                noFields:
+                  value:
+                    error: "at least one field must be provided"
+                invalidStatus:
+                  value:
+                    error: "status must be 'active' or 'paused'"
+        '404':
+          description: Alert not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "alert not found"
+
+    delete:
+      summary: Delete alert
+      description: Deletes an alert and clears its state from KV storage.
+      tags:
+        - Alerts
+      responses:
+        '200':
+          description: Alert deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+              example:
+                success: true
+        '404':
+          description: Alert not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "alert not found"
+
+components:
+  schemas:
+    Alert:
+      type: object
+      required:
+        - id
+        - symbol
+        - direction
+        - threshold
+        - status
+        - channel
+        - target
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the alert
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        symbol:
+          type: string
+          description: Stock ticker symbol (automatically uppercased)
+          example: "AAPL"
+        direction:
+          type: string
+          enum: [above, below]
+          description: Alert triggers when price goes above or below threshold
+          example: "above"
+        threshold:
+          type: number
+          format: double
+          minimum: 0.01
+          description: Price point that triggers the alert
+          example: 200.50
+        status:
+          type: string
+          enum: [active, paused]
+          description: Current status of the alert
+          example: "active"
+        channel:
+          type: string
+          enum: [email, webhook]
+          description: Notification delivery method
+          example: "email"
+        target:
+          type: string
+          description: Email address or webhook URL for notifications
+          example: "user@example.com"
+        notes:
+          type: string
+          nullable: true
+          description: Optional user note or description
+          example: "Watch for breakout"
+        createdAt:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of alert creation
+          example: "2025-11-14T10:30:00.000Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of last update
+          example: "2025-11-14T10:30:00.000Z"
+
+    CreateAlertRequest:
+      type: object
+      required:
+        - symbol
+        - direction
+        - threshold
+        - channel
+        - target
+      properties:
+        symbol:
+          type: string
+          description: Stock ticker symbol
+          example: "AAPL"
+        direction:
+          type: string
+          enum: [above, below]
+          description: Alert triggers when price goes above or below threshold
+          example: "above"
+        threshold:
+          type: number
+          format: double
+          minimum: 0.01
+          description: Price point that triggers the alert (must be positive)
+          example: 200.50
+        channel:
+          type: string
+          enum: [email, webhook]
+          description: Notification delivery method
+          example: "email"
+        target:
+          type: string
+          description: Email address (for email channel) or webhook URL (for webhook channel)
+          example: "user@example.com"
+        notes:
+          type: string
+          description: Optional user note or description
+          example: "Optional note"
+
+    UpdateAlertRequest:
+      type: object
+      description: All fields are optional. Only provided fields will be updated.
+      properties:
+        symbol:
+          type: string
+          description: Stock ticker symbol
+          example: "MSFT"
+        direction:
+          type: string
+          enum: [above, below]
+          description: Alert trigger direction
+          example: "below"
+        threshold:
+          type: number
+          format: double
+          minimum: 0.01
+          description: Price threshold (must be positive)
+          example: 150.00
+        status:
+          type: string
+          enum: [active, paused]
+          description: Alert status
+          example: "paused"
+        channel:
+          type: string
+          enum: [email, webhook]
+          description: Notification delivery method
+          example: "webhook"
+        target:
+          type: string
+          description: Email address or webhook URL
+          example: "https://hooks.example.com/alert"
+        notes:
+          type: string
+          nullable: true
+          description: User note (set to null to clear)
+          example: "Updated note"
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Human-readable error message
+          example: "alert not found"
+

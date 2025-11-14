@@ -1,0 +1,76 @@
+╔═══════════════════════════════════════════════════════════════════════╗
+║                   Stockly API URL Configuration                       ║
+╚═══════════════════════════════════════════════════════════════════════╝
+
+┌───────────────────────────────────────────────────────────────────────┐
+│ AUTOMATIC CONFIGURATION (No .env needed)                              │
+├───────────────────────────────────────────────────────────────────────┤
+│                                                                       │
+│  Development Mode (npm run dev)                                       │
+│  ├── API URL: http://localhost:8787                                   │
+│  └── Requires: Backend running locally on port 8787                   │
+│                                                                       │
+│  Production Mode (npm run build)                                      │
+│  ├── API URL: https://stockly-api.ahmednasser1993.workers.dev        │
+│  ├── Used for: APK builds, iOS bundles, web deploys                  │
+│  └── No backend setup needed                                          │
+│                                                                       │
+└───────────────────────────────────────────────────────────────────────┘
+
+┌───────────────────────────────────────────────────────────────────────┐
+│ OPTIONAL OVERRIDE (.env file)                                         │
+├───────────────────────────────────────────────────────────────────────┤
+│                                                                       │
+│  Create .env file with:                                               │
+│  VITE_API_BASE_URL=https://your-custom-api.example.com              │
+│                                                                       │
+│  This overrides automatic config in both dev and production           │
+│                                                                       │
+└───────────────────────────────────────────────────────────────────────┘
+
+┌───────────────────────────────────────────────────────────────────────┐
+│ FILES UPDATED                                                         │
+├───────────────────────────────────────────────────────────────────────┤
+│                                                                       │
+│  ✓ src/api/client.ts        - Stock quotes & search                  │
+│  ✓ src/api/alerts.ts        - Price alerts                           │
+│  ✓ src/api/adminConfig.ts   - Admin features                         │
+│  ✓ README.md                 - Documentation                          │
+│  ✓ ENVIRONMENT_CONFIG.md    - Configuration guide                    │
+│                                                                       │
+└───────────────────────────────────────────────────────────────────────┘
+
+┌───────────────────────────────────────────────────────────────────────┐
+│ PRIORITY ORDER (highest to lowest)                                    │
+├───────────────────────────────────────────────────────────────────────┤
+│                                                                       │
+│  1. VITE_API_BASE_URL environment variable                           │
+│  2. Automatic detection:                                              │
+│     - DEV mode  → http://localhost:8787                              │
+│     - PROD mode → https://stockly-api.ahmednasser1993.workers.dev   │
+│                                                                       │
+└───────────────────────────────────────────────────────────────────────┘
+
+┌───────────────────────────────────────────────────────────────────────┐
+│ QUICK REFERENCE                                                       │
+├───────────────────────────────────────────────────────────────────────┤
+│                                                                       │
+│  Start development:                                                   │
+│  $ npm run dev                                                        │
+│    → Uses http://localhost:8787                                       │
+│                                                                       │
+│  Build for production:                                                │
+│  $ npm run build                                                      │
+│    → Uses https://stockly-api.ahmednasser1993.workers.dev            │
+│                                                                       │
+│  Build APK/iOS:                                                       │
+│  $ npm run build                                                      │
+│    → Uses https://stockly-api.ahmednasser1993.workers.dev            │
+│                                                                       │
+│  Test with production API locally:                                    │
+│  $ echo "VITE_API_BASE_URL=https://stockly-api..." > .env           │
+│  $ npm run dev                                                        │
+│                                                                       │
+└───────────────────────────────────────────────────────────────────────┘
+
+✅ Configuration complete - No manual setup required!
