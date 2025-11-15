@@ -1,0 +1,116 @@
+/**
+ * Gradient Button Component - Modern Fancy Buttons
+ * Using the modern theme color palette
+ */
+
+.gradient-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: none;
+  border-radius: var(--radius-full);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  overflow: hidden;
+  font-family: var(--font-sans);
+}
+
+.gradient-btn__glow {
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-primary);
+  opacity: 1;
+  transition: opacity var(--transition-base);
+  border-radius: var(--radius-full);
+}
+
+.gradient-btn__content {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: white;
+}
+
+.gradient-btn__icon {
+  display: inline-flex;
+  align-items: center;
+  transition: transform var(--transition-base);
+}
+
+/* Variants */
+.gradient-btn--primary .gradient-btn__glow {
+  background: var(--gradient-primary);
+}
+
+.gradient-btn--secondary .gradient-btn__glow {
+  background: var(--gradient-secondary);
+}
+
+.gradient-btn--tertiary .gradient-btn__glow {
+  background: linear-gradient(135deg, #EC4899 0%, #F472B6 100%);
+}
+
+.gradient-btn--ghost {
+  background: transparent;
+  border: 1px solid var(--border-primary);
+}
+
+.gradient-btn--ghost .gradient-btn__glow {
+  background: var(--bg-surface);
+  opacity: 0;
+}
+
+.gradient-btn--ghost .gradient-btn__content {
+  color: var(--text-primary);
+}
+
+.gradient-btn--ghost:hover .gradient-btn__glow {
+  opacity: 1;
+}
+
+/* Sizes */
+.gradient-btn--sm {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-xs);
+}
+
+.gradient-btn--md {
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--text-sm);
+}
+
+.gradient-btn--lg {
+  padding: var(--space-4) var(--space-8);
+  font-size: var(--text-base);
+}
+
+/* Hover Effects */
+.gradient-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg), var(--shadow-glow-strong);
+}
+
+.gradient-btn:hover:not(:disabled) .gradient-btn__icon {
+  transform: scale(1.1);
+}
+
+.gradient-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.gradient-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Glow effect on hover */
+.gradient-btn--primary:hover:not(:disabled) .gradient-btn__glow {
+  box-shadow: var(--shadow-glow-strong);
+}
+

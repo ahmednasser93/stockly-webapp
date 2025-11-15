@@ -1,12 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap');
-
-:root {
-  font-family: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  color: var(--text-primary);
-  background-color: var(--bg-gradient-end);
-}
+/* Modern theme variables are imported from modern-theme.css */
+/* This file now contains only legacy overrides and specific component styles */
 
 * {
   box-sizing: border-box;

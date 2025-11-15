@@ -1,0 +1,57 @@
+/**
+ * Glass Card Component - Modern Glassmorphism Effect
+ * Using the modern theme color palette
+ */
+
+.glass-card {
+  position: relative;
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  background: var(--gradient-card);
+  border: 1px solid var(--border-primary);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(20px) saturate(180%);
+  overflow: hidden;
+  transition: all var(--transition-base);
+}
+
+.glass-card__glow {
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-primary);
+  opacity: 0;
+  transition: opacity var(--transition-base);
+  pointer-events: none;
+  border-radius: var(--radius-xl);
+}
+
+.glass-card__content {
+  position: relative;
+  z-index: 1;
+}
+
+.glass-card--hover:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--border-accent);
+}
+
+.glass-card--hover:hover .glass-card__glow {
+  opacity: 0.1;
+}
+
+.glass-card--elevated {
+  background: var(--bg-surface-elevated);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--border-secondary);
+}
+
+.glass-card--gradient {
+  background: var(--gradient-card);
+  border: 1px solid var(--color-primary-border);
+}
+
+.glass-card--gradient .glass-card__glow {
+  opacity: 0.15;
+}
+

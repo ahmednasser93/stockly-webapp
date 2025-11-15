@@ -1,47 +1,50 @@
 .neon-stat {
   position: relative;
-  border-radius: 16px;
-  padding: 1rem 1.25rem;
-  border: 1px solid rgba(56, 189, 248, 0.4);
-  background: rgba(15, 23, 42, 0.8);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--color-primary-border);
+  background: var(--bg-surface);
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--space-4);
   overflow: hidden;
-  box-shadow: 0 10px 40px rgba(15, 23, 42, 0.9);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(10px);
 }
 
 .neon-stat__ring {
   width: 48px;
   height: 48px;
-  border-radius: 12px;
-  border: 1px solid rgba(56, 189, 248, 0.4);
-  background: radial-gradient(circle at 30% 30%, rgba(56, 189, 248, 0.7), rgba(37, 99, 235, 0.2));
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-primary-border);
+  background: radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.7), rgba(67, 56, 202, 0.2));
   animation: neonPulse 3.5s ease-in-out infinite;
+  box-shadow: var(--shadow-glow);
 }
 
 .neon-stat__label {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #94a3b8;
+  color: var(--text-muted);
+  font-weight: var(--font-weight-medium);
 }
 
 .neon-stat__value {
-  margin: 0.2rem 0 0;
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #e2e8f0;
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-2xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
 }
 
 .neon-stat__accent {
   margin-left: auto;
-  font-size: 0.9rem;
-  color: #38bdf8;
+  font-size: var(--text-sm);
+  color: var(--color-primary);
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: var(--space-1);
 }
 
 @keyframes neonPulse {

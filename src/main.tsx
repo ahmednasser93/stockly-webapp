@@ -3,6 +3,8 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "./index.css";
+import "./styles/modern-theme.css";
+import "./styles/modern-components.css";
 import App from "./App";
 import { AuthProvider } from "./state/AuthContext";
 import { SettingsProvider } from "./state/SettingsContext";
