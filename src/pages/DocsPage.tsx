@@ -49,6 +49,23 @@ const endpoints = [
       },
     },
   },
+  {
+    name: "Get Historical Prices",
+    method: "GET",
+    path: "/v1/api/get-historical",
+    description: "Retrieves historical price data for a stock symbol over a specified number of days",
+    sampleQuery: "?symbol=AMZN&days=180",
+    params: {
+      symbol: {
+        label: "Ticker Symbol",
+        value: "AMZN",
+      },
+      days: {
+        label: "Number of Days (1-3650)",
+        value: "180",
+      },
+    },
+  },
 ];
 
 const BASE_URLS = [

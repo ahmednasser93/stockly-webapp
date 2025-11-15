@@ -18,6 +18,8 @@ servers:
 tags:
   - name: Alerts
     description: Price alert management endpoints
+  - name: Historical Prices
+    description: Historical stock price data endpoints
 
 paths:
   /v1/api/alerts:
@@ -245,6 +247,74 @@ paths:
               example:
                 error: "alert not found"
 
+  /v1/api/get-historical:
+    get:
+      summary: Get historical price data
+      description: |
+        Retrieves historical price data for a stock symbol over a specified number of days.
+        Data is fetched from the D1 database which is populated by the get-stock endpoint.
+      tags:
+        - Historical Prices
+      parameters:
+        - name: symbol
+          in: query
+          required: true
+          description: Stock ticker symbol (e.g., AAPL, MSFT)
+          schema:
+            type: string
+          example: "AMZN"
+        - name: days
+          in: query
+          required: false
+          description: Number of days to look back (default: 180, max: 3650)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 3650
+            default: 180
+          example: 180
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoricalPricesResponse'
+              example:
+                symbol: "AMZN"
+                days: 180
+                data:
+                  - date: "2025-01-01"
+                    price: 120.55
+                    volume: 12345678
+                  - date: "2025-01-02"
+                    price: 121.20
+                    volume: 14567890
+                  - date: "2025-01-03"
+                    price: 119.85
+                    volume: 11234567
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingSymbol:
+                  value:
+                    error: "symbol parameter is required"
+                invalidDays:
+                  value:
+                    error: "days parameter must be a positive number between 1 and 3650"
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "failed to fetch historical prices"
+
 components:
   schemas:
     Alert:
@@ -396,4 +466,47 @@ components:
           type: string
           description: Human-readable error message
           example: "alert not found"
+
+    HistoricalPricesResponse:
+      type: object
+      required:
+        - symbol
+        - days
+        - data
+      properties:
+        symbol:
+          type: string
+          description: Stock ticker symbol (uppercased)
+          example: "AMZN"
+        days:
+          type: integer
+          description: Number of days requested
+          example: 180
+        data:
+          type: array
+          description: Array of historical price records, ordered by date (ascending)
+          items:
+            $ref: '#/components/schemas/HistoricalPriceRecord'
+
+    HistoricalPriceRecord:
+      type: object
+      required:
+        - date
+        - price
+      properties:
+        date:
+          type: string
+          format: date
+          description: Date in YYYY-MM-DD format
+          example: "2025-01-01"
+        price:
+          type: number
+          format: double
+          description: Closing price for the date
+          example: 120.55
+        volume:
+          type: integer
+          nullable: true
+          description: Trading volume for the date (may be null if unavailable)
+          example: 12345678
 
