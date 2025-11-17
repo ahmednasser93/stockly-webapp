@@ -35,6 +35,7 @@ export type AdminConfig = {
   featureFlags: {
     alerting: boolean;
     sandboxMode: boolean;
+    simulateProviderFailure: boolean;
   };
 };
 
@@ -52,7 +53,7 @@ const FALLBACK_CONFIG: AdminConfig = {
   primaryProvider: "alpha-feed",
   backupProvider: "beta-feed",
   alertThrottle: { maxAlerts: 100, windowSeconds: 60 },
-  featureFlags: { alerting: true, sandboxMode: false },
+  featureFlags: { alerting: true, sandboxMode: false, simulateProviderFailure: false },
 };
 
 const FALLBACK_METRICS: MonitoringSnapshot = {
@@ -105,4 +106,22 @@ export async function fetchOpenApiSpec(): Promise<Record<string, unknown>> {
     throw new Error("Failed to fetch OpenAPI spec");
   }
   return response.json();
+}
+
+export async function simulateProviderFailure(): Promise<AdminConfig> {
+  if (!ADMIN_API_BASE) {
+    return { ...FALLBACK_CONFIG, featureFlags: { ...FALLBACK_CONFIG.featureFlags, simulateProviderFailure: true } };
+  }
+  return adminRequest<AdminConfig>("/v1/api/simulate-provider-failure", {
+    method: "POST",
+  });
+}
+
+export async function disableProviderFailure(): Promise<AdminConfig> {
+  if (!ADMIN_API_BASE) {
+    return { ...FALLBACK_CONFIG, featureFlags: { ...FALLBACK_CONFIG.featureFlags, simulateProviderFailure: false } };
+  }
+  return adminRequest<AdminConfig>("/v1/api/disable-provider-failure", {
+    method: "POST",
+  });
 }

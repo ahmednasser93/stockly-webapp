@@ -102,7 +102,6 @@ esac
 
 if wrangler pages deploy dist \
     --project-name "$PROJECT_NAME" \
-    --functions functions \
     --branch "$BRANCH"; then
     echo ""
     echo -e "${GREEN}╔═══════════════════════════════════════════════════════════════╗${NC}"
@@ -133,5 +132,6 @@ else
     echo -e "${RED}❌ Deployment failed${NC}"
     exit 1
 fi
+
 
 

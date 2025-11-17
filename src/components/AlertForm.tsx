@@ -31,7 +31,6 @@ export function AlertForm({
   );
   const [status, setStatus] = useState<AlertStatus>(alert?.status ?? "active");
   const [target, setTarget] = useState(alert?.target ?? "");
-  const [notes, setNotes] = useState(alert?.notes ?? "");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showSuggestions, setShowSuggestions] = useState(false);
 
@@ -49,7 +48,6 @@ export function AlertForm({
       setThreshold(alert.threshold.toString());
       setStatus(alert.status);
       setTarget(alert.target);
-      setNotes(alert.notes ?? "");
     }
   }, [alert]);
 
@@ -91,7 +89,6 @@ export function AlertForm({
             status,
             channel: "notification", // Always use notification channel
             target,
-            notes: notes.trim() || null,
           }
         : {
             symbol: symbol.toUpperCase(),
@@ -99,7 +96,6 @@ export function AlertForm({
             threshold: parseFloat(threshold),
             channel: "notification", // Always use notification channel
             target,
-            notes: notes.trim() || undefined,
           };
 
       await onSubmit(data);
@@ -294,38 +290,26 @@ export function AlertForm({
 
           <div className="form-group">
             <label htmlFor="target">
-              Device Push Token <span className="required">*</span>
+              FCM Token (Notification Target) <span className="required">*</span>
             </label>
             <input
               id="target"
               type="text"
               value={target}
               onChange={(e) => setTarget(e.target.value)}
-              placeholder="FCM token (automatically managed by mobile app)"
+              placeholder="Enter FCM token from mobile app"
               disabled={isSubmitting}
               readOnly={false}
               className={errors.target ? "error" : ""}
             />
             <p className="help-text">
-              ⚠️ This FCM token is automatically managed by the Stockly mobile app.
-              You can manually enter an FCM token if you have one, but it's recommended to create alerts from the mobile app.
+              The FCM token is used to send push notifications to your device. Get this token from the Stockly mobile app, or create alerts directly from the mobile app where it's automatically managed.
             </p>
             {errors.target && (
               <span className="error-message">{errors.target}</span>
             )}
           </div>
 
-          <div className="form-group">
-            <label htmlFor="notes">Notes (optional)</label>
-            <textarea
-              id="notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Add a note or description..."
-              rows={3}
-              disabled={isSubmitting}
-            />
-          </div>
 
           <div className="form-actions">
             <button

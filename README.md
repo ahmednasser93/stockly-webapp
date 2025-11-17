@@ -21,7 +21,7 @@
 - `src/pages/LoginPage.tsx` – Animated hero + secure form that hits `/api/login`.
 - `src/pages/HomePage.tsx` – Tabbed dashboard/docs view plus neon hero stats.
 - `src/pages/AlertsPage.tsx` – Price alerts dashboard with full CRUD functionality.
-- `src/pages/SettingsPage.tsx` – Controls auto-refresh cadence via `SettingsContext`.
+- `src/pages/SettingsPage.tsx` – Controls auto-refresh cadence via `SettingsContext`. Includes Developer Tools section for provider failure simulation.
 - `src/state/AuthContext.tsx` – Handles session persistence and fallback credential check.
 - `src/state/SettingsContext.tsx` – Stores refresh interval in `localStorage`.
 - `src/api/client.ts` – REST helpers for `/v1/api/search-stock` and `/v1/api/get-stocks`.
@@ -91,6 +91,44 @@ npm run build
 wrangler pages deploy dist --project-name stockly-webapp --functions functions --branch main
 ```
 Ensure `functions/` is included so `/api/login` runs in production.
+
+## Widget Data Support
+
+The web admin API documentation includes information about widget data consumption. Mobile home screen widgets consume the same `get-stock` and `get-stocks` endpoints as the main app.
+
+**Note**: UI support for "Widget Preview" may be added in a future update to help QA test widget configurations.
+
+### Widget Data Format
+
+Widgets expect stock data that matches the standard `get-stock` response format, with additional fields for staleness detection:
+
+- `stale`: boolean - indicates if data is stale
+- `stale_reason`: string - reason for staleness (e.g., "provider_failure", "simulation_mode")
+- `lastUpdatedAt`: ISO8601 timestamp - when data was last updated
+
+Mobile apps cache this data locally for widget consumption. See the mobile app README for details on widget implementation.
+
+## Provider Failure Simulation
+
+The Settings page includes a "Developer Tools" tab that allows testing fallback behavior when external providers fail.
+
+### How to Use
+
+1. Navigate to **Settings → Developer Tools**
+2. Click **"Trigger Provider Failure (Test Mode)"** to enable simulation
+3. When enabled:
+   - The API will return stale cached data instead of calling external providers
+   - The status indicator shows **🔴 Simulation ACTIVE**
+4. Click **"Disable Failure Simulation"** to restore normal provider calls
+5. The status indicator shows **🟢 Simulation OFF** when disabled
+
+### Use Cases
+
+- **QA Testing**: Verify that the UI handles stale data correctly
+- **Fallback Testing**: Test resilience when providers fail
+- **UI Testing**: Validate warning banners and stale data indicators
+
+---
 
 ## How to Update / Maintain
 ```bash

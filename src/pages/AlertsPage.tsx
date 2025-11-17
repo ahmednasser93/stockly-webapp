@@ -351,12 +351,15 @@ export function AlertsPage() {
     setDevicesError(null);
     try {
       const response = await axios.get(`${API_BASE_URL}/v1/api/devices`);
-      setDevices(response.data.devices || []);
+      // Ensure we handle both response.data.devices and response.data (in case of different response structure)
+      const devicesList = response.data?.devices || response.data || [];
+      setDevices(Array.isArray(devicesList) ? devicesList : []);
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: string } }; message?: string };
       const errorMessage = error?.response?.data?.error || error?.message || "Failed to load devices";
       setDevicesError(errorMessage);
       console.error("Failed to load devices:", err);
+      setDevices([]); // Reset to empty array on error
     } finally {
       setDevicesLoading(false);
     }
