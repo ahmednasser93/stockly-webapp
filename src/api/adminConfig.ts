@@ -26,6 +26,7 @@ async function adminRequest<T>(path: string, init?: RequestInit): Promise<T> {
 
 export type AdminConfig = {
   pollingIntervalSec: number;
+  kvWriteIntervalSec: number;
   primaryProvider: string;
   backupProvider: string;
   alertThrottle: {
@@ -50,6 +51,7 @@ export type MonitoringSnapshot = {
 
 const FALLBACK_CONFIG: AdminConfig = {
   pollingIntervalSec: 30,
+  kvWriteIntervalSec: 3600,
   primaryProvider: "alpha-feed",
   backupProvider: "beta-feed",
   alertThrottle: { maxAlerts: 100, windowSeconds: 60 },

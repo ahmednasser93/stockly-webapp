@@ -66,6 +66,40 @@ const endpoints = [
       },
     },
   },
+  {
+    name: "Get Admin Config",
+    method: "GET",
+    path: "/config/get",
+    description: "Retrieves the current admin configuration including polling interval, feature flags, and alert throttling settings",
+    sampleQuery: "",
+    params: {},
+  },
+  {
+    name: "Get User Settings",
+    method: "GET",
+    path: "/v1/api/settings/:userId",
+    description: "Retrieves user-specific settings including refresh interval preference",
+    sampleQuery: "",
+    params: {
+      userId: {
+        label: "User ID",
+        value: "user123",
+      },
+    },
+  },
+  {
+    name: "Get User Preferences",
+    method: "GET",
+    path: "/v1/api/preferences/:userId",
+    description: "Retrieves user-specific notification preferences",
+    sampleQuery: "",
+    params: {
+      userId: {
+        label: "User ID",
+        value: "user123",
+      },
+    },
+  },
 ];
 
 const BASE_URLS = [
@@ -91,13 +125,28 @@ export function DocsPage() {
   const endpoint = endpoints[activeIndex];
 
   const handleSubmit = async () => {
-    const url = new URL(baseUrl.replace(/\/$/, "") + endpoint.path);
+    let url: URL;
+    let path = endpoint.path;
+    
+    // Handle path parameters (e.g., :userId)
+    if (path.includes(":userId")) {
+      const userIdInput = document.getElementById("param-userId") as HTMLInputElement | null;
+      const userId = userIdInput?.value || "user123";
+      path = path.replace(":userId", userId);
+    }
+    
+    url = new URL(baseUrl.replace(/\/$/, "") + path);
+    
+    // Add query parameters
     Object.keys(endpoint.params).forEach((key) => {
-      const input = document.getElementById(`param-${key}`) as HTMLInputElement | null;
-      if (input?.value) {
-        url.searchParams.set(key, input.value);
+      if (key !== "userId") { // userId is already in path
+        const input = document.getElementById(`param-${key}`) as HTMLInputElement | null;
+        if (input?.value) {
+          url.searchParams.set(key, input.value);
+        }
       }
     });
+    
     setLoading(true);
     setOutput("Sending request…");
     try {

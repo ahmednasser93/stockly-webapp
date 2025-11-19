@@ -109,6 +109,8 @@ export function AlertsPage() {
     userId: string;
     pushToken: string;
     deviceInfo: string | null;
+    alertCount?: number;
+    activeAlertCount?: number;
     createdAt: string;
     updatedAt: string;
   }
@@ -138,6 +140,11 @@ export function AlertsPage() {
     });
     return map;
   }, [pricesQuery.data]);
+
+  // Detect orphaned alerts (alerts with push tokens that don't match any device)
+  const orphanedAlerts = useMemo(() => {
+    return alerts.filter((alert) => !devices.some((d) => d.pushToken === alert.target));
+  }, [alerts, devices]);
 
   // Filter and sort alerts
   const filteredAlerts = useMemo(() => {
@@ -351,14 +358,50 @@ export function AlertsPage() {
     setDevicesError(null);
     try {
       const response = await axios.get(`${API_BASE_URL}/v1/api/devices`);
-      // Ensure we handle both response.data.devices and response.data (in case of different response structure)
-      const devicesList = response.data?.devices || response.data || [];
+      
+      // Handle different response structures
+      let devicesList: Device[] = [];
+      
+      if (response.data) {
+        // Check if response.data is directly an array
+        if (Array.isArray(response.data)) {
+          devicesList = response.data;
+        }
+        // Check if response has devices property
+        else if (response.data.devices && Array.isArray(response.data.devices)) {
+          devicesList = response.data.devices;
+        }
+        // Check for paginated response (data.data)
+        else if (response.data.data && Array.isArray(response.data.data)) {
+          devicesList = response.data.data;
+        }
+        // Check for results array
+        else if (response.data.results && Array.isArray(response.data.results)) {
+          devicesList = response.data.results;
+        }
+        // Check for items array (common pagination pattern)
+        else if (response.data.items && Array.isArray(response.data.items)) {
+          devicesList = response.data.items;
+        }
+      }
+      
+      // Ensure we have an array
       setDevices(Array.isArray(devicesList) ? devicesList : []);
+      
+      // Log for debugging
+      if (devicesList.length > 0) {
+        console.log(`Loaded ${devicesList.length} device(s)`);
+      }
     } catch (err: unknown) {
-      const error = err as { response?: { data?: { error?: string } }; message?: string };
+      const error = err as { response?: { data?: { error?: string }; status?: number }; message?: string };
       const errorMessage = error?.response?.data?.error || error?.message || "Failed to load devices";
       setDevicesError(errorMessage);
       console.error("Failed to load devices:", err);
+      console.error("Error details:", {
+        message: error?.message,
+        response: error?.response?.data,
+        status: error?.response?.status,
+      });
       setDevices([]); // Reset to empty array on error
     } finally {
       setDevicesLoading(false);
@@ -553,7 +596,23 @@ export function AlertsPage() {
               </div>
             ) : (
               <>
-        <div className="alerts-controls">
+                {orphanedAlerts.length > 0 && (
+                  <div style={{ 
+                    marginBottom: "1.5rem", 
+                    padding: "1rem", 
+                    background: "rgba(239, 68, 68, 0.1)", 
+                    border: "1px solid rgba(239, 68, 68, 0.3)", 
+                    borderRadius: "8px" 
+                  }}>
+                    <p style={{ margin: 0, color: "#ef4444", fontWeight: "600", marginBottom: "0.5rem" }}>
+                      ⚠️ Warning: {orphanedAlerts.length} orphaned alert{orphanedAlerts.length !== 1 ? "s" : ""} detected
+                    </p>
+                    <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--text-muted)" }}>
+                      These alerts have push tokens that don't match any registered device. They will not receive notifications until the device is registered or the alert is updated with a valid token. Orphaned alerts are highlighted in red in the table below.
+                    </p>
+                  </div>
+                )}
+                <div className="alerts-controls">
           <div className="search-wrapper">
             <input
               type="text"
@@ -628,7 +687,7 @@ export function AlertsPage() {
                     {sortField === "status" && (sortOrder === "asc" ? "↑" : "↓")}
                   </th>
                   <th>Channel</th>
-                  <th>Target</th>
+                  <th>Device / Target</th>
                   <th onClick={() => handleSort("createdAt")}>
                     Created{" "}
                     {sortField === "createdAt" &&
@@ -645,11 +704,19 @@ export function AlertsPage() {
                     currentPrice &&
                     Math.abs(alert.threshold - currentPrice) / currentPrice <
                       0.05;
+                  
+                  // Find matching device for this alert
+                  const matchingDevice = devices.find((d) => d.pushToken === alert.target);
+                  const isOrphaned = !matchingDevice;
 
                   return (
                     <tr
                       key={alert.id}
-                      className={alert.status === "paused" ? "paused" : ""}
+                      className={alert.status === "paused" ? "paused" : isOrphaned ? "orphaned" : ""}
+                      style={isOrphaned ? { 
+                        background: "rgba(239, 68, 68, 0.05)",
+                        borderLeft: "3px solid #ef4444"
+                      } : {}}
                     >
                       <td className="symbol-cell">
                         <strong>{alert.symbol}</strong>
@@ -699,7 +766,35 @@ export function AlertsPage() {
                         )}
                       </td>
                       <td className="target-cell">
-                        <span className="truncate">{alert.target}</span>
+                        {matchingDevice ? (
+                          <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                              <span style={{ fontWeight: "600", color: "var(--accent-color)" }}>
+                                {matchingDevice.userId}
+                              </span>
+                              {matchingDevice.deviceInfo && (
+                                <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
+                                  ({matchingDevice.deviceInfo})
+                                </span>
+                              )}
+                            </div>
+                            <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
+                              {alert.target.substring(0, 30)}...
+                            </span>
+                          </div>
+                        ) : (
+                          <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                              <span style={{ color: "#ef4444", fontWeight: "600" }}>⚠️ Orphaned</span>
+                            </div>
+                            <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
+                              {alert.target.substring(0, 30)}...
+                            </span>
+                            <span style={{ fontSize: "0.75rem", color: "#ef4444", fontStyle: "italic" }}>
+                              No matching device found
+                            </span>
+                          </div>
+                        )}
                       </td>
                       <td className="date-cell">
                         {new Date(alert.createdAt).toLocaleDateString()}
@@ -1136,6 +1231,22 @@ export function AlertsPage() {
                     <p style={{ color: "#f87171", margin: 0 }}>❌ {devicesError}</p>
                   </div>
                 )}
+                {orphanedAlerts.length > 0 && (
+                  <div style={{ 
+                    marginBottom: "1.5rem", 
+                    padding: "1rem", 
+                    background: "rgba(239, 68, 68, 0.1)", 
+                    border: "1px solid rgba(239, 68, 68, 0.3)", 
+                    borderRadius: "8px" 
+                  }}>
+                    <p style={{ margin: 0, color: "#ef4444", fontWeight: "600", marginBottom: "0.5rem" }}>
+                      ⚠️ Warning: {orphanedAlerts.length} orphaned alert{orphanedAlerts.length !== 1 ? "s" : ""} detected
+                    </p>
+                    <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--text-muted)" }}>
+                      These alerts have push tokens that don't match any registered device. They will not receive notifications until the device is registered or the alert is updated with a valid token.
+                    </p>
+                  </div>
+                )}
                 {devices.length === 0 ? (
                   <div className="empty-state">
                     <div className="empty-icon">📱</div>
@@ -1150,81 +1261,100 @@ export function AlertsPage() {
                           <th>User ID</th>
                           <th>FCM Token</th>
                           <th>Device Info</th>
+                          <th>Alerts</th>
                           <th>Registered</th>
                           <th>Last Updated</th>
                           <th>Actions</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {devices.map((device) => (
-                          <tr key={device.userId}>
-                            <td>
-                              <span style={{ fontWeight: 600, color: "var(--accent-color)" }}>
-                                {device.userId}
-                              </span>
-                            </td>
-                            <td className="target-cell">
-                              <span className="truncate" style={{ maxWidth: "200px", fontFamily: "monospace", fontSize: "0.85rem" }}>
-                                {device.pushToken.substring(0, 40)}...
-                              </span>
-                            </td>
-                            <td>
-                              {device.deviceInfo ? (
-                                <span style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>
-                                  {device.deviceInfo}
+                        {devices.map((device) => {
+                          // Count alerts for this device
+                          const deviceAlerts = alerts.filter((a) => a.target === device.pushToken);
+                          const activeAlerts = deviceAlerts.filter((a) => a.status === "active");
+                          const displayAlertCount = device.alertCount !== undefined ? device.alertCount : deviceAlerts.length;
+                          const displayActiveCount = device.activeAlertCount !== undefined ? device.activeAlertCount : activeAlerts.length;
+                          
+                          return (
+                            <tr key={device.userId}>
+                              <td>
+                                <span style={{ fontWeight: 600, color: "var(--accent-color)" }}>
+                                  {device.userId}
                                 </span>
-                              ) : (
-                                <span style={{ fontSize: "0.875rem", color: "var(--text-muted)", fontStyle: "italic" }}>
-                                  No info
+                              </td>
+                              <td className="target-cell">
+                                <span className="truncate" style={{ maxWidth: "200px", fontFamily: "monospace", fontSize: "0.85rem" }}>
+                                  {device.pushToken.substring(0, 40)}...
                                 </span>
-                              )}
-                            </td>
-                            <td className="date-cell">
-                              {new Date(device.createdAt).toLocaleString()}
-                            </td>
-                            <td className="date-cell">
-                              {new Date(device.updatedAt).toLocaleString()}
-                            </td>
-                            <td>
-                              <div style={{ display: "flex", gap: "0.5rem" }}>
-                                <button
-                                  type="button"
-                                  onClick={() => handleSendTestNotification(device.userId)}
-                                  disabled={testingDeviceId === device.userId || deletingDeviceId === device.userId}
-                                  style={{
-                                    padding: "0.5rem 1rem",
-                                    fontSize: "0.875rem",
-                                    background: testingDeviceId === device.userId ? "var(--ghost-border)" : "var(--accent-color)",
-                                    color: testingDeviceId === device.userId ? "var(--text-muted)" : "white",
-                                    border: "none",
-                                    borderRadius: "6px",
-                                    cursor: testingDeviceId === device.userId ? "not-allowed" : "pointer",
-                                    opacity: testingDeviceId === device.userId || deletingDeviceId === device.userId ? 0.6 : 1,
-                                  }}
-                                >
-                                  {testingDeviceId === device.userId ? "Sending..." : "Re-send"}
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteDevice(device.userId)}
-                                  disabled={deletingDeviceId === device.userId || testingDeviceId === device.userId}
-                                  style={{
-                                    padding: "0.5rem 1rem",
-                                    fontSize: "0.875rem",
-                                    background: deletingDeviceId === device.userId ? "var(--ghost-border)" : "#dc2626",
-                                    color: deletingDeviceId === device.userId ? "var(--text-muted)" : "white",
-                                    border: "none",
-                                    borderRadius: "6px",
-                                    cursor: deletingDeviceId === device.userId ? "not-allowed" : "pointer",
-                                    opacity: deletingDeviceId === device.userId || testingDeviceId === device.userId ? 0.6 : 1,
-                                  }}
-                                >
-                                  {deletingDeviceId === device.userId ? "Deleting..." : "Delete"}
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
+                              </td>
+                              <td>
+                                {device.deviceInfo ? (
+                                  <span style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>
+                                    {device.deviceInfo}
+                                  </span>
+                                ) : (
+                                  <span style={{ fontSize: "0.875rem", color: "var(--text-muted)", fontStyle: "italic" }}>
+                                    No info
+                                  </span>
+                                )}
+                              </td>
+                              <td>
+                                <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+                                  <span style={{ fontSize: "0.875rem", fontWeight: "600" }}>
+                                    {displayAlertCount} total
+                                  </span>
+                                  <span style={{ fontSize: "0.8125rem", color: displayActiveCount > 0 ? "#22c55e" : "var(--text-muted)" }}>
+                                    {displayActiveCount} active
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="date-cell">
+                                {new Date(device.createdAt).toLocaleString()}
+                              </td>
+                              <td className="date-cell">
+                                {new Date(device.updatedAt).toLocaleString()}
+                              </td>
+                              <td>
+                                <div style={{ display: "flex", gap: "0.5rem" }}>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSendTestNotification(device.userId)}
+                                    disabled={testingDeviceId === device.userId || deletingDeviceId === device.userId}
+                                    style={{
+                                      padding: "0.5rem 1rem",
+                                      fontSize: "0.875rem",
+                                      background: testingDeviceId === device.userId ? "var(--ghost-border)" : "var(--accent-color)",
+                                      color: testingDeviceId === device.userId ? "var(--text-muted)" : "white",
+                                      border: "none",
+                                      borderRadius: "6px",
+                                      cursor: testingDeviceId === device.userId ? "not-allowed" : "pointer",
+                                      opacity: testingDeviceId === device.userId || deletingDeviceId === device.userId ? 0.6 : 1,
+                                    }}
+                                  >
+                                    {testingDeviceId === device.userId ? "Sending..." : "Test"}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteDevice(device.userId)}
+                                    disabled={deletingDeviceId === device.userId || testingDeviceId === device.userId}
+                                    style={{
+                                      padding: "0.5rem 1rem",
+                                      fontSize: "0.875rem",
+                                      background: deletingDeviceId === device.userId ? "var(--ghost-border)" : "#dc2626",
+                                      color: deletingDeviceId === device.userId ? "var(--text-muted)" : "white",
+                                      border: "none",
+                                      borderRadius: "6px",
+                                      cursor: deletingDeviceId === device.userId ? "not-allowed" : "pointer",
+                                      opacity: deletingDeviceId === device.userId || testingDeviceId === device.userId ? 0.6 : 1,
+                                    }}
+                                  >
+                                    {deletingDeviceId === device.userId ? "Deleting..." : "Delete"}
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
@@ -1233,13 +1363,13 @@ export function AlertsPage() {
             )}
           </div>
         )}
-      </div>
 
       {showForm && (
         <AlertForm
           onSubmit={handleCreateAlert}
           onCancel={() => setShowForm(false)}
           isSubmitting={isCreating}
+          devices={devices}
         />
       )}
 
@@ -1249,6 +1379,7 @@ export function AlertsPage() {
           onSubmit={handleUpdateAlert}
           onCancel={() => setEditingAlert(null)}
           isSubmitting={isUpdating}
+          devices={devices}
         />
       )}
 
@@ -1271,8 +1402,9 @@ export function AlertsPage() {
           >
             ✕
           </button>
-        </div>
-      )}
+          </div>
+        )}
+      </div>
     </section>
   );
 }

@@ -328,8 +328,8 @@ describe("AlertsPage", () => {
       expect(screen.getByText("user-1")).toBeInTheDocument();
     }, { timeout: 3000 });
 
-    // Click Re-send button
-    const sendTestButton = screen.getByText("Re-send");
+    // Click Test button
+    const sendTestButton = screen.getByText("Test");
     sendTestButton.click();
 
     await waitFor(() => {
