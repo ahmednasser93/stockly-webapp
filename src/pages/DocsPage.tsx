@@ -100,6 +100,61 @@ const endpoints = [
       },
     },
   },
+  {
+    name: "Get Stock News (Single)",
+    method: "GET",
+    path: "/v1/api/get-news",
+    description: "Fetches latest stock news articles for a single stock symbol",
+    sampleQuery: "?symbol=AAPL",
+    params: {
+      symbol: {
+        label: "Ticker Symbol",
+        value: "AAPL",
+      },
+    },
+  },
+  {
+    name: "Get Stock News (Multiple)",
+    method: "GET",
+    path: "/v1/api/get-news",
+    description: "Fetches latest stock news articles for multiple stock symbols (max 10)",
+    sampleQuery: "?symbols=AAPL,MSFT,GOOGL",
+    params: {
+      symbols: {
+        label: "Comma separated symbols (max 10)",
+        value: "AAPL,MSFT,GOOGL",
+      },
+    },
+  },
+  {
+    name: "Get Stock News (With Pagination)",
+    method: "GET",
+    path: "/v1/api/get-news",
+    description: "Fetches stock news with pagination, date filtering, and result limiting",
+    sampleQuery: "?symbol=AAPL&from=2025-01-01&to=2025-01-31&page=0&limit=20",
+    params: {
+      symbol: {
+        label: "Ticker Symbol",
+        value: "AAPL",
+      },
+      from: {
+        label: "From Date (YYYY-MM-DD)",
+        value: "2025-01-01",
+      },
+      to: {
+        label: "To Date (YYYY-MM-DD)",
+        value: "2025-01-31",
+      },
+      page: {
+        label: "Page Number (0-based)",
+        value: "0",
+      },
+      limit: {
+        label: "Results Per Page (1-250)",
+        value: "20",
+      },
+    },
+  },
 ];
 
 const BASE_URLS = [
@@ -146,6 +201,41 @@ export function DocsPage() {
         }
       }
     });
+    
+    // Special handling for get-news endpoint - only use one param (symbol OR symbols)
+    if (path === "/v1/api/get-news") {
+      const symbolInput = document.getElementById("param-symbol") as HTMLInputElement | null;
+      const symbolsInput = document.getElementById("param-symbols") as HTMLInputElement | null;
+      const fromInput = document.getElementById("param-from") as HTMLInputElement | null;
+      const toInput = document.getElementById("param-to") as HTMLInputElement | null;
+      const pageInput = document.getElementById("param-page") as HTMLInputElement | null;
+      const limitInput = document.getElementById("param-limit") as HTMLInputElement | null;
+      
+      // Clear both symbol params first
+      url.searchParams.delete("symbol");
+      url.searchParams.delete("symbols");
+      
+      // Use symbol if provided, otherwise use symbols
+      if (symbolInput?.value) {
+        url.searchParams.set("symbol", symbolInput.value);
+      } else if (symbolsInput?.value) {
+        url.searchParams.set("symbols", symbolsInput.value);
+      }
+      
+      // Add pagination parameters if provided
+      if (fromInput?.value) {
+        url.searchParams.set("from", fromInput.value);
+      }
+      if (toInput?.value) {
+        url.searchParams.set("to", toInput.value);
+      }
+      if (pageInput?.value) {
+        url.searchParams.set("page", pageInput.value);
+      }
+      if (limitInput?.value) {
+        url.searchParams.set("limit", limitInput.value);
+      }
+    }
     
     setLoading(true);
     setOutput("Sending request…");

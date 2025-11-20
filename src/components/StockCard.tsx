@@ -1,4 +1,7 @@
+import { Link } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import type { StockQuote } from "../types";
+import { fetchStockDetails } from "../api/stockDetails";
 
 function formatNumber(value: number | null, options?: Intl.NumberFormatOptions) {
   if (value === null || value === undefined) return "--";
@@ -25,27 +28,45 @@ function formatTimestamp(timestamp: number | null) {
 }
 
 export function StockCard({ quote }: { quote: StockQuote }) {
+  const queryClient = useQueryClient();
+
+  // Prefetch stock details on hover/touch
+  const handleMouseEnter = () => {
+    queryClient.prefetchQuery({
+      queryKey: ["stockDetails", quote.symbol.toUpperCase()],
+      queryFn: () => fetchStockDetails(quote.symbol.toUpperCase()),
+      staleTime: 5 * 60 * 1000,
+    });
+  };
+
   return (
-    <article className="stock-card">
-      <header>
-        <h3>{quote.symbol}</h3>
-        <p className="price">{formatNumber(quote.price)}</p>
-      </header>
-      <dl>
-        <div>
-          <dt>Day Low</dt>
-          <dd>{formatNumber(quote.dayLow)}</dd>
-        </div>
-        <div>
-          <dt>Day High</dt>
-          <dd>{formatNumber(quote.dayHigh)}</dd>
-        </div>
-        <div>
-          <dt>Volume</dt>
-          <dd>{formatVolume(quote.volume)}</dd>
-        </div>
-      </dl>
-      <footer>Last updated: {formatTimestamp(quote.timestamp)}</footer>
-    </article>
+    <Link
+      to={`/stocks/${quote.symbol}`}
+      className="stock-card-link"
+      onMouseEnter={handleMouseEnter}
+      onTouchStart={handleMouseEnter}
+    >
+      <article className="stock-card">
+        <header>
+          <h3>{quote.symbol}</h3>
+          <p className="price">{formatNumber(quote.price)}</p>
+        </header>
+        <dl>
+          <div>
+            <dt>Day Low</dt>
+            <dd>{formatNumber(quote.dayLow)}</dd>
+          </div>
+          <div>
+            <dt>Day High</dt>
+            <dd>{formatNumber(quote.dayHigh)}</dd>
+          </div>
+          <div>
+            <dt>Volume</dt>
+            <dd>{formatVolume(quote.volume)}</dd>
+          </div>
+        </dl>
+        <footer>Last updated: {formatTimestamp(quote.timestamp)}</footer>
+      </article>
+    </Link>
   );
 }

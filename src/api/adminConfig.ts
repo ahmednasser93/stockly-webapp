@@ -15,7 +15,6 @@ async function adminRequest<T>(path: string, init?: RequestInit): Promise<T> {
   const url = `${ADMIN_API_BASE}${path}`;
   const response = await fetch(url, {
     headers: DEFAULT_HEADERS,
-    credentials: "include",
     ...init,
   });
   if (!response.ok) {

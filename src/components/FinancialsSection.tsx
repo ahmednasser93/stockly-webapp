@@ -16,8 +16,11 @@ export function FinancialsSection({ financials }: FinancialsSectionProps) {
   const [activeTab, setActiveTab] = useState<FinancialTab>("income");
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Financials</h3>
+    <div className="bg-white rounded-2xl shadow-lg p-5 border border-gray-200/50">
+      <div className="flex items-center gap-2 mb-5">
+        <div className="w-1 h-6 bg-blue-600 rounded-full"></div>
+        <h3 className="text-xl font-bold text-gray-900">Financials</h3>
+      </div>
 
       <Tabs.Root
         value={activeTab}

@@ -1,25 +1,35 @@
-import type { StockNews } from "../types/stockDetails";
 import { formatRelativeTime } from "../utils/formatters";
 import { ExternalLink } from "lucide-react";
+import type { NewsItem } from "../types/news";
+import type { StockNews as StockDetailsNews } from "../types/stockDetails";
 
 interface NewsCardProps {
-  news: StockNews;
+  news: NewsItem | StockDetailsNews;
 }
 
 export function NewsCard({ news }: NewsCardProps) {
+  // Handle both NewsItem (from get-news API) and StockNews (from stock-details API)
+  const source = "source" in news ? news.source : news.site;
+  const summary = "summary" in news ? news.summary : ("text" in news ? news.text : undefined);
+  const image = news.image;
+
   return (
     <a
       href={news.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="bg-white rounded-xl shadow-sm p-4 border border-gray-200 flex gap-3 hover:shadow-md transition-shadow"
+      className="bg-white rounded-xl shadow-sm p-4 border border-gray-200 flex gap-3 hover:shadow-lg hover:border-blue-200 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
     >
-      {news.image && (
+      {image && (
         <img
-          src={news.image}
+          src={image}
           alt={news.title}
           className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
           loading="lazy"
+          onError={(e) => {
+            // Hide image if it fails to load
+            e.currentTarget.style.display = "none";
+          }}
         />
       )}
       <div className="flex-1 min-w-0">
@@ -27,16 +37,16 @@ export function NewsCard({ news }: NewsCardProps) {
           {news.title}
         </h4>
         <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
-          <span>{news.source}</span>
+          <span>{source}</span>
           <span>•</span>
           <span>{formatRelativeTime(news.publishedDate)}</span>
         </div>
-        {news.summary && (
+        {summary && (
           <p className="text-xs text-gray-600 line-clamp-2 mb-2">
-            {news.summary}
+            {summary.length > 200 ? `${summary.substring(0, 200)}...` : summary}
           </p>
         )}
-        <div className="flex items-center gap-1 text-xs text-blue-600">
+        <div className="flex items-center gap-1 text-xs text-blue-600 font-medium">
           <span>Read more</span>
           <ExternalLink className="w-3 h-3" />
         </div>

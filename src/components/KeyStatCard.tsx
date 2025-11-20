@@ -8,12 +8,12 @@ interface KeyStatCardProps {
 
 export function KeyStatCard({ icon, label, value }: KeyStatCardProps) {
   return (
-    <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
-      <div className="flex items-center gap-2 mb-2">
-        <div className="text-blue-600">{icon}</div>
-        <span className="text-sm text-gray-600">{label}</span>
+    <div className="bg-white rounded-xl shadow-md p-4 border border-gray-200/50 hover:shadow-lg hover:border-blue-200 transition-all duration-200 hover:-translate-y-0.5 key-stat-card">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="text-blue-600 p-1.5 bg-blue-50 rounded-lg">{icon}</div>
+        <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">{label}</span>
       </div>
-      <div className="text-lg font-semibold text-gray-900">{value}</div>
+      <div className="text-xl font-bold text-gray-900">{value}</div>
     </div>
   );
 }

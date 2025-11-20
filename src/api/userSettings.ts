@@ -15,7 +15,6 @@ async function userRequest<T>(path: string, init?: RequestInit, allow404 = false
   try {
     const response = await fetch(url, {
       headers: DEFAULT_HEADERS,
-      credentials: "include",
       ...init,
     });
     

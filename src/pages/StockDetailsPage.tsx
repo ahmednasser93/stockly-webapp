@@ -31,28 +31,51 @@ export function StockDetailsPage() {
   );
   const [chartPeriod, setChartPeriod] = useState<ChartPeriod>("1D");
 
-  // Loading skeleton
+  // Enhanced loading skeleton
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-200">
-          <div className="max-w-xl mx-auto px-4 py-4">
-            <div className="animate-pulse">
-              <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
-              <div className="h-6 bg-gray-200 rounded w-1/2"></div>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200/50">
+          <div className="max-w-xl mx-auto px-4 py-5">
+            <div className="animate-pulse space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="h-10 w-10 bg-gray-300 rounded-xl"></div>
+                <div className="flex gap-2">
+                  <div className="h-10 w-10 bg-gray-300 rounded-xl"></div>
+                  <div className="h-10 w-10 bg-gray-300 rounded-xl"></div>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="h-16 w-16 bg-gray-300 rounded-2xl"></div>
+                <div className="flex-1 space-y-2">
+                  <div className="h-8 bg-gray-300 rounded w-1/3"></div>
+                  <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="h-10 bg-gray-300 rounded-lg w-32"></div>
+                <div className="h-8 bg-gray-300 rounded-lg w-24"></div>
+              </div>
             </div>
           </div>
         </div>
         <div className="max-w-xl mx-auto px-4 py-6 space-y-6">
-          <div className="h-[300px] bg-gray-200 rounded-xl animate-pulse"></div>
+          <div className="bg-white rounded-2xl shadow-md p-4 border border-gray-200">
+            <div className="h-[300px] bg-gradient-to-br from-gray-200 to-gray-300 rounded-xl animate-pulse"></div>
+          </div>
           <div className="grid grid-cols-2 gap-3">
             {[...Array(6)].map((_, i) => (
               <div
                 key={i}
-                className="h-24 bg-gray-200 rounded-xl animate-pulse"
-              ></div>
+                className="h-28 bg-white rounded-xl shadow-sm border border-gray-200 p-4 animate-pulse"
+              >
+                <div className="h-4 bg-gray-200 rounded w-1/2 mb-3"></div>
+                <div className="h-6 bg-gray-300 rounded w-3/4"></div>
+              </div>
             ))}
           </div>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 h-32 animate-pulse"></div>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 h-48 animate-pulse"></div>
         </div>
       </div>
     );
@@ -100,35 +123,35 @@ export function StockDetailsPage() {
   const chartData = chart[chartPeriod] || [];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 stock-details-page">
       <StockDetailsHeader
         symbol={data.symbol}
         profile={profile}
         quote={quote}
       />
 
-      <div className="max-w-xl mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-xl mx-auto px-4 py-6 space-y-5">
         {/* Chart Section */}
-        <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+        <div className="bg-white rounded-2xl shadow-lg p-5 border border-gray-200/50 hover:shadow-xl transition-all duration-300 stock-details-card">
           <Tabs.Root
             value={chartPeriod}
             onValueChange={(value) => setChartPeriod(value as ChartPeriod)}
             className="w-full"
           >
-            <Tabs.List className="flex gap-2 mb-4 border-b border-gray-200 overflow-x-auto">
+            <Tabs.List className="flex gap-1 mb-5 border-b border-gray-200 overflow-x-auto pb-1">
               {(["1D", "1W", "1M", "3M", "1Y", "ALL"] as ChartPeriod[]).map(
                 (period) => (
                   <Tabs.Trigger
                     key={period}
                     value={period}
-                    className="px-3 py-2 text-sm font-medium text-gray-600 data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 transition-colors whitespace-nowrap"
+                    className="px-4 py-2 text-sm font-semibold text-gray-600 rounded-t-lg transition-all duration-200 data-[state=active]:text-blue-600 data-[state=active]:bg-blue-50 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 whitespace-nowrap hover:text-gray-900 hover:bg-gray-50"
                   >
                     {period}
                   </Tabs.Trigger>
                 )
               )}
             </Tabs.List>
-            <Tabs.Content value={chartPeriod}>
+            <Tabs.Content value={chartPeriod} className="mt-2">
               <Chart data={chartData} period={chartPeriod} />
             </Tabs.Content>
           </Tabs.Root>
@@ -169,17 +192,24 @@ export function StockDetailsPage() {
         </div>
 
         {/* Company Overview */}
-        <CompanyOverview profile={profile} />
+        <div className="stock-details-card">
+          <CompanyOverview profile={profile} />
+        </div>
 
         {/* Financials Section */}
-        <FinancialsSection financials={financials} />
+        <div className="stock-details-card">
+          <FinancialsSection financials={financials} />
+        </div>
 
         {/* News Section */}
         {news && news.length > 0 && (
-          <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Latest News
-            </h3>
+          <div className="bg-white rounded-2xl shadow-lg p-5 border border-gray-200/50 stock-details-card">
+            <div className="flex items-center gap-2 mb-5">
+              <div className="w-1 h-6 bg-blue-600 rounded-full"></div>
+              <h3 className="text-xl font-bold text-gray-900">
+                Latest News
+              </h3>
+            </div>
             <div className="space-y-3">
               {news.map((item, index) => (
                 <NewsCard key={index} news={item} />
@@ -189,7 +219,9 @@ export function StockDetailsPage() {
         )}
 
         {/* Peers Section */}
-        <PeersList peers={peers} />
+        <div className="stock-details-card">
+          <PeersList peers={peers} />
+        </div>
       </div>
     </div>
   );

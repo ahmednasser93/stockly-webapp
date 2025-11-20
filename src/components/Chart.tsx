@@ -137,12 +137,16 @@ export function Chart({ data, period }: ChartProps) {
   };
 
   return (
-    <div className="w-full h-[300px] md:h-[400px]">
+    <div className="w-full h-[300px] md:h-[400px] relative">
       <ReactECharts
         option={option}
         style={{ height: "100%", width: "100%" }}
         opts={{ renderer: "svg" }}
+        className="chart-container"
       />
+      <div className="absolute top-2 right-2 text-xs text-gray-500 font-medium">
+        {data.length} data points
+      </div>
     </div>
   );
 }

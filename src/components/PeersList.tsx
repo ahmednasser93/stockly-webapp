@@ -19,15 +19,18 @@ export function PeersList({ peers }: PeersListProps) {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Peers</h3>
+    <div className="bg-white rounded-2xl shadow-lg p-5 border border-gray-200/50">
+      <div className="flex items-center gap-2 mb-5">
+        <div className="w-1 h-6 bg-blue-600 rounded-full"></div>
+        <h3 className="text-xl font-bold text-gray-900">Peers</h3>
+      </div>
       <div className="overflow-x-auto">
         <div className="flex gap-3 pb-2">
           {peers.map((peer) => (
             <button
               key={peer.symbol}
               onClick={() => navigate(`/stocks/${peer.symbol}`)}
-              className="flex-shrink-0 bg-gray-50 rounded-lg p-3 border border-gray-200 hover:bg-gray-100 hover:border-blue-300 transition-colors min-w-[120px]"
+              className="flex-shrink-0 bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md hover:border-blue-300 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 min-w-[120px]"
             >
               <div className="font-semibold text-gray-900 mb-1">
                 {peer.symbol}

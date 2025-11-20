@@ -394,6 +394,21 @@ select:disabled {
   gap: 1rem;
 }
 
+.stock-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stock-card-link:hover {
+  transform: translateY(-2px);
+}
+
+.stock-card-link:active {
+  transform: translateY(0);
+}
+
 .stock-card {
   background: var(--surface-color);
   border-radius: 16px;
@@ -402,6 +417,14 @@ select:disabled {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.stock-card-link:hover .stock-card {
+  border-color: var(--accent-border);
+  background: var(--surface-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .stock-card header {
@@ -1480,4 +1503,120 @@ button.danger:hover:not(:disabled) {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+}
+
+/* Stock Details Page Enhancements */
+.stock-details-page {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stock-details-header {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stock-details-card {
+  animation: fadeInUp 0.4s ease-out;
+  animation-fill-mode: both;
+}
+
+.stock-details-card:nth-child(1) { animation-delay: 0.1s; }
+.stock-details-card:nth-child(2) { animation-delay: 0.15s; }
+.stock-details-card:nth-child(3) { animation-delay: 0.2s; }
+.stock-details-card:nth-child(4) { animation-delay: 0.25s; }
+.stock-details-card:nth-child(5) { animation-delay: 0.3s; }
+.stock-details-card:nth-child(6) { animation-delay: 0.35s; }
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.key-stat-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.key-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #2563EB, #3B82F6);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.key-stat-card:hover::before {
+  transform: scaleX(1);
+}
+
+/* Enhanced chart container */
+.stock-details-card .echarts-for-react {
+  transition: opacity 0.3s ease;
+}
+
+/* Smooth tab transitions */
+[data-radix-tabs-content] {
+  animation: fadeIn 0.2s ease-in;
+}
+
+/* Better peer card styling */
+.peer-card {
+  transition: all 0.2s ease;
+}
+
+.peer-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+}
+
+/* Enhanced news card */
+.news-card-link {
+  position: relative;
+}
+
+.news-card-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.news-card-link:hover::after {
+  opacity: 1;
 }
