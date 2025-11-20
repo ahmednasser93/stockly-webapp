@@ -8,6 +8,7 @@ import { LoginPage } from "./pages/LoginPage";
 import { DocsPage } from "./pages/DocsPage";
 import { AlertsPage } from "./pages/AlertsPage";
 import { PreferencesPage } from "./pages/PreferencesPage";
+import { StockDetailsPage } from "./pages/StockDetailsPage";
 
 function App() {
   return (
@@ -26,6 +27,14 @@ function App() {
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/preferences" element={<PreferencesPage />} />
       </Route>
+      <Route
+        path="/stocks/:symbol"
+        element={
+          <ProtectedRoute>
+            <StockDetailsPage />
+          </ProtectedRoute>
+        }
+      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

@@ -286,6 +286,26 @@
   }
 }
 
+@media (max-width: 768px) {
+  .header-content {
+    padding: 0.75rem 1rem;
+  }
+
+  .nav-modern {
+    gap: 0.5rem;
+  }
+
+  .nav-item {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  .nav-item svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
 @media (max-width: 640px) {
   .header-content {
     flex-wrap: wrap;
@@ -297,6 +317,23 @@
     order: 3;
     width: 100%;
     justify-content: space-around;
+    gap: 0.25rem;
+  }
+
+  .nav-item {
+    flex: 1;
+    min-width: 0;
+    padding: 0.625rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .nav-item span {
+    display: none;
+  }
+
+  .nav-item svg {
+    width: 20px;
+    height: 20px;
   }
   
   .brand-text {

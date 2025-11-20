@@ -58,6 +58,19 @@ main {
   box-sizing: border-box;
 }
 
+/* Mobile-first responsive padding */
+@media (max-width: 768px) {
+  main {
+    padding: 1rem 1rem 3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  main {
+    padding: 0.75rem 0.75rem 2.5rem;
+  }
+}
+
 .page {
   display: flex;
   flex-direction: column;
@@ -495,13 +508,14 @@ select:disabled {
 }
 
 .docs-page pre {
-  background: rgba(2, 6, 23, 0.85);
+  background: var(--bg-surface);
   color: var(--text-primary);
   border-radius: 1rem;
   padding: 1rem;
   min-height: 200px;
   font-size: 0.85rem;
   overflow: auto;
+  border: 1px solid var(--surface-border);
 }
 
 .docs-page button {
@@ -1213,6 +1227,52 @@ button.danger:hover:not(:disabled) {
   }
 }
 
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .card {
+    padding: 1.25rem;
+    border-radius: 1rem;
+  }
+
+  .page {
+    gap: 1rem;
+  }
+
+  h1 {
+    font-size: 1.75rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  h3 {
+    font-size: 1.25rem;
+  }
+
+  /* Touch-friendly buttons */
+  button,
+  .button-link,
+  .nav-item {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.75rem 1rem;
+  }
+
+  /* Better form inputs on mobile */
+  input,
+  select,
+  textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 0.75rem;
+  }
+
+  /* Improved card spacing */
+  .card h2 {
+    margin-bottom: 0.75rem;
+  }
+}
+
 @media (max-width: 640px) {
   .field-group {
     flex-direction: column;
@@ -1239,10 +1299,19 @@ button.danger:hover:not(:disabled) {
 
   .filter-tabs {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .filter-tabs::-webkit-scrollbar {
+    display: none;
   }
 
   .alerts-table-container {
-    overflow-x: scroll;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -1rem;
+    padding: 0 1rem;
   }
 
   .alerts-table {
@@ -1253,10 +1322,162 @@ button.danger:hover:not(:disabled) {
     bottom: 1rem;
     right: 1rem;
     left: 1rem;
+    max-width: calc(100% - 2rem);
   }
 
   .alert-form-modal,
   .delete-dialog {
     padding: 1.5rem;
+    margin: 1rem;
+    max-width: calc(100% - 2rem);
+  }
+
+  /* Better mobile grid */
+  .docs-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .endpoint-list {
+    order: 2;
+  }
+
+  .endpoint-details {
+    order: 1;
+  }
+
+  /* Mobile-optimized hero */
+  .hero-panel h1 {
+    font-size: 1.5rem;
+  }
+
+  .hero-panel p.muted {
+    font-size: 0.875rem;
+  }
+
+  /* Stock cards on mobile */
+  .stock-card {
+    padding: 1rem;
+  }
+
+  /* Search bar mobile */
+  .search-wrapper {
+    width: 100%;
+  }
+
+  /* Settings form mobile */
+  .settings-form {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 1rem;
+  }
+
+  button {
+    font-size: 0.875rem;
+    padding: 0.625rem 0.875rem;
+  }
+
+  .tab-bar {
+    gap: 0.25rem;
+    padding: 0.25rem;
+  }
+
+  .tab-bar button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+}
+
+/* Prevent text size adjustment on iOS */
+@media screen and (max-width: 768px) {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+}
+
+  /* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  button:hover,
+  .button-link:hover,
+  .nav-item:hover {
+    opacity: 1;
+  }
+
+  button:active,
+  .button-link:active,
+  .nav-item:active {
+    opacity: 0.8;
+    transform: scale(0.98);
+  }
+
+  .card:hover {
+    transform: none;
+  }
+}
+
+/* Additional mobile optimizations */
+@media (max-width: 768px) {
+  /* Prevent horizontal scroll */
+  body {
+    overflow-x: hidden;
+  }
+
+  /* Better spacing for mobile */
+  .page {
+    padding: 0;
+  }
+
+  /* Mobile-friendly modals */
+  .alert-form-modal,
+  .delete-dialog {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    border-radius: 1rem 1rem 0 0;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  /* Better mobile tables */
+  .alerts-table th,
+  .alerts-table td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.8125rem;
+  }
+
+  /* Mobile search */
+  .search-wrapper input {
+    width: 100%;
+  }
+
+  /* Mobile grid improvements */
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+/* Landscape mobile optimizations */
+@media (max-width: 768px) and (orientation: landscape) {
+  main {
+    padding: 1rem;
+  }
+
+  .hero-panel {
+    padding: 1.5rem;
+  }
+}
+
+/* High DPI mobile screens */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  button,
+  .button-link {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
