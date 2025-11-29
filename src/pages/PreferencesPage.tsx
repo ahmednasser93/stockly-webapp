@@ -32,10 +32,6 @@ export function PreferencesPage() {
   const [maxDaily, setMaxDaily] = useState("");
   const [allowedSymbols, setAllowedSymbols] = useState("");
 
-  useEffect(() => {
-    loadPreferences();
-  }, []);
-
   const loadPreferences = async () => {
     try {
       setLoading(true);
@@ -50,10 +46,11 @@ export function PreferencesPage() {
       setQuietEnd(prefs.quietEnd || "");
       setMaxDaily(prefs.maxDaily ? String(prefs.maxDaily) : "");
       setAllowedSymbols(prefs.allowedSymbols ? prefs.allowedSymbols.join(", ") : "");
-    } catch (err: any) {
+    } catch (err: unknown) {
       // If it's a network error or 500, show error
-      if (err?.code === "ERR_NETWORK" || err?.response?.status >= 500) {
-        const errorMessage = err?.response?.data?.error || err?.message || "Failed to load preferences";
+      const axiosError = err as { code?: string; response?: { status?: number; data?: { error?: string } }; message?: string };
+      if (axiosError?.code === "ERR_NETWORK" || (axiosError?.response?.status ?? 0) >= 500) {
+        const errorMessage = axiosError?.response?.data?.error || axiosError?.message || "Failed to load preferences";
         setError(`Failed to load preferences: ${errorMessage}`);
         console.error("Preferences load error:", err);
       } else {
@@ -65,6 +62,11 @@ export function PreferencesPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadPreferences();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();

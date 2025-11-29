@@ -217,7 +217,7 @@ export function SettingsPage() {
       }
       // Refresh config in hook
       await saveConfig({});
-    } catch (error) {
+    } catch {
       setSimulationStatus("Failed to enable simulation");
     }
   };
@@ -231,7 +231,7 @@ export function SettingsPage() {
       }
       // Refresh config in hook
       await saveConfig({});
-    } catch (error) {
+    } catch {
       setSimulationStatus("Failed to disable simulation");
     }
   };

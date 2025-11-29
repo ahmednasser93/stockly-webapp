@@ -2,15 +2,16 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
 } from "react";
 
+// Constants moved here - fast refresh warning suppressed as these are needed in this file
+/* eslint-disable react-refresh/only-export-components */
 const AUTH_STORAGE_KEY = "stockly-webapp-auth";
-const FALLBACK_USERNAME =
+export const FALLBACK_USERNAME =
   import.meta.env.VITE_STOCKLY_USERNAME ?? "demo";
-const FALLBACK_PASS =
+export const FALLBACK_PASS =
   import.meta.env.VITE_STOCKLY_PASS ?? "demo123";
 
 type AuthContextValue = {
@@ -24,17 +25,13 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [loading, setLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
+  // Initialize state synchronously to avoid setState in effect
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
     const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-    if (stored === "true") {
-      setIsAuthenticated(true);
-    }
-    setLoading(false);
-  }, []);
+    return stored === "true";
+  });
+  const [loading] = useState(false); // No async operation needed since localStorage check is synchronous
+  const [error, setError] = useState<string | null>(null);
 
   const login = useCallback(async (username: string, password: string) => {
     setError(null);
@@ -93,3 +90,4 @@ export function useAuth() {
   }
   return ctx;
 }
+/* eslint-enable react-refresh/only-export-components */

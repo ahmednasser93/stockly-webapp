@@ -15,7 +15,9 @@ type ThemeContextValue = {
   setTheme: (next: Theme) => void;
 };
 
-const THEME_STORAGE_KEY = "stockly-theme";
+// Constants - fast refresh warning suppressed as these are needed in this file
+/* eslint-disable react-refresh/only-export-components */
+export const THEME_STORAGE_KEY = "stockly-theme";
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
@@ -70,3 +72,4 @@ export function useTheme() {
   }
   return ctx;
 }
+/* eslint-enable react-refresh/only-export-components */

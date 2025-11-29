@@ -23,7 +23,7 @@ export function SearchBar({
         <input
           type="text"
           value={query}
-          placeholder="Search for a stock symbol or company"
+          placeholder="Search by company name or symbol"
           onChange={(e) => onQueryChange(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") {

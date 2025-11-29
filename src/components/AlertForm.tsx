@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { searchSymbols } from "../api/client";
 import type {
@@ -32,16 +32,26 @@ export function AlertForm({
   isSubmitting,
   devices = [],
 }: AlertFormProps) {
-  const [symbol, setSymbol] = useState(alert?.symbol ?? "");
-  const [direction, setDirection] = useState<AlertDirection>(
-    alert?.direction ?? "above"
-  );
-  const [threshold, setThreshold] = useState(
-    alert?.threshold?.toString() ?? ""
-  );
-  const [status, setStatus] = useState<AlertStatus>(alert?.status ?? "active");
-  const [target, setTarget] = useState(alert?.target ?? "");
-  const [selectedDeviceId, setSelectedDeviceId] = useState<string>("");
+  // Initialize state from alert prop, reset when alert changes
+  const getInitialSymbol = () => alert?.symbol ?? "";
+  const getInitialDirection = (): AlertDirection => alert?.direction ?? "above";
+  const getInitialThreshold = () => alert?.threshold?.toString() ?? "";
+  const getInitialStatus = (): AlertStatus => alert?.status ?? "active";
+  const getInitialTarget = () => alert?.target ?? "";
+  const getInitialDeviceId = (): string => {
+    if (alert?.target) {
+      const matchingDevice = devices.find((d) => d.pushToken === alert.target);
+      return matchingDevice?.userId ?? "";
+    }
+    return "";
+  };
+
+  const [symbol, setSymbol] = useState(getInitialSymbol);
+  const [direction, setDirection] = useState<AlertDirection>(getInitialDirection);
+  const [threshold, setThreshold] = useState(getInitialThreshold);
+  const [status, setStatus] = useState<AlertStatus>(getInitialStatus);
+  const [target, setTarget] = useState(getInitialTarget);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string>(getInitialDeviceId);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showSuggestions, setShowSuggestions] = useState(false);
 
@@ -52,20 +62,36 @@ export function AlertForm({
     staleTime: 5 * 60 * 1000,
   });
 
+  // Track alert ID to detect changes
+  const alertIdRef = useRef<string | undefined>(alert?.id);
+
+  // Reset form state when alert prop changes (using key-like pattern with ref)
+  // This is a legitimate use case for syncing form state with props
+  // We disable the eslint rule as this pattern is necessary for controlled form components
   useEffect(() => {
-    if (alert) {
-      setSymbol(alert.symbol);
-      setDirection(alert.direction);
-      setThreshold(alert.threshold.toString());
-      setStatus(alert.status);
-      setTarget(alert.target);
-      // Find matching device for this alert
-      const matchingDevice = devices.find((d) => d.pushToken === alert.target);
-      if (matchingDevice) {
-        setSelectedDeviceId(matchingDevice.userId);
+    const currentAlertId = alert?.id;
+    if (currentAlertId !== alertIdRef.current) {
+      alertIdRef.current = currentAlertId;
+      // Reset form to match new alert (or empty if no alert)
+      if (alert) {
+        setSymbol(alert.symbol);
+        setDirection(alert.direction);
+        setThreshold(alert.threshold.toString());
+        setStatus(alert.status);
+        setTarget(alert.target);
+        const matchingDevice = devices.find((d) => d.pushToken === alert.target);
+        setSelectedDeviceId(matchingDevice?.userId ?? "");
+      } else {
+        setSymbol("");
+        setDirection("above");
+        setThreshold("");
+        setStatus("active");
+        setTarget("");
+        setSelectedDeviceId("");
       }
     }
-  }, [alert, devices]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- alert.id is the key we track, devices is needed for device lookup
+  }, [alert?.id, devices]);
 
   // When device is selected, update target field
   useEffect(() => {

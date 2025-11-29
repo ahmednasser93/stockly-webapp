@@ -1,7 +1,9 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
-const SETTINGS_STORAGE_KEY = "stockly-webapp-settings";
-const DEFAULT_REFRESH_SECONDS = 30;
+// Constants - fast refresh warning suppressed as these are needed in this file
+/* eslint-disable react-refresh/only-export-components */
+export const SETTINGS_STORAGE_KEY = "stockly-webapp-settings";
+export const DEFAULT_REFRESH_SECONDS = 30;
 
 type SettingsContextValue = {
   refreshInterval: number;
@@ -21,23 +23,20 @@ export function SettingsProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [refreshInterval, setRefreshInterval] = useState<number>(
-    DEFAULT_REFRESH_SECONDS
-  );
-
-  useEffect(() => {
+  const [refreshInterval, setRefreshInterval] = useState<number>(() => {
     try {
       const stored = localStorage.getItem(SETTINGS_STORAGE_KEY);
       if (stored) {
         const parsed: StoredSettings = JSON.parse(stored);
         if (parsed?.refreshInterval) {
-          setRefreshInterval(parsed.refreshInterval);
+          return parsed.refreshInterval;
         }
       }
     } catch (err) {
       console.warn("Failed to parse saved settings", err);
     }
-  }, []);
+    return DEFAULT_REFRESH_SECONDS;
+  });
 
   useEffect(() => {
     const payload: StoredSettings = { refreshInterval };
@@ -68,3 +67,4 @@ export function useSettings() {
   }
   return ctx;
 }
+/* eslint-enable react-refresh/only-export-components */

@@ -22,12 +22,13 @@ describe("api client", () => {
 
   it("requests search results when query is long enough", async () => {
     const mockResponse = [{ symbol: "AAPL", name: "Apple" }];
-    global.fetch = mockFetch(mockResponse) as unknown as typeof fetch;
+    const mockFetchFn = mockFetch(mockResponse);
+    global.fetch = mockFetchFn as unknown as typeof fetch;
 
     const result = await searchSymbols("AA");
 
     expect(global.fetch).toHaveBeenCalledTimes(1);
-    const calledUrl = (global.fetch as any).mock.calls[0][0] as string;
+    const calledUrl = (mockFetchFn.mock.calls[0] as [string])[0];
     expect(calledUrl).toContain("/v1/api/search-stock");
     expect(result).toEqual(mockResponse);
   });
@@ -41,12 +42,13 @@ describe("api client", () => {
 
   it("fetches stocks when symbols exist", async () => {
     const payload = [{ symbol: "AAPL", price: 190 }];
-    global.fetch = mockFetch(payload) as unknown as typeof fetch;
+    const mockFetchFn = mockFetch(payload);
+    global.fetch = mockFetchFn as unknown as typeof fetch;
 
     const result = await fetchStocks(["AAPL"]);
 
     expect(global.fetch).toHaveBeenCalledTimes(1);
-    const calledUrl = (global.fetch as any).mock.calls[0][0] as string;
+    const calledUrl = (mockFetchFn.mock.calls[0] as [string])[0];
     expect(calledUrl).toContain("symbols=AAPL");
     expect(result).toEqual(payload);
   });

@@ -23,7 +23,14 @@ export function Chart({ data, period }: ChartProps) {
         minute: "2-digit",
       });
     }
-    if (period === "1W" || period === "1M") {
+    if (period === "1W") {
+      return date.toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+      });
+    }
+    if (period === "1M") {
       return date.toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
@@ -112,7 +119,7 @@ export function Chart({ data, period }: ChartProps) {
         color: "#1F2937",
         fontSize: 12,
       },
-      formatter: (params: any) => {
+      formatter: (params: Array<{ dataIndex: number; value: number }> | null) => {
         if (!params || params.length === 0) return "";
         const point = data[params[0].dataIndex];
         const date = new Date(point.date);
@@ -123,12 +130,12 @@ export function Chart({ data, period }: ChartProps) {
             </div>
             <div style="font-size: 12px; color: #6B7280;">
               ${date.toLocaleString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-                hour: "numeric",
-                minute: "2-digit",
-              })}
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        })}
             </div>
           </div>
         `;

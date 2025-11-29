@@ -89,7 +89,7 @@ export type ApiResponse<T> = {
   success?: boolean;
   message?: string;
   settings?: T;
-  [key: string]: any;
+  [key: string]: unknown;
 };
 
 export async function getUserSettings(userId: string): Promise<UserSettings> {

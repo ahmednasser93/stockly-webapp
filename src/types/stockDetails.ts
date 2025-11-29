@@ -42,6 +42,10 @@ export type ChartDataPoint = {
   date: string; // ISO 8601
   price: number;
   volume?: number;
+  open?: number;
+  high?: number;
+  low?: number;
+  close?: number;
 };
 
 export type StockFinancials = {

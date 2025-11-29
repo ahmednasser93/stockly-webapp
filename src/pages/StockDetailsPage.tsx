@@ -4,6 +4,8 @@ import * as Tabs from "@radix-ui/react-tabs";
 import { useStockDetails } from "../hooks/useStockDetails";
 import { StockDetailsHeader } from "../components/StockDetailsHeader";
 import { Chart } from "../components/Chart";
+import { CandlestickChart } from "../components/CandlestickChart";
+import { useQuery } from "@tanstack/react-query";
 import { KeyStatCard } from "../components/KeyStatCard";
 import { CompanyOverview } from "../components/CompanyOverview";
 import { FinancialsSection } from "../components/FinancialsSection";
@@ -30,6 +32,20 @@ export function StockDetailsPage() {
     symbol || ""
   );
   const [chartPeriod, setChartPeriod] = useState<ChartPeriod>("1D");
+  const [showCandlestick, setShowCandlestick] = useState(false);
+
+  // Fetch 4-hour intraday data for 1W period
+  const { data: intradayData } = useQuery({
+    queryKey: ["intraday", symbol, "4h"],
+    queryFn: async () => {
+      const response = await fetch(
+        `/api/historical-intraday?symbol=${symbol}&interval=4h&days=14`
+      );
+      if (!response.ok) throw new Error("Failed to fetch intraday data");
+      return response.json();
+    },
+    enabled: chartPeriod === "1W",
+  });
 
   // Enhanced loading skeleton
   if (isLoading) {
@@ -120,7 +136,20 @@ export function StockDetailsPage() {
   }
 
   const { profile, quote, chart, financials, news, peers } = data;
-  const chartData = chart[chartPeriod] || [];
+
+  // Use intraday data for 1W period if available
+  const chartData =
+    chartPeriod === "1W" && intradayData?.data
+      ? intradayData.data.map((d: any) => ({
+        date: d.date,
+        price: d.close,
+        open: d.open,
+        high: d.high,
+        low: d.low,
+        close: d.close,
+        volume: d.volume,
+      }))
+      : chart[chartPeriod] || [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 stock-details-page">
@@ -151,8 +180,38 @@ export function StockDetailsPage() {
                 )
               )}
             </Tabs.List>
+
+            {chartPeriod === "1W" && (
+              <div className="flex justify-end mb-2 px-2">
+                <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-1 border border-gray-200">
+                  <button
+                    onClick={() => setShowCandlestick(false)}
+                    className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${!showCandlestick
+                      ? "bg-white text-blue-600 shadow-sm border border-gray-200"
+                      : "text-gray-500 hover:text-gray-700"
+                      }`}
+                  >
+                    Line
+                  </button>
+                  <button
+                    onClick={() => setShowCandlestick(true)}
+                    className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${showCandlestick
+                      ? "bg-white text-blue-600 shadow-sm border border-gray-200"
+                      : "text-gray-500 hover:text-gray-700"
+                      }`}
+                  >
+                    Candles
+                  </button>
+                </div>
+              </div>
+            )}
+
             <Tabs.Content value={chartPeriod} className="mt-2">
-              <Chart data={chartData} period={chartPeriod} />
+              {showCandlestick && chartPeriod === "1W" ? (
+                <CandlestickChart data={chartData} />
+              ) : (
+                <Chart data={chartData} period={chartPeriod} />
+              )}
             </Tabs.Content>
           </Tabs.Root>
         </div>

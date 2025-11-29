@@ -53,7 +53,28 @@ const endpoints = [
     name: "Get Historical Prices",
     method: "GET",
     path: "/v1/api/get-historical",
-    description: "Retrieves historical price data for a stock symbol over a specified number of days",
+    description: "Retrieves historical price data for a stock symbol. Supports date range filtering via 'from' and 'to' parameters, or backward-compatible 'days' parameter. Data is fetched from D1 database (populated by get-stock endpoint). Automatically fetches from FMP API if database is empty.",
+    sampleQuery: "?symbol=AMZN&from=2025-01-01&to=2025-01-31",
+    params: {
+      symbol: {
+        label: "Ticker Symbol",
+        value: "AMZN",
+      },
+      from: {
+        label: "From Date (YYYY-MM-DD)",
+        value: "2025-01-01",
+      },
+      to: {
+        label: "To Date (YYYY-MM-DD)",
+        value: "2025-01-31",
+      },
+    },
+  },
+  {
+    name: "Get Historical Prices (Backward Compatible)",
+    method: "GET",
+    path: "/v1/api/get-historical",
+    description: "Retrieves historical price data using the 'days' parameter (backward compatible format).",
     sampleQuery: "?symbol=AMZN&days=180",
     params: {
       symbol: {
@@ -61,7 +82,7 @@ const endpoints = [
         value: "AMZN",
       },
       days: {
-        label: "Number of Days (1-3650)",
+        label: "Number of Days",
         value: "180",
       },
     },
@@ -180,18 +201,17 @@ export function DocsPage() {
   const endpoint = endpoints[activeIndex];
 
   const handleSubmit = async () => {
-    let url: URL;
     let path = endpoint.path;
-    
+
     // Handle path parameters (e.g., :userId)
     if (path.includes(":userId")) {
       const userIdInput = document.getElementById("param-userId") as HTMLInputElement | null;
       const userId = userIdInput?.value || "user123";
       path = path.replace(":userId", userId);
     }
-    
-    url = new URL(baseUrl.replace(/\/$/, "") + path);
-    
+
+    const url = new URL(baseUrl.replace(/\/$/, "") + path);
+
     // Add query parameters
     Object.keys(endpoint.params).forEach((key) => {
       if (key !== "userId") { // userId is already in path
@@ -201,7 +221,7 @@ export function DocsPage() {
         }
       }
     });
-    
+
     // Special handling for get-news endpoint - only use one param (symbol OR symbols)
     if (path === "/v1/api/get-news") {
       const symbolInput = document.getElementById("param-symbol") as HTMLInputElement | null;
@@ -210,18 +230,18 @@ export function DocsPage() {
       const toInput = document.getElementById("param-to") as HTMLInputElement | null;
       const pageInput = document.getElementById("param-page") as HTMLInputElement | null;
       const limitInput = document.getElementById("param-limit") as HTMLInputElement | null;
-      
+
       // Clear both symbol params first
       url.searchParams.delete("symbol");
       url.searchParams.delete("symbols");
-      
+
       // Use symbol if provided, otherwise use symbols
       if (symbolInput?.value) {
         url.searchParams.set("symbol", symbolInput.value);
       } else if (symbolsInput?.value) {
         url.searchParams.set("symbols", symbolsInput.value);
       }
-      
+
       // Add pagination parameters if provided
       if (fromInput?.value) {
         url.searchParams.set("from", fromInput.value);
@@ -236,7 +256,7 @@ export function DocsPage() {
         url.searchParams.set("limit", limitInput.value);
       }
     }
-    
+
     setLoading(true);
     setOutput("Sending request…");
     try {

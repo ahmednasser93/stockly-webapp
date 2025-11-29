@@ -36,6 +36,50 @@ export async function fetchStockDetails(symbol: string): Promise<StockDetails> {
     }
 
     const data = await response.json();
+
+    // Fetch 1-hour historical data from FMP for the last 7 days
+    // This provides better granularity for the 1W chart
+    try {
+      const now = new Date();
+      const fromDate = new Date();
+      fromDate.setDate(now.getDate() - 7);
+
+      const toStr = now.toISOString().split('T')[0];
+      const fromStr = fromDate.toISOString().split('T')[0];
+
+      const fmpUrl = new URL(`https://financialmodelingprep.com/stable/historical-chart/30min/${symbol.toUpperCase()}`);
+      fmpUrl.searchParams.set('apikey', 'z5xjUUlsab7zBKntL5QnMzWyPuq2iWsM');
+      fmpUrl.searchParams.set('from', fromStr);
+      fmpUrl.searchParams.set('to', toStr);
+
+      const fmpResponse = await fetch(fmpUrl.toString());
+      if (fmpResponse.ok) {
+        const fmpData = await fmpResponse.json();
+        if (Array.isArray(fmpData)) {
+          // Transform FMP data to ChartDataPoint format
+          interface FMPHistoricalItem {
+            date: string;
+            close?: number;
+            open?: number;
+            volume?: number;
+          }
+          const chartPoints = fmpData.map((item: FMPHistoricalItem) => ({
+            date: item.date,
+            price: item.close ?? item.open ?? 0, // Use close or open price
+            volume: item.volume
+          })).reverse(); // FMP returns newest first, we want oldest first
+
+          // Update the 1W chart data
+          if (data.chart) {
+            data.chart['1W'] = chartPoints;
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch FMP historical data:', error);
+      // Continue with original data if FMP fetch fails
+    }
+
     return data as StockDetails;
   } catch (error) {
     clearTimeout(timeoutId);
