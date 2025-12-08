@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSettings } from "../state/SettingsContext";
 import type { StockQuote } from "../types";
 import { fetchStockDetails } from "../api/stockDetails";
 
@@ -30,12 +31,14 @@ function formatTimestamp(timestamp: number | null) {
 export function StockCard({ quote }: { quote: StockQuote }) {
   const queryClient = useQueryClient();
 
+  const { cacheStaleTimeMinutes } = useSettings();
+
   // Prefetch stock details on hover/touch
   const handleMouseEnter = () => {
     queryClient.prefetchQuery({
       queryKey: ["stockDetails", quote.symbol.toUpperCase()],
       queryFn: () => fetchStockDetails(quote.symbol.toUpperCase()),
-      staleTime: 5 * 60 * 1000,
+      staleTime: cacheStaleTimeMinutes * 60 * 1000,
     });
   };
 

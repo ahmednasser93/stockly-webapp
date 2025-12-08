@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useSettings } from "../state/SettingsContext";
 import { searchSymbols } from "../api/client";
 import type {
   Alert,
@@ -55,11 +56,13 @@ export function AlertForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showSuggestions, setShowSuggestions] = useState(false);
 
+  const { cacheStaleTimeMinutes } = useSettings();
+
   const searchQuery = useQuery({
     queryKey: ["search", symbol],
     queryFn: () => searchSymbols(symbol.trim()),
     enabled: symbol.trim().length >= 2 && !alert,
-    staleTime: 5 * 60 * 1000,
+    staleTime: cacheStaleTimeMinutes * 60 * 1000,
   });
 
   // Track alert ID to detect changes

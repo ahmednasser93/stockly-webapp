@@ -6,14 +6,16 @@ import {
   deleteAlert,
 } from "../api/alerts";
 import type { CreateAlertRequest, UpdateAlertRequest } from "../types";
+import { useSettings } from "../state/SettingsContext";
 
 export function useAlerts() {
   const queryClient = useQueryClient();
+  const { cacheStaleTimeMinutes } = useSettings();
 
   const alertsQuery = useQuery({
     queryKey: ["alerts"],
     queryFn: listAlerts,
-    staleTime: 30 * 1000, // 30 seconds
+    staleTime: Math.min(cacheStaleTimeMinutes * 60 * 1000, 30 * 1000), // Use cache setting but cap at 30s for alerts
   });
 
   const createMutation = useMutation({

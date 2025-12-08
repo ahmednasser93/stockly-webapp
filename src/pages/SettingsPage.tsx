@@ -33,6 +33,8 @@ export function SettingsPage() {
   
   // User Settings
   const [refreshIntervalMinutes, setRefreshIntervalMinutes] = useState(5);
+  const [cacheStaleTimeMinutes, setCacheStaleTimeMinutes] = useState(5);
+  const [cacheGcTimeMinutes, setCacheGcTimeMinutes] = useState(10);
   const [userSettingsLoading, setUserSettingsLoading] = useState(true);
   const [userSettingsError, setUserSettingsError] = useState<string | null>(null);
   
@@ -95,6 +97,8 @@ export function SettingsPage() {
         const settings = await getUserSettings(userId);
         if (mounted) {
           setRefreshIntervalMinutes(settings.refreshIntervalMinutes);
+          setCacheStaleTimeMinutes(settings.cacheStaleTimeMinutes ?? 5);
+          setCacheGcTimeMinutes(settings.cacheGcTimeMinutes ?? 10);
         }
       } catch (err) {
         if (mounted) {
@@ -180,9 +184,13 @@ export function SettingsPage() {
       
       // Update user settings
       const refreshIntervalMinutesNum = Math.max(1, Math.min(720, Math.round(Number(refreshIntervalMinutes) || 5)));
+      const cacheStaleTimeMinutesNum = Math.max(0, Math.min(60, Math.round(Number(cacheStaleTimeMinutes) || 5)));
+      const cacheGcTimeMinutesNum = Math.max(1, Math.min(120, Math.round(Number(cacheGcTimeMinutes) || 10)));
       await updateUserSettings({
         userId,
         refreshIntervalMinutes: refreshIntervalMinutesNum,
+        cacheStaleTimeMinutes: cacheStaleTimeMinutesNum,
+        cacheGcTimeMinutes: cacheGcTimeMinutesNum,
       });
       
       // Update user preferences
@@ -629,6 +637,88 @@ export function SettingsPage() {
                           <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: "1.4" }}>
                             How often your browser automatically refreshes stock data. Range: 1 minute to 12 hours (720 minutes). 
                             <strong style={{ color: "var(--text-primary)" }}> Note:</strong> This is a client-side preference only. The API stores it but doesn't use it server-side.
+                          </p>
+                        </div>
+                      </div>
+                    </label>
+
+                    <label style={{ marginTop: "1.5rem" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                        <span style={{ fontWeight: "600" }}>Cache Stale Time (minutes)</span>
+                        <span style={{ 
+                          fontSize: "0.75rem", 
+                          padding: "0.125rem 0.375rem", 
+                          background: "rgba(34, 197, 94, 0.1)", 
+                          color: "#22c55e", 
+                          borderRadius: "4px",
+                          fontWeight: "500"
+                        }}>0-60</span>
+                      </div>
+                      <input
+                        type="number"
+                        min={0}
+                        max={60}
+                        value={cacheStaleTimeMinutes}
+                        onChange={(event) => setCacheStaleTimeMinutes(Number(event.target.value))}
+                      />
+                      <div style={{ 
+                        marginTop: "0.5rem", 
+                        padding: "0.75rem", 
+                        background: "rgba(59, 130, 246, 0.05)", 
+                        border: "1px solid rgba(59, 130, 246, 0.2)", 
+                        borderRadius: "8px",
+                        display: "flex",
+                        gap: "0.5rem",
+                        alignItems: "flex-start"
+                      }}>
+                        <span style={{ fontSize: "1.125rem", lineHeight: "1" }}>⏱️</span>
+                        <div style={{ flex: 1 }}>
+                          <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--text-primary)", fontWeight: "500" }}>
+                            Data freshness duration
+                          </p>
+                          <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                            How long cached data is considered fresh before refetching. Lower values = fresher data but more API calls. Recommended: 2-5 minutes.
+                          </p>
+                        </div>
+                      </div>
+                    </label>
+
+                    <label style={{ marginTop: "1.5rem" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                        <span style={{ fontWeight: "600" }}>Cache GC Time (minutes)</span>
+                        <span style={{ 
+                          fontSize: "0.75rem", 
+                          padding: "0.125rem 0.375rem", 
+                          background: "rgba(34, 197, 94, 0.1)", 
+                          color: "#22c55e", 
+                          borderRadius: "4px",
+                          fontWeight: "500"
+                        }}>1-120</span>
+                      </div>
+                      <input
+                        type="number"
+                        min={1}
+                        max={120}
+                        value={cacheGcTimeMinutes}
+                        onChange={(event) => setCacheGcTimeMinutes(Number(event.target.value))}
+                      />
+                      <div style={{ 
+                        marginTop: "0.5rem", 
+                        padding: "0.75rem", 
+                        background: "rgba(139, 92, 246, 0.05)", 
+                        border: "1px solid rgba(139, 92, 246, 0.2)", 
+                        borderRadius: "8px",
+                        display: "flex",
+                        gap: "0.5rem",
+                        alignItems: "flex-start"
+                      }}>
+                        <span style={{ fontSize: "1.125rem", lineHeight: "1" }}>🗑️</span>
+                        <div style={{ flex: 1 }}>
+                          <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--text-primary)", fontWeight: "500" }}>
+                            Cache retention duration
+                          </p>
+                          <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                            How long unused cached data stays in memory before garbage collection. Higher values = better performance but more memory usage. Recommended: 5-10 minutes.
                           </p>
                         </div>
                       </div>

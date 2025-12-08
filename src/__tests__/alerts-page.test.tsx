@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { SettingsProvider } from "../state/SettingsContext";
 import { AlertsPage } from "../pages/AlertsPage";
 import * as alertsApi from "../api/alerts";
 import * as clientApi from "../api/client";
@@ -82,7 +83,9 @@ describe("AlertsPage", () => {
 
   const renderWithProviders = (component: React.ReactElement) => {
     return render(
-      <QueryClientProvider client={queryClient}>{component}</QueryClientProvider>
+      <SettingsProvider>
+        <QueryClientProvider client={queryClient}>{component}</QueryClientProvider>
+      </SettingsProvider>
     );
   };
 

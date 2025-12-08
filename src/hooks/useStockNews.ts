@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchStockNews, fetchMultipleStockNews } from "../api/news";
 import type { NewsResponse, NewsPaginationOptions } from "../types/news";
+import { useSettings } from "../state/SettingsContext";
 
 /**
  * Hook to fetch news for a single stock symbol
@@ -9,6 +10,8 @@ export function useStockNews(
   symbol: string,
   pagination?: NewsPaginationOptions
 ) {
+  const { cacheStaleTimeMinutes, cacheGcTimeMinutes } = useSettings();
+  
   // Build query key that includes pagination params
   const queryKey = [
     "stockNews",
@@ -23,8 +26,8 @@ export function useStockNews(
     queryKey,
     queryFn: () => fetchStockNews(symbol, pagination),
     enabled: !!symbol,
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    gcTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: cacheStaleTimeMinutes * 60 * 1000,
+    gcTime: cacheGcTimeMinutes * 60 * 1000,
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
     refetchOnWindowFocus: false,
@@ -38,6 +41,8 @@ export function useMultipleStockNews(
   symbols: string[],
   pagination?: NewsPaginationOptions
 ) {
+  const { cacheStaleTimeMinutes, cacheGcTimeMinutes } = useSettings();
+  
   const normalizedSymbols = symbols
     .map((s) => s.toUpperCase())
     .filter((s) => s.length > 0)
@@ -58,8 +63,8 @@ export function useMultipleStockNews(
     queryKey,
     queryFn: () => fetchMultipleStockNews(normalizedSymbols, pagination),
     enabled: normalizedSymbols.length > 0,
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    gcTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: cacheStaleTimeMinutes * 60 * 1000,
+    gcTime: cacheGcTimeMinutes * 60 * 1000,
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
     refetchOnWindowFocus: false,

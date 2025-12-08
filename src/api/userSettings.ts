@@ -58,12 +58,16 @@ async function userRequest<T>(path: string, init?: RequestInit, allow404 = false
 export type UserSettings = {
   userId: string;
   refreshIntervalMinutes: number;
+  cacheStaleTimeMinutes?: number;
+  cacheGcTimeMinutes?: number;
   updatedAt: string;
 };
 
 export type UpdateUserSettingsRequest = {
   userId: string;
   refreshIntervalMinutes: number;
+  cacheStaleTimeMinutes?: number;
+  cacheGcTimeMinutes?: number;
 };
 
 export type NotificationPreferences = {
@@ -99,10 +103,16 @@ export async function getUserSettings(userId: string): Promise<UserSettings> {
     return {
       userId,
       refreshIntervalMinutes: 5,
+      cacheStaleTimeMinutes: 5,
+      cacheGcTimeMinutes: 10,
       updatedAt: new Date().toISOString(),
     };
   }
-  return result;
+  return {
+    ...result,
+    cacheStaleTimeMinutes: result.cacheStaleTimeMinutes ?? 5,
+    cacheGcTimeMinutes: result.cacheGcTimeMinutes ?? 10,
+  };
 }
 
 export async function updateUserSettings(
