@@ -60,6 +60,7 @@ export type UserSettings = {
   refreshIntervalMinutes: number;
   cacheStaleTimeMinutes?: number;
   cacheGcTimeMinutes?: number;
+  newsFavoriteSymbols?: string[];
   updatedAt: string;
 };
 
@@ -105,6 +106,7 @@ export async function getUserSettings(userId: string): Promise<UserSettings> {
       refreshIntervalMinutes: 5,
       cacheStaleTimeMinutes: 5,
       cacheGcTimeMinutes: 10,
+      newsFavoriteSymbols: [],
       updatedAt: new Date().toISOString(),
     };
   }
@@ -112,6 +114,7 @@ export async function getUserSettings(userId: string): Promise<UserSettings> {
     ...result,
     cacheStaleTimeMinutes: result.cacheStaleTimeMinutes ?? 5,
     cacheGcTimeMinutes: result.cacheGcTimeMinutes ?? 10,
+    newsFavoriteSymbols: result.newsFavoriteSymbols ?? [],
   };
 }
 
@@ -156,6 +159,27 @@ export async function updateUserPreferences(
   });
   if (result === null) {
     throw new Error("Failed to update user preferences");
+  }
+  return result;
+}
+
+/**
+ * Update news favorite symbols for a user
+ * Uses POST /v1/api/users/preferences/update endpoint
+ */
+export async function updateNewsFavoriteSymbols(
+  userId: string,
+  newsFavoriteSymbols: string[]
+): Promise<ApiResponse<void>> {
+  const result = await userRequest<ApiResponse<void>>("/v1/api/users/preferences/update", {
+    method: "POST",
+    body: JSON.stringify({
+      userId,
+      newsFavoriteSymbols,
+    }),
+  });
+  if (result === null) {
+    throw new Error("Failed to update news favorite symbols");
   }
   return result;
 }

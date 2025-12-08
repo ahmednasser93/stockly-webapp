@@ -7,6 +7,7 @@ import {
   updateUserSettings,
   getUserPreferences,
   updateUserPreferences,
+  updateNewsFavoriteSymbols,
 } from "../api/userSettings";
 
 type SettingsTab = "settings" | "monitoring" | "developer";
@@ -35,6 +36,8 @@ export function SettingsPage() {
   const [refreshIntervalMinutes, setRefreshIntervalMinutes] = useState(5);
   const [cacheStaleTimeMinutes, setCacheStaleTimeMinutes] = useState(5);
   const [cacheGcTimeMinutes, setCacheGcTimeMinutes] = useState(10);
+  const [newsFavoriteSymbols, setNewsFavoriteSymbols] = useState<string[]>([]);
+  const [newsFavoriteSymbolsInput, setNewsFavoriteSymbolsInput] = useState("");
   const [userSettingsLoading, setUserSettingsLoading] = useState(true);
   const [userSettingsError, setUserSettingsError] = useState<string | null>(null);
   
@@ -99,6 +102,9 @@ export function SettingsPage() {
           setRefreshIntervalMinutes(settings.refreshIntervalMinutes);
           setCacheStaleTimeMinutes(settings.cacheStaleTimeMinutes ?? 5);
           setCacheGcTimeMinutes(settings.cacheGcTimeMinutes ?? 10);
+          const symbols = settings.newsFavoriteSymbols ?? [];
+          setNewsFavoriteSymbols(symbols);
+          setNewsFavoriteSymbolsInput(symbols.join(", "));
         }
       } catch (err) {
         if (mounted) {
@@ -193,7 +199,7 @@ export function SettingsPage() {
         cacheGcTimeMinutes: cacheGcTimeMinutesNum,
       });
       
-      // Update user preferences
+      // Update user preferences (notification preferences)
       const symbolsArray = allowedSymbols
         ? allowedSymbols.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean)
         : null;
@@ -206,6 +212,13 @@ export function SettingsPage() {
         allowedSymbols: symbolsArray,
         maxDaily: maxDaily ? parseInt(maxDaily, 10) : null,
       });
+
+      // Update news favorite symbols
+      const newsSymbolsArray = newsFavoriteSymbolsInput
+        .split(",")
+        .map((s) => s.trim().toUpperCase())
+        .filter(Boolean);
+      await updateNewsFavoriteSymbols(userId, newsSymbolsArray);
       
       setSettingsStatus("Settings saved successfully");
       setTimeout(() => setSettingsStatus(""), 3000);
@@ -720,6 +733,67 @@ export function SettingsPage() {
                           <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: "1.4" }}>
                             How long unused cached data stays in memory before garbage collection. Higher values = better performance but more memory usage. Recommended: 5-10 minutes.
                           </p>
+                        </div>
+                      </div>
+                    </label>
+
+                    <label style={{ marginTop: "1.5rem" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                        <span style={{ fontWeight: "600" }}>News Favorite Symbols</span>
+                        <span style={{ 
+                          fontSize: "0.75rem", 
+                          padding: "0.125rem 0.375rem", 
+                          background: "rgba(34, 197, 94, 0.1)", 
+                          color: "#22c55e", 
+                          borderRadius: "4px",
+                          fontWeight: "500"
+                        }}>NEWS</span>
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="AAPL, MSFT, GOOGL"
+                        value={newsFavoriteSymbolsInput}
+                        onChange={(event) => setNewsFavoriteSymbolsInput(event.target.value)}
+                        style={{ fontFamily: "monospace" }}
+                      />
+                      <div style={{ 
+                        marginTop: "0.5rem", 
+                        padding: "0.75rem", 
+                        background: "rgba(59, 130, 246, 0.05)", 
+                        border: "1px solid rgba(59, 130, 246, 0.2)", 
+                        borderRadius: "8px",
+                        display: "flex",
+                        gap: "0.5rem",
+                        alignItems: "flex-start"
+                      }}>
+                        <span style={{ fontSize: "1.125rem", lineHeight: "1" }}>📰</span>
+                        <div style={{ flex: 1 }}>
+                          <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--text-primary)", fontWeight: "500" }}>
+                            Stock symbols for personalized news feed
+                          </p>
+                          <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                            Comma-separated list of stock symbols (e.g., "AAPL, MSFT, GOOGL"). These symbols will be used to fetch personalized news in the news feed. Leave empty to disable favorite news.
+                          </p>
+                          {newsFavoriteSymbols.length > 0 && (
+                            <div style={{ marginTop: "0.5rem", display: "flex", gap: "0.25rem", flexWrap: "wrap" }}>
+                              {newsFavoriteSymbols.map((symbol, idx) => (
+                                <span
+                                  key={idx}
+                                  style={{
+                                    padding: "0.25rem 0.5rem",
+                                    background: "rgba(59, 130, 246, 0.1)",
+                                    border: "1px solid rgba(59, 130, 246, 0.3)",
+                                    borderRadius: "4px",
+                                    fontSize: "0.75rem",
+                                    fontWeight: "600",
+                                    color: "#3b82f6",
+                                  }}
+                                >
+                                  {symbol}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </label>

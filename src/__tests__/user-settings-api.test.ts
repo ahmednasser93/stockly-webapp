@@ -23,6 +23,7 @@ describe("User Settings API", () => {
         refreshIntervalMinutes: 10,
         cacheStaleTimeMinutes: 5,
         cacheGcTimeMinutes: 10,
+        newsFavoriteSymbols: ["AAPL", "MSFT"],
         updatedAt: "2025-01-20T10:00:00Z",
       };
 
@@ -56,6 +57,7 @@ describe("User Settings API", () => {
         refreshIntervalMinutes: 5,
         cacheStaleTimeMinutes: 5,
         cacheGcTimeMinutes: 10,
+        newsFavoriteSymbols: [],
         updatedAt: expect.any(String),
       });
     });
@@ -77,6 +79,7 @@ describe("User Settings API", () => {
 
       expect(result.cacheStaleTimeMinutes).toBe(5);
       expect(result.cacheGcTimeMinutes).toBe(10);
+      expect(result.newsFavoriteSymbols).toEqual([]);
     });
 
     it("should handle network errors gracefully", async () => {
@@ -90,6 +93,7 @@ describe("User Settings API", () => {
         refreshIntervalMinutes: 5,
         cacheStaleTimeMinutes: 5,
         cacheGcTimeMinutes: 10,
+        newsFavoriteSymbols: [],
         updatedAt: expect.any(String),
       });
     });
