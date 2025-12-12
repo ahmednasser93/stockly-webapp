@@ -1,9 +1,4 @@
-// Use localhost in development, production URL in builds
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ??
-  (import.meta.env.DEV
-    ? "http://localhost:8787"
-    : "https://stockly-api.ahmednasser1993.workers.dev");
+import { API_BASE_URL } from "./client";
 
 const DEFAULT_HEADERS = {
   "Content-Type": "application/json",
@@ -11,18 +6,18 @@ const DEFAULT_HEADERS = {
 
 async function userRequest<T>(path: string, init?: RequestInit, allow404 = false): Promise<T | null> {
   const url = `${API_BASE_URL}${path}`;
-  
+
   try {
     const response = await fetch(url, {
       headers: DEFAULT_HEADERS,
       ...init,
     });
-    
+
     // Handle 404 as expected for new users (return null to use defaults)
     if (response.status === 404 && allow404) {
       return null;
     }
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       let errorMessage = `User API error: ${response.status}`;
@@ -34,12 +29,12 @@ async function userRequest<T>(path: string, init?: RequestInit, allow404 = false
       }
       throw new Error(errorMessage);
     }
-    
+
     // Handle empty responses (204 No Content)
     if (response.status === 204 || response.headers.get("content-length") === "0") {
       return {} as T;
     }
-    
+
     return (await response.json()) as T;
   } catch (error) {
     // Handle network errors (CORS, connection refused, etc.)

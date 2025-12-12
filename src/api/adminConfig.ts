@@ -1,11 +1,9 @@
-// Use localhost in development, production URL in builds
+import { API_BASE_URL as CLIENT_API_BASE } from "./client";
+
 const ADMIN_API_BASE = (
-  import.meta.env.VITE_ADMIN_API_BASE_URL ||
-  import.meta.env.VITE_API_BASE_URL ||
-  (import.meta.env.DEV
-    ? "http://localhost:8787"
-    : "https://stockly-api.ahmednasser1993.workers.dev")
-).replace(/\/?$/, "");
+  import.meta.env.VITE_ADMIN_API_BASE_URL?.replace(/\/$/, "") ||
+  CLIENT_API_BASE
+);
 
 const DEFAULT_HEADERS = {
   "Content-Type": "application/json",

@@ -43,7 +43,19 @@ echo ""
 
 echo "🔨 Building Web App..."
 echo "------------------------------------------------"
-npm run build || {
+
+# Check if VITE_GOOGLE_CLIENT_ID is set, if not, use default production value
+if [ -z "$VITE_GOOGLE_CLIENT_ID" ]; then
+  echo "⚠️  VITE_GOOGLE_CLIENT_ID not set in environment"
+  echo "   Using default production Google Client ID..."
+  export VITE_GOOGLE_CLIENT_ID="272719199106-9hpeemg60nqoph9t52audf6hmri27mb6.apps.googleusercontent.com"
+  echo "   Note: For Cloudflare Pages, you can also set VITE_GOOGLE_CLIENT_ID as a build environment variable"
+  echo "   in the Cloudflare Pages dashboard (Settings → Environment Variables → Build)"
+  echo ""
+fi
+
+# Build with environment variable
+VITE_GOOGLE_CLIENT_ID="${VITE_GOOGLE_CLIENT_ID}" npm run build || {
   echo "❌ Build failed. Aborting deployment."
   exit 1
 }

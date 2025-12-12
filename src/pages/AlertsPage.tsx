@@ -4,7 +4,7 @@ import { useAlerts } from "../hooks/useAlerts";
 import { fetchStocks } from "../api/client";
 import { AlertForm } from "../components/AlertForm";
 import { DeleteAlertDialog } from "../components/DeleteAlertDialog";
-import axios from "axios";
+import { axiosClient } from "../api/axios-client";
 import type {
   Alert,
   CreateAlertRequest,
@@ -16,11 +16,6 @@ type SortField = "symbol" | "threshold" | "status" | "createdAt";
 type SortOrder = "asc" | "desc";
 type AlertTab = "alerts" | "preferences" | "logs" | "devices";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ??
-  (import.meta.env.DEV
-    ? "http://localhost:8787"
-    : "https://stockly-api.ahmednasser1993.workers.dev");
 
 interface NotificationPreferences {
   userId: string;
@@ -288,7 +283,7 @@ export function AlertsPage() {
     try {
       setPrefsLoading(true);
       setPrefsError(null);
-      const response = await axios.get(`${API_BASE_URL}/v1/api/preferences/${userId}`);
+      const response = await axiosClient.get(`/v1/api/preferences/${userId}`);
       const prefs = response.data as NotificationPreferences;
       setPreferences(prefs);
       setEnabled(prefs.enabled);
@@ -318,7 +313,7 @@ export function AlertsPage() {
       const symbolsArray = allowedSymbols
         ? allowedSymbols.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean)
         : null;
-      await axios.put(`${API_BASE_URL}/v1/api/preferences`, {
+      await axiosClient.put(`/v1/api/preferences`, {
         userId,
         enabled,
         quietStart: quietStart || null,
@@ -341,9 +336,9 @@ export function AlertsPage() {
       setLogsLoading(true);
       setLogsError(null);
       const endpoint = viewMode === "recent"
-        ? `${API_BASE_URL}/v1/api/notifications/recent`
-        : `${API_BASE_URL}/v1/api/notifications/failed`;
-      const response = await axios.get(endpoint);
+        ? `/v1/api/notifications/recent`
+        : `/v1/api/notifications/failed`;
+      const response = await axiosClient.get(endpoint);
       setNotifications(response.data.notifications || []);
     } catch {
       setLogsError("Failed to load notifications");
@@ -357,11 +352,11 @@ export function AlertsPage() {
     setDevicesLoading(true);
     setDevicesError(null);
     try {
-      const response = await axios.get(`${API_BASE_URL}/v1/api/devices`);
-      
+      const response = await axiosClient.get(`/v1/api/devices`);
+
       // Handle different response structures
       let devicesList: Device[] = [];
-      
+
       if (response.data) {
         // Check if response.data is directly an array
         if (Array.isArray(response.data)) {
@@ -384,10 +379,10 @@ export function AlertsPage() {
           devicesList = response.data.items;
         }
       }
-      
+
       // Ensure we have an array
       setDevices(Array.isArray(devicesList) ? devicesList : []);
-      
+
       // Log for debugging
       if (devicesList.length > 0) {
         console.log(`Loaded ${devicesList.length} device(s)`);
@@ -412,12 +407,12 @@ export function AlertsPage() {
   const handleSendTestNotification = async (userId: string, customMessage?: string) => {
     setTestingDeviceId(userId);
     try {
-      const response = await axios.post(
-        `${API_BASE_URL}/v1/api/devices/${encodeURIComponent(userId)}/test`,
+      const response = await axiosClient.post(
+        `/v1/api/devices/${encodeURIComponent(userId)}/test`,
         customMessage ? { message: customMessage } : {},
         { headers: { "Content-Type": "application/json" } }
       );
-      
+
       if (response.data.success) {
         showToast("Test notification sent successfully!", "success");
       } else {
@@ -441,10 +436,10 @@ export function AlertsPage() {
 
     setDeletingDeviceId(userId);
     try {
-      const response = await axios.delete(
-        `${API_BASE_URL}/v1/api/devices/${encodeURIComponent(userId)}`
+      const response = await axiosClient.delete(
+        `/v1/api/devices/${encodeURIComponent(userId)}`
       );
-      
+
       if (response.data.success) {
         showToast("Device deleted successfully!", "success");
         // Reload devices list
@@ -479,10 +474,10 @@ export function AlertsPage() {
       setRetryingLogId(logId);
       setRetryLogs([]);
       setRetryResult(null);
-      
-      const response = await axios.post(`${API_BASE_URL}/v1/api/notifications/retry/${logId}`);
+
+      const response = await axiosClient.post(`/v1/api/notifications/retry/${logId}`);
       const result = response.data;
-      
+
       setRetryLogs(result.logs || []);
       setRetryResult({
         success: result.success,
@@ -490,13 +485,13 @@ export function AlertsPage() {
         status: result.status,
         errorMessage: result.errorMessage,
       });
-      
+
       // Reload notifications to show the new log entry
       await loadNotifications();
-      
+
       showToast(
-        result.success 
-          ? "Notification retried successfully!" 
+        result.success
+          ? "Notification retried successfully!"
           : "Notification retry failed",
         result.success ? "success" : "error"
       );
@@ -597,12 +592,12 @@ export function AlertsPage() {
             ) : (
               <>
                 {orphanedAlerts.length > 0 && (
-                  <div style={{ 
-                    marginBottom: "1.5rem", 
-                    padding: "1rem", 
-                    background: "rgba(239, 68, 68, 0.1)", 
-                    border: "1px solid rgba(239, 68, 68, 0.3)", 
-                    borderRadius: "8px" 
+                  <div style={{
+                    marginBottom: "1.5rem",
+                    padding: "1rem",
+                    background: "rgba(239, 68, 68, 0.1)",
+                    border: "1px solid rgba(239, 68, 68, 0.3)",
+                    borderRadius: "8px"
                   }}>
                     <p style={{ margin: 0, color: "#ef4444", fontWeight: "600", marginBottom: "0.5rem" }}>
                       ⚠️ Warning: {orphanedAlerts.length} orphaned alert{orphanedAlerts.length !== 1 ? "s" : ""} detected
@@ -613,242 +608,242 @@ export function AlertsPage() {
                   </div>
                 )}
                 <div className="alerts-controls">
-          <div className="search-wrapper">
-            <input
-              type="text"
-              placeholder="Search alerts..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="alerts-search"
-            />
-          </div>
+                  <div className="search-wrapper">
+                    <input
+                      type="text"
+                      placeholder="Search alerts..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="alerts-search"
+                    />
+                  </div>
 
-          <div className="filter-tabs">
-            <button
-              type="button"
-              className={filterStatus === "all" ? "active" : ""}
-              onClick={() => setFilterStatus("all")}
-            >
-              All ({alerts.length})
-            </button>
-            <button
-              type="button"
-              className={filterStatus === "active" ? "active" : ""}
-              onClick={() => setFilterStatus("active")}
-            >
-              Active ({alerts.filter((a) => a.status === "active").length})
-            </button>
-            <button
-              type="button"
-              className={filterStatus === "paused" ? "active" : ""}
-              onClick={() => setFilterStatus("paused")}
-            >
-              Paused ({alerts.filter((a) => a.status === "paused").length})
-            </button>
-          </div>
-        </div>
-
-        {filteredAlerts.length === 0 ? (
-          <div className="empty-state">
-            {alerts.length === 0 ? (
-              <>
-                <div className="empty-icon">🔔</div>
-                <h3>No alerts configured</h3>
-                <p>Create your first alert to get started!</p>
-                <button type="button" onClick={() => setShowForm(true)}>
-                  Create Alert
-                </button>
-              </>
-            ) : (
-              <>
-                <p>No alerts match your filters.</p>
-              </>
-            )}
-          </div>
-        ) : (
-          <div className="alerts-table-container">
-            <table className="alerts-table">
-              <thead>
-                <tr>
-                  <th onClick={() => handleSort("symbol")}>
-                    Symbol{" "}
-                    {sortField === "symbol" && (sortOrder === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th>Current Price</th>
-                  <th>Direction</th>
-                  <th onClick={() => handleSort("threshold")}>
-                    Threshold{" "}
-                    {sortField === "threshold" &&
-                      (sortOrder === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th>Distance</th>
-                  <th onClick={() => handleSort("status")}>
-                    Status{" "}
-                    {sortField === "status" && (sortOrder === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th>Channel</th>
-                  <th>Device / Target</th>
-                  <th onClick={() => handleSort("createdAt")}>
-                    Created{" "}
-                    {sortField === "createdAt" &&
-                      (sortOrder === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredAlerts.map((alert) => {
-                  const currentPrice = priceMap.get(alert.symbol);
-                  const distance = calculateDistance(alert);
-                  const isNearThreshold =
-                    currentPrice &&
-                    Math.abs(alert.threshold - currentPrice) / currentPrice <
-                      0.05;
-                  
-                  // Find matching device for this alert
-                  const matchingDevice = devices.find((d) => d.pushToken === alert.target);
-                  const isOrphaned = !matchingDevice;
-
-                  return (
-                    <tr
-                      key={alert.id}
-                      className={alert.status === "paused" ? "paused" : isOrphaned ? "orphaned" : ""}
-                      style={isOrphaned ? { 
-                        background: "rgba(239, 68, 68, 0.05)",
-                        borderLeft: "3px solid #ef4444"
-                      } : {}}
+                  <div className="filter-tabs">
+                    <button
+                      type="button"
+                      className={filterStatus === "all" ? "active" : ""}
+                      onClick={() => setFilterStatus("all")}
                     >
-                      <td className="symbol-cell">
-                        <strong>{alert.symbol}</strong>
-                      </td>
-                      <td>
-                        {currentPrice ? (
-                          <span className="price">
-                            ${currentPrice.toFixed(2)}
-                          </span>
-                        ) : (
-                          <span className="muted">—</span>
-                        )}
-                      </td>
-                      <td>
-                        <span
-                          className={`direction-badge ${alert.direction}`}
-                        >
-                          {alert.direction === "above" ? "↑ Above" : "↓ Below"}
-                        </span>
-                      </td>
-                      <td>
-                        <strong>${alert.threshold.toFixed(2)}</strong>
-                      </td>
-                      <td>
-                        {distance ? (
-                          <span
-                            className={`distance ${isNearThreshold ? "near" : ""}`}
-                          >
-                            {distance}
-                          </span>
-                        ) : (
-                          <span className="muted">—</span>
-                        )}
-                      </td>
-                      <td>
-                        <span className={`status-badge ${alert.status}`}>
-                          {alert.status === "active" ? "🟢 Active" : "⏸️ Paused"}
-                        </span>
-                      </td>
-                      <td>
-                        {alert.channel === "notification" ? (
-                          <span className="channel-badge">📱 Mobile Notification</span>
-                        ) : (
-                          <span className="legacy-badge">
-                            Legacy Alert (Disabled)
-                          </span>
-                        )}
-                      </td>
-                      <td className="target-cell">
-                        {matchingDevice ? (
-                          <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                              <span style={{ fontWeight: "600", color: "var(--accent-color)" }}>
-                                {matchingDevice.userId}
-                              </span>
-                              {matchingDevice.deviceInfo && (
-                                <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-                                  ({matchingDevice.deviceInfo})
-                                </span>
-                              )}
-                            </div>
-                            <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
-                              {alert.target.substring(0, 30)}...
-                            </span>
-                          </div>
-                        ) : (
-                          <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                              <span style={{ color: "#ef4444", fontWeight: "600" }}>⚠️ Orphaned</span>
-                            </div>
-                            <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
-                              {alert.target.substring(0, 30)}...
-                            </span>
-                            <span style={{ fontSize: "0.75rem", color: "#ef4444", fontStyle: "italic" }}>
-                              No matching device found
-                            </span>
-                          </div>
-                        )}
-                      </td>
-                      <td className="date-cell">
-                        {new Date(alert.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="actions-cell">
-                        {alert.channel === "notification" ? (
-                          <>
-                            <button
-                              type="button"
-                              className="icon-button"
-                              onClick={() => handleToggleStatus(alert)}
-                              title={
-                                alert.status === "active" ? "Pause" : "Activate"
-                              }
-                              disabled={isUpdating}
-                            >
-                              {alert.status === "active" ? "⏸️" : "▶️"}
-                            </button>
-                            <button
-                              type="button"
-                              className="icon-button"
-                              onClick={() => setEditingAlert(alert)}
-                              title="Edit"
-                            >
-                              ✏️
-                            </button>
-                          </>
-                        ) : (
-                          <button
-                            type="button"
-                            className="icon-button"
-                            disabled={true}
-                            title="Legacy alerts cannot be edited"
-                            style={{ opacity: 0.4, cursor: "not-allowed" }}
-                          >
-                            ✏️
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          className="icon-button danger"
-                          onClick={() => setDeletingAlert(alert)}
-                          title="Delete"
-                        >
-                          🗑️
+                      All ({alerts.length})
+                    </button>
+                    <button
+                      type="button"
+                      className={filterStatus === "active" ? "active" : ""}
+                      onClick={() => setFilterStatus("active")}
+                    >
+                      Active ({alerts.filter((a) => a.status === "active").length})
+                    </button>
+                    <button
+                      type="button"
+                      className={filterStatus === "paused" ? "active" : ""}
+                      onClick={() => setFilterStatus("paused")}
+                    >
+                      Paused ({alerts.filter((a) => a.status === "paused").length})
+                    </button>
+                  </div>
+                </div>
+
+                {filteredAlerts.length === 0 ? (
+                  <div className="empty-state">
+                    {alerts.length === 0 ? (
+                      <>
+                        <div className="empty-icon">🔔</div>
+                        <h3>No alerts configured</h3>
+                        <p>Create your first alert to get started!</p>
+                        <button type="button" onClick={() => setShowForm(true)}>
+                          Create Alert
                         </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+                      </>
+                    ) : (
+                      <>
+                        <p>No alerts match your filters.</p>
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  <div className="alerts-table-container">
+                    <table className="alerts-table">
+                      <thead>
+                        <tr>
+                          <th onClick={() => handleSort("symbol")}>
+                            Symbol{" "}
+                            {sortField === "symbol" && (sortOrder === "asc" ? "↑" : "↓")}
+                          </th>
+                          <th>Current Price</th>
+                          <th>Direction</th>
+                          <th onClick={() => handleSort("threshold")}>
+                            Threshold{" "}
+                            {sortField === "threshold" &&
+                              (sortOrder === "asc" ? "↑" : "↓")}
+                          </th>
+                          <th>Distance</th>
+                          <th onClick={() => handleSort("status")}>
+                            Status{" "}
+                            {sortField === "status" && (sortOrder === "asc" ? "↑" : "↓")}
+                          </th>
+                          <th>Channel</th>
+                          <th>Device / Target</th>
+                          <th onClick={() => handleSort("createdAt")}>
+                            Created{" "}
+                            {sortField === "createdAt" &&
+                              (sortOrder === "asc" ? "↑" : "↓")}
+                          </th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredAlerts.map((alert) => {
+                          const currentPrice = priceMap.get(alert.symbol);
+                          const distance = calculateDistance(alert);
+                          const isNearThreshold =
+                            currentPrice &&
+                            Math.abs(alert.threshold - currentPrice) / currentPrice <
+                            0.05;
+
+                          // Find matching device for this alert
+                          const matchingDevice = devices.find((d) => d.pushToken === alert.target);
+                          const isOrphaned = !matchingDevice;
+
+                          return (
+                            <tr
+                              key={alert.id}
+                              className={alert.status === "paused" ? "paused" : isOrphaned ? "orphaned" : ""}
+                              style={isOrphaned ? {
+                                background: "rgba(239, 68, 68, 0.05)",
+                                borderLeft: "3px solid #ef4444"
+                              } : {}}
+                            >
+                              <td className="symbol-cell">
+                                <strong>{alert.symbol}</strong>
+                              </td>
+                              <td>
+                                {currentPrice ? (
+                                  <span className="price">
+                                    ${currentPrice.toFixed(2)}
+                                  </span>
+                                ) : (
+                                  <span className="muted">—</span>
+                                )}
+                              </td>
+                              <td>
+                                <span
+                                  className={`direction-badge ${alert.direction}`}
+                                >
+                                  {alert.direction === "above" ? "↑ Above" : "↓ Below"}
+                                </span>
+                              </td>
+                              <td>
+                                <strong>${alert.threshold.toFixed(2)}</strong>
+                              </td>
+                              <td>
+                                {distance ? (
+                                  <span
+                                    className={`distance ${isNearThreshold ? "near" : ""}`}
+                                  >
+                                    {distance}
+                                  </span>
+                                ) : (
+                                  <span className="muted">—</span>
+                                )}
+                              </td>
+                              <td>
+                                <span className={`status-badge ${alert.status}`}>
+                                  {alert.status === "active" ? "🟢 Active" : "⏸️ Paused"}
+                                </span>
+                              </td>
+                              <td>
+                                {alert.channel === "notification" ? (
+                                  <span className="channel-badge">📱 Mobile Notification</span>
+                                ) : (
+                                  <span className="legacy-badge">
+                                    Legacy Alert (Disabled)
+                                  </span>
+                                )}
+                              </td>
+                              <td className="target-cell">
+                                {matchingDevice ? (
+                                  <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                                      <span style={{ fontWeight: "600", color: "var(--accent-color)" }}>
+                                        {matchingDevice.userId}
+                                      </span>
+                                      {matchingDevice.deviceInfo && (
+                                        <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
+                                          ({matchingDevice.deviceInfo})
+                                        </span>
+                                      )}
+                                    </div>
+                                    <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
+                                      {alert.target.substring(0, 30)}...
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                                      <span style={{ color: "#ef4444", fontWeight: "600" }}>⚠️ Orphaned</span>
+                                    </div>
+                                    <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
+                                      {alert.target.substring(0, 30)}...
+                                    </span>
+                                    <span style={{ fontSize: "0.75rem", color: "#ef4444", fontStyle: "italic" }}>
+                                      No matching device found
+                                    </span>
+                                  </div>
+                                )}
+                              </td>
+                              <td className="date-cell">
+                                {new Date(alert.createdAt).toLocaleDateString()}
+                              </td>
+                              <td className="actions-cell">
+                                {alert.channel === "notification" ? (
+                                  <>
+                                    <button
+                                      type="button"
+                                      className="icon-button"
+                                      onClick={() => handleToggleStatus(alert)}
+                                      title={
+                                        alert.status === "active" ? "Pause" : "Activate"
+                                      }
+                                      disabled={isUpdating}
+                                    >
+                                      {alert.status === "active" ? "⏸️" : "▶️"}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="icon-button"
+                                      onClick={() => setEditingAlert(alert)}
+                                      title="Edit"
+                                    >
+                                      ✏️
+                                    </button>
+                                  </>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    className="icon-button"
+                                    disabled={true}
+                                    title="Legacy alerts cannot be edited"
+                                    style={{ opacity: 0.4, cursor: "not-allowed" }}
+                                  >
+                                    ✏️
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  className="icon-button danger"
+                                  onClick={() => setDeletingAlert(alert)}
+                                  title="Delete"
+                                >
+                                  🗑️
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </>
             )}
           </>
@@ -1082,8 +1077,8 @@ export function AlertsPage() {
                                     style={{
                                       padding: "0.5rem 1rem",
                                       fontSize: "0.875rem",
-                                      background: retryingLogId === notification.id 
-                                        ? "var(--ghost-border)" 
+                                      background: retryingLogId === notification.id
+                                        ? "var(--ghost-border)"
                                         : "var(--accent-color)",
                                       color: "white",
                                       border: "none",
@@ -1138,16 +1133,16 @@ export function AlertsPage() {
                             Clear
                           </button>
                         </div>
-                        
+
                         {retryResult && (
                           <div style={{
                             marginBottom: "1rem",
                             padding: "1rem",
-                            background: retryResult.success 
-                              ? "rgba(56, 189, 248, 0.1)" 
+                            background: retryResult.success
+                              ? "rgba(56, 189, 248, 0.1)"
                               : "rgba(248, 113, 113, 0.1)",
-                            border: `1px solid ${retryResult.success 
-                              ? "rgba(56, 189, 248, 0.3)" 
+                            border: `1px solid ${retryResult.success
+                              ? "rgba(56, 189, 248, 0.3)"
                               : "rgba(248, 113, 113, 0.3)"}`,
                             borderRadius: "6px",
                           }}>
@@ -1196,10 +1191,10 @@ export function AlertsPage() {
                             retryLogs.map((log, index) => (
                               <div key={index} style={{
                                 marginBottom: "0.5rem",
-                                color: log.includes("✅") 
-                                  ? "#38bdf8" 
-                                  : log.includes("❌") 
-                                    ? "#f87171" 
+                                color: log.includes("✅")
+                                  ? "#38bdf8"
+                                  : log.includes("❌")
+                                    ? "#f87171"
                                     : "var(--text)",
                               }}>
                                 {log}
@@ -1232,12 +1227,12 @@ export function AlertsPage() {
                   </div>
                 )}
                 {orphanedAlerts.length > 0 && (
-                  <div style={{ 
-                    marginBottom: "1.5rem", 
-                    padding: "1rem", 
-                    background: "rgba(239, 68, 68, 0.1)", 
-                    border: "1px solid rgba(239, 68, 68, 0.3)", 
-                    borderRadius: "8px" 
+                  <div style={{
+                    marginBottom: "1.5rem",
+                    padding: "1rem",
+                    background: "rgba(239, 68, 68, 0.1)",
+                    border: "1px solid rgba(239, 68, 68, 0.3)",
+                    borderRadius: "8px"
                   }}>
                     <p style={{ margin: 0, color: "#ef4444", fontWeight: "600", marginBottom: "0.5rem" }}>
                       ⚠️ Warning: {orphanedAlerts.length} orphaned alert{orphanedAlerts.length !== 1 ? "s" : ""} detected
@@ -1274,7 +1269,7 @@ export function AlertsPage() {
                           const activeAlerts = deviceAlerts.filter((a) => a.status === "active");
                           const displayAlertCount = device.alertCount !== undefined ? device.alertCount : deviceAlerts.length;
                           const displayActiveCount = device.activeAlertCount !== undefined ? device.activeAlertCount : activeAlerts.length;
-                          
+
                           return (
                             <tr key={device.userId}>
                               <td>
@@ -1364,44 +1359,44 @@ export function AlertsPage() {
           </div>
         )}
 
-      {showForm && (
-        <AlertForm
-          onSubmit={handleCreateAlert}
-          onCancel={() => setShowForm(false)}
-          isSubmitting={isCreating}
-          devices={devices}
-        />
-      )}
+        {showForm && (
+          <AlertForm
+            onSubmit={handleCreateAlert}
+            onCancel={() => setShowForm(false)}
+            isSubmitting={isCreating}
+            devices={devices}
+          />
+        )}
 
-      {editingAlert && (
-        <AlertForm
-          alert={editingAlert}
-          onSubmit={handleUpdateAlert}
-          onCancel={() => setEditingAlert(null)}
-          isSubmitting={isUpdating}
-          devices={devices}
-        />
-      )}
+        {editingAlert && (
+          <AlertForm
+            alert={editingAlert}
+            onSubmit={handleUpdateAlert}
+            onCancel={() => setEditingAlert(null)}
+            isSubmitting={isUpdating}
+            devices={devices}
+          />
+        )}
 
-      {deletingAlert && (
-        <DeleteAlertDialog
-          alert={deletingAlert}
-          onConfirm={handleDeleteAlert}
-          onCancel={() => setDeletingAlert(null)}
-          isDeleting={isDeleting}
-        />
-      )}
+        {deletingAlert && (
+          <DeleteAlertDialog
+            alert={deletingAlert}
+            onConfirm={handleDeleteAlert}
+            onCancel={() => setDeletingAlert(null)}
+            isDeleting={isDeleting}
+          />
+        )}
 
-      {toast && (
-        <div className={`toast ${toast.type}`}>
-          <span>{toast.message}</span>
-          <button
-            type="button"
-            className="toast-close"
-            onClick={() => setToast(null)}
-          >
-            ✕
-          </button>
+        {toast && (
+          <div className={`toast ${toast.type}`}>
+            <span>{toast.message}</span>
+            <button
+              type="button"
+              className="toast-close"
+              onClick={() => setToast(null)}
+            >
+              ✕
+            </button>
           </div>
         )}
       </div>

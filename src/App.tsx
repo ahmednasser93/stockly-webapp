@@ -5,6 +5,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { HomePage } from "./pages/HomePage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { LoginPage } from "./pages/LoginPage";
+import { UsernameSelectionPage } from "./pages/UsernameSelectionPage";
 import { DocsPage } from "./pages/DocsPage";
 import { AlertsPage } from "./pages/AlertsPage";
 import { PreferencesPage } from "./pages/PreferencesPage";
@@ -14,6 +15,7 @@ function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/username-selection" element={<UsernameSelectionPage />} />
       <Route
         element={
           <ProtectedRoute>
@@ -26,15 +28,8 @@ function App() {
         <Route path="/docs" element={<DocsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/preferences" element={<PreferencesPage />} />
+        <Route path="/stocks/:symbol" element={<StockDetailsPage />} />
       </Route>
-      <Route
-        path="/stocks/:symbol"
-        element={
-          <ProtectedRoute>
-            <StockDetailsPage />
-          </ProtectedRoute>
-        }
-      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

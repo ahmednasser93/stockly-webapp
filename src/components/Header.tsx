@@ -6,7 +6,7 @@ import "./Header.css";
 const APP_VERSION = __APP_VERSION__;
 
 export function Header() {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
 
   return (
     <header className="header-modern">
@@ -66,6 +66,34 @@ export function Header() {
         </nav>
 
         <div className="header-actions">
+          {user && (
+            <div className="user-info" style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              gap: "0.5rem",
+              marginRight: "1rem",
+              padding: "0.5rem 1rem",
+              background: "rgba(255, 255, 255, 0.1)",
+              borderRadius: "8px",
+              fontSize: "0.875rem"
+            }}>
+              {user.picture && (
+                <img 
+                  src={user.picture} 
+                  alt={user.name || user.username || user.email}
+                  style={{
+                    width: "24px",
+                    height: "24px",
+                    borderRadius: "50%",
+                    objectFit: "cover"
+                  }}
+                />
+              )}
+              <span style={{ fontWeight: 500 }}>
+                {user.username || user.name || user.email}
+              </span>
+            </div>
+          )}
           <ThemeToggle />
           <button type="button" className="btn-logout" onClick={logout}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

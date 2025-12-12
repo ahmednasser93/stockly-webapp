@@ -12,6 +12,21 @@ import type { Alert } from "../types";
 vi.mock("../api/alerts");
 vi.mock("../api/client");
 vi.mock("axios");
+vi.mock("../api/axios-client", () => {
+  const mockAxiosClient = {
+    get: vi.fn(() => Promise.resolve({ data: {} })),
+    post: vi.fn(() => Promise.resolve({ data: {} })),
+    put: vi.fn(() => Promise.resolve({ data: {} })),
+    delete: vi.fn(() => Promise.resolve({ data: {} })),
+    interceptors: {
+      request: { use: vi.fn() },
+      response: { use: vi.fn() },
+    },
+  };
+  return {
+    axiosClient: mockAxiosClient,
+  };
+});
 
 const mockListAlerts = vi.mocked(alertsApi.listAlerts);
 const mockFetchStocks = vi.mocked(clientApi.fetchStocks);
@@ -65,7 +80,7 @@ describe("AlertsPage", () => {
     },
   ];
 
-  beforeEach(() => {
+  beforeEach(async () => {
     queryClient = new QueryClient({
       defaultOptions: {
         queries: {
@@ -79,6 +94,17 @@ describe("AlertsPage", () => {
     // Reset axios mocks
     vi.mocked(axios.get).mockReset();
     vi.mocked(axios.post).mockReset();
+    // Reset axiosClient mocks
+    const { axiosClient } = await import("../api/axios-client");
+    vi.mocked(axiosClient.get).mockReset();
+    vi.mocked(axiosClient.post).mockReset();
+    vi.mocked(axiosClient.put).mockReset();
+    vi.mocked(axiosClient.delete).mockReset();
+    // Set default return values
+    vi.mocked(axiosClient.get).mockResolvedValue({ data: {} });
+    vi.mocked(axiosClient.post).mockResolvedValue({ data: {} });
+    vi.mocked(axiosClient.put).mockResolvedValue({ data: {} });
+    vi.mocked(axiosClient.delete).mockResolvedValue({ data: {} });
   });
 
   const renderWithProviders = (component: React.ReactElement) => {
@@ -186,8 +212,8 @@ describe("AlertsPage", () => {
   });
 
   it("should render Devices tab", async () => {
-    const mockedAxios = vi.mocked(axios);
-    mockedAxios.get.mockResolvedValueOnce({
+    const { axiosClient } = await import("../api/axios-client");
+    vi.mocked(axiosClient.get).mockResolvedValue({
       data: { devices: [] },
     });
 
@@ -217,9 +243,9 @@ describe("AlertsPage", () => {
       },
     ];
 
-    // Mock axios.get to handle both alerts and devices endpoints
-    // Need to match the actual API_BASE_URL pattern used in AlertsPage
-    vi.mocked(axios.get).mockImplementation((url: string | unknown) => {
+    // Mock axiosClient.get to handle both alerts and devices endpoints
+    const { axiosClient } = await import("../api/axios-client");
+    vi.mocked(axiosClient.get).mockImplementation((url: string | unknown) => {
       const urlStr = typeof url === "string" ? url : url?.url || String(url);
       if (urlStr.includes("/devices")) {
         return Promise.resolve({ data: { devices: mockDevices } });
@@ -254,10 +280,10 @@ describe("AlertsPage", () => {
   });
 
   it("should show empty state when no devices are registered", async () => {
-    const mockedAxios = vi.mocked(axios);
+    const { axiosClient } = await import("../api/axios-client");
     
-    // Mock axios.get to handle both alerts and devices endpoints
-    mockedAxios.get.mockImplementation((url: string) => {
+    // Mock axiosClient.get to handle both alerts and devices endpoints
+    vi.mocked(axiosClient.get).mockImplementation((url: string) => {
       if (url.includes("/devices")) {
         return Promise.resolve({ data: { devices: [] } });
       }
@@ -287,7 +313,7 @@ describe("AlertsPage", () => {
   });
 
   it("should send test notification when Send Test button is clicked", async () => {
-    const mockedAxios = vi.mocked(axios);
+    const { axiosClient } = await import("../api/axios-client");
     const mockDevices = [
       {
         userId: "user-1",
@@ -298,8 +324,8 @@ describe("AlertsPage", () => {
       },
     ];
 
-    // Mock axios.get to handle both alerts and devices endpoints
-    mockedAxios.get.mockImplementation((url: string) => {
+    // Mock axiosClient.get to handle both alerts and devices endpoints
+    vi.mocked(axiosClient.get).mockImplementation((url: string) => {
       if (url.includes("/devices")) {
         return Promise.resolve({ data: { devices: mockDevices } });
       }
@@ -312,7 +338,7 @@ describe("AlertsPage", () => {
       return Promise.reject(new Error(`Unexpected URL: ${url}`));
     });
     
-    mockedAxios.post.mockResolvedValueOnce({
+    vi.mocked(axiosClient.post).mockResolvedValueOnce({
       data: { success: true, message: "Test notification sent successfully" },
     });
 
@@ -336,7 +362,7 @@ describe("AlertsPage", () => {
     sendTestButton.click();
 
     await waitFor(() => {
-      expect(mockedAxios.post).toHaveBeenCalledWith(
+      expect(axiosClient.post).toHaveBeenCalledWith(
         expect.stringContaining("/devices/user-1/test"),
         {},
         expect.objectContaining({ headers: { "Content-Type": "application/json" } })

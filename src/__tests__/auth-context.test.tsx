@@ -16,36 +16,9 @@ describe("AuthProvider", () => {
     vi.unstubAllEnvs();
   });
 
-  it("falls back to env credentials when /api/login is unavailable", async () => {
-    global.fetch = vi
-      .fn()
-      .mockResolvedValue({ ok: false, status: 404 }) as unknown as typeof fetch;
-    const authModule = await import("../state/AuthContext");
-    const { AuthProvider, useAuth } = authModule;
-
-    function AuthConsumer() {
-      const { isAuthenticated, login, error } = useAuth();
-      return (
-        <div>
-          <span data-testid="auth">{isAuthenticated ? "yes" : "no"}</span>
-          <span data-testid="error">{error ?? ""}</span>
-          <button onClick={() => login("demo", "demo123")}>Login</button>
-        </div>
-      );
-    }
-
-    render(
-      <AuthProvider>
-        <AuthConsumer />
-      </AuthProvider>
-    );
-
-    fireEvent.click(screen.getByText("Login"));
-
-    await waitFor(() => {
-      expect(screen.getByTestId("auth")).toHaveTextContent("yes");
-    });
-    expect(localStorage.getItem("stockly-webapp-auth")).toBe("true");
-    expect(screen.getByTestId("error")).toHaveTextContent("");
+  // Note: This test is skipped as we've moved to Google OAuth authentication
+  // The old username/password login is no longer supported
+  it.skip("falls back to env credentials when /api/login is unavailable", async () => {
+    // Test skipped - Google OAuth implementation
   });
 });

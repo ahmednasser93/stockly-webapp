@@ -2,82 +2,197 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
+import { API_BASE_URL } from "../api/client";
 
-// Constants moved here - fast refresh warning suppressed as these are needed in this file
-/* eslint-disable react-refresh/only-export-components */
-const AUTH_STORAGE_KEY = "stockly-webapp-auth";
-export const FALLBACK_USERNAME =
-  import.meta.env.VITE_STOCKLY_USERNAME ?? "demo";
-export const FALLBACK_PASS =
-  import.meta.env.VITE_STOCKLY_PASS ?? "demo123";
+export interface User {
+  id: string;
+  email: string;
+  name: string | null;
+  picture: string | null;
+  username: string | null;
+}
 
 type AuthContextValue = {
   isAuthenticated: boolean;
+  user: User | null;
   loading: boolean;
   error: string | null;
-  login: (username: string, password: string) => Promise<void>;
-  logout: () => void;
+  requiresUsername: boolean;
+  handleGoogleSignIn: (idToken: string) => Promise<void>;
+  logout: () => Promise<void>;
+  checkAuth: () => Promise<void>;
+  setUsername: (username: string) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  // Initialize state synchronously to avoid setState in effect
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-    return stored === "true";
-  });
-  const [loading] = useState(false); // No async operation needed since localStorage check is synchronous
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [requiresUsername, setRequiresUsername] = useState(false);
 
-  const login = useCallback(async (username: string, password: string) => {
-    setError(null);
+  // Check authentication status on mount
+  const checkAuth = useCallback(async () => {
     try {
-      const response = await fetch("/api/login", {
+      const response = await fetch(`${API_BASE_URL}/v1/api/auth/me`, {
+        method: "GET",
+        credentials: "include", // Include cookies
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.user);
+        setIsAuthenticated(true);
+        // Set requiresUsername based on whether user has username
+        const hasUsername = !!data.user.username;
+        setRequiresUsername(!hasUsername);
+        setError(null);
+      } else if (response.status === 401) {
+        // Not authenticated - clear state
+        setIsAuthenticated(false);
+        setUser(null);
+        setRequiresUsername(false);
+      } else {
+        // Other error
+        setIsAuthenticated(false);
+        setUser(null);
+        setRequiresUsername(false);
+      }
+    } catch (err) {
+      console.error("Auth check failed:", err);
+      setIsAuthenticated(false);
+      setUser(null);
+      setRequiresUsername(false);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  // Handle Google OAuth sign-in with ID token
+  const handleGoogleSignIn = useCallback(async (idToken: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Send Google ID token to our API
+      const response = await fetch(`${API_BASE_URL}/v1/api/auth/google`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username, password }),
+        credentials: "include", // Important: include cookies for httpOnly cookie storage
+        body: JSON.stringify({
+          idToken,
+        }),
       });
-      if (response.ok) {
-        localStorage.setItem(AUTH_STORAGE_KEY, "true");
-        setIsAuthenticated(true);
-        return;
-      }
-      if (response.status === 401) {
-        setError("Invalid credentials");
-        setIsAuthenticated(false);
-        return;
-      }
-      if (response.status !== 404) {
-        console.warn("Unexpected login response", response.status);
-      }
-    } catch (networkError) {
-      console.warn("Login API unavailable, falling back to local env", networkError);
-    }
 
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    if (username === FALLBACK_USERNAME && password === FALLBACK_PASS) {
-      localStorage.setItem(AUTH_STORAGE_KEY, "true");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Authentication failed");
+      }
+
+      const data = await response.json();
+      setUser(data.user);
       setIsAuthenticated(true);
-    } else {
-      setError("Invalid credentials");
-      setIsAuthenticated(false);
+      // Set requiresUsername based on whether user has username
+      setRequiresUsername(!data.user.username);
+
+      // If user already has username, redirect to home immediately
+      if (data.user.username) {
+        window.location.href = "/";
+      }
+      // Otherwise, ProtectedRoute will handle redirect to username-selection
+    } catch (err) {
+      console.error("Login error:", err);
+      setError(err instanceof Error ? err.message : "Authentication failed");
+      throw err; // Re-throw so LoginPage can handle it
+    } finally {
+      setLoading(false);
     }
   }, []);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem(AUTH_STORAGE_KEY);
-    setIsAuthenticated(false);
+  // Set username after initial sign-in
+  const setUsername = useCallback(async (username: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch(`${API_BASE_URL}/v1/api/auth/username`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ username }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || "Failed to set username";
+        
+        // If username already set (409), refresh auth state and don't throw
+        if (response.status === 409) {
+          await checkAuth();
+          // Return success since username is already set
+          return;
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      setUser(data.user);
+      setRequiresUsername(false);
+      // Navigation will be handled by ProtectedRoute
+    } catch (err) {
+      console.error("Set username error:", err);
+      setError(err instanceof Error ? err.message : "Failed to set username");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const logout = useCallback(async () => {
+    try {
+      await fetch(`${API_BASE_URL}/v1/api/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (err) {
+      console.error("Logout error:", err);
+    } finally {
+      setUser(null);
+      setIsAuthenticated(false);
+      setRequiresUsername(false);
+      // Navigation will be handled by ProtectedRoute
+      window.location.href = "/login";
+    }
   }, []);
 
   const value = useMemo(
-    () => ({ isAuthenticated, loading, login, logout, error }),
-    [isAuthenticated, loading, login, logout, error]
+    () => ({
+      isAuthenticated,
+      user,
+      loading,
+      error,
+      requiresUsername,
+      handleGoogleSignIn,
+      logout,
+      checkAuth,
+      setUsername,
+    }),
+    [isAuthenticated, user, loading, error, requiresUsername, handleGoogleSignIn, logout, checkAuth, setUsername]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -90,4 +205,3 @@ export function useAuth() {
   }
   return ctx;
 }
-/* eslint-enable react-refresh/only-export-components */

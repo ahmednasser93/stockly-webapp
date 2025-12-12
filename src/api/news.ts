@@ -1,11 +1,6 @@
 import type { NewsResponse, NewsPaginationOptions } from "../types/news";
 
-// Use same API base URL as client.ts
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ??
-  (import.meta.env.DEV
-    ? "http://localhost:8787"
-    : "https://stockly-api.ahmednasser1993.workers.dev");
+import { API_BASE_URL } from "./client";
 
 /**
  * Build URL with pagination parameters
@@ -43,6 +38,7 @@ export async function fetchStockNews(
 
   const response = await fetch(url.toString(), {
     method: "GET",
+    credentials: "include",
   });
 
   if (!response.ok) {
@@ -93,6 +89,7 @@ export async function fetchMultipleStockNews(
 
   const response = await fetch(url.toString(), {
     method: "GET",
+    credentials: "include",
   });
 
   if (!response.ok) {

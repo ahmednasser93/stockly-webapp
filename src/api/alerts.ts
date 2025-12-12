@@ -6,12 +6,7 @@ import type {
   ErrorResponse,
 } from "../types";
 
-// Use localhost in development, production URL in builds
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ??
-  (import.meta.env.DEV
-    ? "http://localhost:8787"
-    : "https://stockly-api.ahmednasser1993.workers.dev");
+import { API_BASE_URL } from "./client";
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
@@ -29,14 +24,14 @@ async function handleResponse<T>(res: Response): Promise<T> {
 
 export async function listAlerts(): Promise<Alert[]> {
   const url = `${API_BASE_URL}/v1/api/alerts`;
-  const res = await fetch(url);
+  const res = await fetch(url, { credentials: "include" });
   const data = await handleResponse<ListAlertsResponse>(res);
   return data.alerts ?? [];
 }
 
 export async function getAlert(id: string): Promise<Alert> {
   const url = `${API_BASE_URL}/v1/api/alerts/${id}`;
-  const res = await fetch(url);
+  const res = await fetch(url, { credentials: "include" });
   return handleResponse<Alert>(res);
 }
 
@@ -47,6 +42,7 @@ export async function createAlert(
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify(data),
   });
   return handleResponse<Alert>(res);
@@ -60,6 +56,7 @@ export async function updateAlert(
   const res = await fetch(url, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify(data),
   });
   return handleResponse<Alert>(res);
@@ -69,6 +66,7 @@ export async function deleteAlert(id: string): Promise<{ success: boolean }> {
   const url = `${API_BASE_URL}/v1/api/alerts/${id}`;
   const res = await fetch(url, {
     method: "DELETE",
+    credentials: "include",
   });
   return handleResponse<{ success: boolean }>(res);
 }

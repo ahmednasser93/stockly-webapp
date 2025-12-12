@@ -25,13 +25,38 @@ function formatVolume(value: number | null) {
 function formatTimestamp(timestamp: number | null) {
   if (!timestamp) return "Unknown";
   const date = new Date(timestamp * 1000);
-  return date.toLocaleString();
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function calculatePriceChange(price: number | null, dayLow: number | null, dayHigh: number | null) {
+  if (!price || !dayLow || !dayHigh || dayHigh === dayLow) return null;
+  const range = dayHigh - dayLow;
+  const position = (price - dayLow) / range;
+  return position;
+}
+
+function getPriceTrend(price: number | null, dayLow: number | null, dayHigh: number | null) {
+  if (!price || !dayLow || !dayHigh) return "neutral";
+  const midPoint = (dayLow + dayHigh) / 2;
+  if (price > midPoint * 1.02) return "up";
+  if (price < midPoint * 0.98) return "down";
+  return "neutral";
 }
 
 export function StockCard({ quote }: { quote: StockQuote }) {
   const queryClient = useQueryClient();
-
   const { cacheStaleTimeMinutes } = useSettings();
+
+  const priceChange = calculatePriceChange(quote.price, quote.dayLow, quote.dayHigh);
+  const trend = getPriceTrend(quote.price, quote.dayLow, quote.dayHigh);
+  const range = quote.dayHigh && quote.dayLow ? quote.dayHigh - quote.dayLow : 0;
+  const rangePercent = quote.price && quote.dayLow ? 
+    ((quote.price - quote.dayLow) / range * 100).toFixed(1) : null;
 
   // Prefetch stock details on hover/touch
   const handleMouseEnter = () => {
@@ -49,26 +74,62 @@ export function StockCard({ quote }: { quote: StockQuote }) {
       onMouseEnter={handleMouseEnter}
       onTouchStart={handleMouseEnter}
     >
-      <article className="stock-card">
-        <header>
-          <h3>{quote.symbol}</h3>
-          <p className="price">{formatNumber(quote.price)}</p>
-        </header>
-        <dl>
-          <div>
-            <dt>Day Low</dt>
-            <dd>{formatNumber(quote.dayLow)}</dd>
+      <article className={`stock-card stock-card--${trend}`}>
+        <div className="stock-card__header">
+          <div className="stock-card__symbol-section">
+            <h3 className="stock-card__symbol">{quote.symbol}</h3>
+            {rangePercent !== null && (
+              <span className={`stock-card__trend stock-card__trend--${trend}`}>
+                {trend === "up" && "↗"}
+                {trend === "down" && "↘"}
+                {trend === "neutral" && "→"}
+                <span className="stock-card__trend-text">{rangePercent}%</span>
+              </span>
+            )}
           </div>
-          <div>
-            <dt>Day High</dt>
-            <dd>{formatNumber(quote.dayHigh)}</dd>
+          <div className="stock-card__price-section">
+            <p className="stock-card__price">{formatNumber(quote.price)}</p>
+            {quote.dayLow && quote.dayHigh && (
+              <div className="stock-card__range-bar">
+                <div 
+                  className="stock-card__range-fill" 
+                  style={{ width: `${priceChange ? priceChange * 100 : 50}%` }}
+                />
+              </div>
+            )}
           </div>
-          <div>
-            <dt>Volume</dt>
-            <dd>{formatVolume(quote.volume)}</dd>
+        </div>
+
+        <div className="stock-card__stats">
+          <div className="stock-card__stat">
+            <span className="stock-card__stat-label">Low</span>
+            <span className="stock-card__stat-value stock-card__stat-value--low">
+              {formatNumber(quote.dayLow)}
+            </span>
           </div>
-        </dl>
-        <footer>Last updated: {formatTimestamp(quote.timestamp)}</footer>
+          <div className="stock-card__stat stock-card__stat--center">
+            <span className="stock-card__stat-label">Range</span>
+            <span className="stock-card__stat-value">
+              {formatNumber(range, { maximumFractionDigits: 2 })}
+            </span>
+          </div>
+          <div className="stock-card__stat">
+            <span className="stock-card__stat-label">High</span>
+            <span className="stock-card__stat-value stock-card__stat-value--high">
+              {formatNumber(quote.dayHigh)}
+            </span>
+          </div>
+        </div>
+
+        <div className="stock-card__footer">
+          <div className="stock-card__volume">
+            <span className="stock-card__volume-icon">📊</span>
+            <span className="stock-card__volume-text">{formatVolume(quote.volume)}</span>
+          </div>
+          <time className="stock-card__timestamp">
+            {formatTimestamp(quote.timestamp)}
+          </time>
+        </div>
       </article>
     </Link>
   );

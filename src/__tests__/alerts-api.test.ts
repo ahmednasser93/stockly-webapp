@@ -41,7 +41,8 @@ describe("Alerts API Client", () => {
       const result = await listAlerts();
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining("/v1/api/alerts")
+        expect.stringContaining("/v1/api/alerts"),
+        { credentials: "include" }
       );
       expect(result).toEqual([mockAlert]);
     });
@@ -79,7 +80,8 @@ describe("Alerts API Client", () => {
       const result = await getAlert(mockAlert.id);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining(`/v1/api/alerts/${mockAlert.id}`)
+        expect.stringContaining(`/v1/api/alerts/${mockAlert.id}`),
+        { credentials: "include" }
       );
       expect(result).toEqual(mockAlert);
     });
@@ -119,6 +121,7 @@ describe("Alerts API Client", () => {
         expect.objectContaining({
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify(createRequest),
         })
       );
@@ -167,6 +170,7 @@ describe("Alerts API Client", () => {
         expect.objectContaining({
           method: "PUT",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify(updateRequest),
         })
       );
@@ -211,6 +215,7 @@ describe("Alerts API Client", () => {
         expect.stringContaining(`/v1/api/alerts/${mockAlert.id}`),
         expect.objectContaining({
           method: "DELETE",
+          credentials: "include",
         })
       );
       expect(result).toEqual({ success: true });

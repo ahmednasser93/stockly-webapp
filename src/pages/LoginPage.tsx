@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
-import type { FormEvent } from "react";
 import { Navigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
 import { useAuth } from "../state/AuthContext";
 import { AuroraBackground } from "../components/reactbits/AuroraBackground";
 import { useGsapFadeIn } from "../hooks/useGsapFadeIn";
@@ -13,10 +13,7 @@ const LOGIN_PERKS = [
 ];
 
 export function LoginPage() {
-  const { isAuthenticated, login, error } = useAuth();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { isAuthenticated, handleGoogleSignIn, error } = useAuth();
   const [formError, setFormError] = useState<string | null>(null);
   const heroRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
@@ -32,16 +29,22 @@ export function LoginPage() {
     return <Navigate to="/" replace />;
   }
 
-  const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault();
-    if (!username || !password) {
-      setFormError("Please provide username and password");
+  const handleGoogleSuccess = async (credentialResponse: { credential?: string }) => {
+    if (!credentialResponse.credential) {
+      setFormError("Google sign-in failed. Please try again.");
       return;
     }
+
     setFormError(null);
-    setSubmitting(true);
-    await login(username, password);
-    setSubmitting(false);
+    try {
+      await handleGoogleSignIn(credentialResponse.credential);
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : "Authentication failed");
+    }
+  };
+
+  const handleGoogleError = () => {
+    setFormError("Google sign-in was cancelled or failed");
   };
 
   return (
@@ -64,36 +67,28 @@ export function LoginPage() {
           </div>
         </div>
         <div className="login-panel" ref={formRef}>
-          <form className="card" onSubmit={handleSubmit}>
+          <div className="card">
             <div className="login-card-header">
-              <h2>Secure Login</h2>
-              <p>Use the shared Stockly credentials to unlock dashboard + docs.</p>
+              <h2>Sign in to Stockly</h2>
+              <p>Sign in with your Google account to access your personalized stock dashboard.</p>
             </div>
-            <label>
-              Username
-              <input
-                type="text"
-                value={username}
-                autoComplete="username"
-                onChange={(e) => setUsername(e.target.value)}
-              />
-            </label>
-            <label>
-              Password
-              <input
-                type="password"
-                value={password}
-                autoComplete="current-password"
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </label>
             {(formError || error) && (
-              <p className="error">{formError ?? error}</p>
+              <p className="error" style={{ marginBottom: "1rem" }}>
+                {formError ?? error}
+              </p>
             )}
-            <button type="submit" disabled={submitting}>
-              {submitting ? "Verifying…" : "Enter command center"}
-            </button>
-          </form>
+            <div style={{ display: "flex", justifyContent: "center", marginTop: "1.5rem" }}>
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                useOneTap={false}
+                theme="filled_blue"
+                size="large"
+                text="signin_with"
+                shape="rectangular"
+              />
+            </div>
+          </div>
           <div className="doc-preview card">
             <p className="muted">Need the API contract?</p>
             <h3>Docs tab mirrors backend Swagger with live credentials.</h3>

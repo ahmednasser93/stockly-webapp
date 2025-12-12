@@ -178,7 +178,10 @@ const endpoints = [
   },
 ];
 
+import { API_BASE_URL } from "../api/client";
+
 const BASE_URLS = [
+  { label: "Current Environment", value: API_BASE_URL },
   {
     label: "Production Worker",
     value: "https://stockly-api.ahmednasser1993.workers.dev",

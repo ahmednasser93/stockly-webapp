@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 /* Modern theme variables are imported from modern-theme.css */
 /* This file now contains only legacy overrides and specific component styles */
 
@@ -8,8 +10,8 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--bg-gradient-end);
-  color: var(--text-primary);
+  /* background: var(--bg-gradient-end); */
+  /* color: var(--text-primary); */
   transition: background 0.3s ease, color 0.3s ease;
 }
 

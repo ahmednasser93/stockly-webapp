@@ -5,9 +5,9 @@ interface FinancialCardProps {
 
 export function FinancialCard({ label, value }: FinancialCardProps) {
   return (
-    <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-3 border border-gray-200 hover:border-blue-200 hover:shadow-sm transition-all duration-200">
-      <div className="text-xs font-medium text-gray-600 mb-1.5 uppercase tracking-wide">{label}</div>
-      <div className="text-base font-bold text-gray-900">{value}</div>
+    <div className="group bg-white rounded-xl p-4 border border-slate-200 hover:border-blue-300 hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+      <div className="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">{label}</div>
+      <div className="text-lg font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">{value}</div>
     </div>
   );
 }

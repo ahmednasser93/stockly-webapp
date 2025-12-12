@@ -1,16 +1,11 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import * as Tabs from "@radix-ui/react-tabs";
 import { useStockDetails } from "../hooks/useStockDetails";
-import { StockDetailsHeader } from "../components/StockDetailsHeader";
 import { Chart } from "../components/Chart";
 import { CandlestickChart } from "../components/CandlestickChart";
 import { useQuery } from "@tanstack/react-query";
-import { KeyStatCard } from "../components/KeyStatCard";
-import { CompanyOverview } from "../components/CompanyOverview";
-import { FinancialsSection } from "../components/FinancialsSection";
-import { NewsCard } from "../components/NewsCard";
-import { PeersList } from "../components/PeersList";
+import { LoadingBar } from "../components/LoadingBar";
+import { StockNewsFeed } from "../components/StockNewsFeed";
 import type { ChartPeriod } from "../types/stockDetails";
 import {
   formatCurrency,
@@ -18,271 +13,276 @@ import {
   formatVolume,
 } from "../utils/formatters";
 import {
-  TrendingUp,
-  TrendingDown,
   ArrowUp,
   ArrowDown,
-  DollarSign,
-  BarChart3,
+  ExternalLink,
 } from "lucide-react";
+
+import { API_BASE_URL } from "../api/client";
 
 export function StockDetailsPage() {
   const { symbol } = useParams<{ symbol: string }>();
-  const { data, isLoading, isError, error, refetch } = useStockDetails(
+  // Mark as staleTime: 0 so we see the loading bar on revisit, or keep cache but show fetching
+  const { data, isLoading, isError, error, refetch, isFetching } = useStockDetails(
     symbol || ""
   );
-  const [chartPeriod, setChartPeriod] = useState<ChartPeriod>("1D");
+  const [chartPeriod, setChartPeriod] = useState<ChartPeriod>("1W");
   const [showCandlestick, setShowCandlestick] = useState(false);
 
-  // Fetch 4-hour intraday data for 1W period
-  const { data: intradayData } = useQuery({
-    queryKey: ["intraday", symbol, "4h"],
+  // Calculate date range based on period
+  const getDateRange = (period: ChartPeriod) => {
+    const to = new Date();
+    const from = new Date();
+
+    switch (period) {
+      case "1D": from.setDate(to.getDate() - 1); break;
+      case "1W": from.setDate(to.getDate() - 7); break;
+      case "1M": from.setMonth(to.getMonth() - 1); break;
+      case "3M": from.setMonth(to.getMonth() - 3); break;
+      case "1Y": from.setFullYear(to.getFullYear() - 1); break;
+      case "ALL": from.setFullYear(to.getFullYear() - 5); break; // Default to 5 years for ALL
+      default: from.setDate(to.getDate() - 7);
+    }
+
+    return {
+      from: from.toISOString().split('T')[0],
+      to: to.toISOString().split('T')[0]
+    };
+  };
+
+  const { from, to } = getDateRange(chartPeriod);
+
+  // Generalize query to fetch for any selected period
+  const { data: historicalData } = useQuery({
+    queryKey: ["historical", symbol, chartPeriod],
     queryFn: async () => {
+      // Use different endpoint/params for 1D specific high-res data if needed, 
+      // but sticking to get-historical for now as requested.
+      // Note: "1D" is Intraday usually, but user asked for "get-historical" endpoint logic.
+      // If 1D needs intraday, we might need a separate condition, but assuming get-historical works generally.
+
       const response = await fetch(
-        `/api/historical-intraday?symbol=${symbol}&interval=4h&days=14`
+        `${API_BASE_URL}/v1/api/get-historical?symbol=${symbol}&from=${from}&to=${to}`,
+        { credentials: "include" }
       );
-      if (!response.ok) throw new Error("Failed to fetch intraday data");
+      if (!response.ok) throw new Error("Failed to fetch historical data");
       return response.json();
     },
-    enabled: chartPeriod === "1W",
+    enabled: !!symbol,
+    refetchOnWindowFocus: false,
   });
 
-  // Enhanced loading skeleton
-  if (isLoading) {
+  // Loading State
+  const showSkeleton = isLoading && !data;
+  if (showSkeleton) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200/50">
-          <div className="max-w-xl mx-auto px-4 py-5">
-            <div className="animate-pulse space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="h-10 w-10 bg-gray-300 rounded-xl"></div>
-                <div className="flex gap-2">
-                  <div className="h-10 w-10 bg-gray-300 rounded-xl"></div>
-                  <div className="h-10 w-10 bg-gray-300 rounded-xl"></div>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="h-16 w-16 bg-gray-300 rounded-2xl"></div>
-                <div className="flex-1 space-y-2">
-                  <div className="h-8 bg-gray-300 rounded w-1/3"></div>
-                  <div className="h-4 bg-gray-300 rounded w-1/2"></div>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="h-10 bg-gray-300 rounded-lg w-32"></div>
-                <div className="h-8 bg-gray-300 rounded-lg w-24"></div>
-              </div>
+      <div className="min-h-screen bg-[#f4f7f9] p-6">
+        <LoadingBar isLoading={true} />
+        <div className="max-w-[1400px] mx-auto bg-white rounded-xl shadow-sm border border-slate-200 min-h-[800px] p-8 animate-pulse">
+          <div className="h-10 bg-slate-100 rounded w-1/3 mb-8"></div>
+          <div className="grid grid-cols-12 gap-8">
+            <div className="col-span-8 h-[600px] bg-slate-50 rounded"></div>
+            <div className="col-span-4 space-y-4">
+              <div className="h-64 bg-slate-50 rounded"></div>
+              <div className="h-64 bg-slate-50 rounded"></div>
             </div>
           </div>
-        </div>
-        <div className="max-w-xl mx-auto px-4 py-6 space-y-6">
-          <div className="bg-white rounded-2xl shadow-md p-4 border border-gray-200">
-            <div className="h-[300px] bg-gradient-to-br from-gray-200 to-gray-300 rounded-xl animate-pulse"></div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {[...Array(6)].map((_, i) => (
-              <div
-                key={i}
-                className="h-28 bg-white rounded-xl shadow-sm border border-gray-200 p-4 animate-pulse"
-              >
-                <div className="h-4 bg-gray-200 rounded w-1/2 mb-3"></div>
-                <div className="h-6 bg-gray-300 rounded w-3/4"></div>
-              </div>
-            ))}
-          </div>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 h-32 animate-pulse"></div>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 h-48 animate-pulse"></div>
         </div>
       </div>
     );
   }
 
-  // Error state
+  // Error State
   if (isError) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-red-200 max-w-md w-full">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-              <span className="text-red-600 text-xl">⚠️</span>
-            </div>
-            <h3 className="font-semibold text-red-900">
-              Failed to load stock details
-            </h3>
-          </div>
-          <p className="text-sm text-red-700 mb-4">
-            {error?.message || "Unknown error occurred"}
-          </p>
-          <button
-            onClick={() => refetch()}
-            className="w-full bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium"
-          >
-            Retry
-          </button>
+      <div className="min-h-screen bg-[#f4f7f9] flex items-center justify-center p-6">
+        <div className="bg-white rounded-xl shadow-sm p-8 border border-red-200 max-w-md text-center">
+          <h3 className="text-red-900 font-semibold text-lg mb-2">Unavailable</h3>
+          <p className="text-slate-600 mb-6">{error?.message}</p>
+          <button onClick={() => refetch()} className="px-4 py-2 bg-blue-600 text-white rounded-lg">Retry</button>
         </div>
       </div>
     );
   }
 
-  // No data
-  if (!data) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="text-center">
-          <p className="text-gray-600">No stock data available</p>
-        </div>
-      </div>
-    );
-  }
+  if (!data) return null;
 
-  const { profile, quote, chart, financials, news, peers } = data;
+  const { profile, quote } = data;
+  const chartData = historicalData?.historical?.map((d: any) => ({
+    date: d.date,
+    price: d.close,
+    open: d.open,
+    high: d.high,
+    low: d.low,
+    close: d.close,
+    volume: d.volume,
+  })).reverse() || []; // Reverse if API returns newest first (FMP usually does)
 
-  // Use intraday data for 1W period if available
-  const chartData =
-    chartPeriod === "1W" && intradayData?.data
-      ? intradayData.data.map((d: any) => ({
-        date: d.date,
-        price: d.close,
-        open: d.open,
-        high: d.high,
-        low: d.low,
-        close: d.close,
-        volume: d.volume,
-      }))
-      : chart[chartPeriod] || [];
+
+  // Price Change Logic
+  const priceChange = quote.change;
+  const priceChangePercent = quote.changesPercentage;
+  const isPositive = priceChange >= 0;
+  const priceColor = isPositive ? "text-green-600" : "text-[#d63031]";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 stock-details-page">
-      <StockDetailsHeader
-        symbol={data.symbol}
-        profile={profile}
-        quote={quote}
-      />
+    <div className="min-h-screen bg-[#f4f7f9] p-4 lg:p-8 font-sans text-slate-900">
+      <LoadingBar isLoading={isFetching} />
 
-      <div className="max-w-xl mx-auto px-4 py-6 space-y-5">
-        {/* Chart Section */}
-        <div className="bg-white rounded-2xl shadow-lg p-5 border border-gray-200/50 hover:shadow-xl transition-all duration-300 stock-details-card">
-          <Tabs.Root
-            value={chartPeriod}
-            onValueChange={(value) => setChartPeriod(value as ChartPeriod)}
-            className="w-full"
-          >
-            <Tabs.List className="flex gap-1 mb-5 border-b border-gray-200 overflow-x-auto pb-1">
-              {(["1D", "1W", "1M", "3M", "1Y", "ALL"] as ChartPeriod[]).map(
-                (period) => (
-                  <Tabs.Trigger
+      {/* Main Container Card */}
+      <div className="max-w-[1400px] mx-auto bg-white rounded-[20px] shadow-sm border border-slate-200/60 overflow-hidden">
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
+
+          {/* LEFT COLUMN (65%) */}
+          <div className="lg:col-span-8 p-6 lg:p-10 space-y-8">
+
+            {/* Header Section */}
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-slate-900 mb-1">
+                {data.symbol} <span className="text-slate-400 font-normal ml-2 text-xl">- {profile.companyName}</span>
+              </h1>
+
+              <div className="mt-4 flex items-baseline gap-4">
+                <span className="text-[48px] font-bold tracking-tight text-slate-900 leading-none">
+                  {formatCurrency(quote.price)}
+                </span>
+                <span className={`text-xl font-semibold flex items-center gap-1 ${priceColor}`}>
+                  {isPositive ? <ArrowUp className="w-5 h-5" /> : <ArrowDown className="w-5 h-5" />}
+                  {priceChange.toFixed(2)} ({priceChangePercent.toFixed(2)}%)
+                </span>
+              </div>
+            </div>
+
+            {/* Chart Controls */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex bg-slate-100 p-1 rounded-lg gap-1">
+                {(["1D", "1W", "1M", "3M", "1Y", "ALL"] as ChartPeriod[]).map((period) => (
+                  <button
                     key={period}
-                    value={period}
-                    className="px-4 py-2 text-sm font-semibold text-gray-600 rounded-t-lg transition-all duration-200 data-[state=active]:text-blue-600 data-[state=active]:bg-blue-50 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 whitespace-nowrap hover:text-gray-900 hover:bg-gray-50"
+                    onClick={() => setChartPeriod(period)}
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 ${chartPeriod === period
+                      ? "bg-white text-blue-600 shadow-sm ring-1 ring-slate-200"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/50"
+                      }`}
                   >
                     {period}
-                  </Tabs.Trigger>
-                )
-              )}
-            </Tabs.List>
-
-            {chartPeriod === "1W" && (
-              <div className="flex justify-end mb-2 px-2">
-                <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-1 border border-gray-200">
-                  <button
-                    onClick={() => setShowCandlestick(false)}
-                    className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${!showCandlestick
-                      ? "bg-white text-blue-600 shadow-sm border border-gray-200"
-                      : "text-gray-500 hover:text-gray-700"
-                      }`}
-                  >
-                    Line
                   </button>
-                  <button
-                    onClick={() => setShowCandlestick(true)}
-                    className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${showCandlestick
-                      ? "bg-white text-blue-600 shadow-sm border border-gray-200"
-                      : "text-gray-500 hover:text-gray-700"
-                      }`}
-                  >
-                    Candles
-                  </button>
-                </div>
+                ))}
               </div>
-            )}
 
-            <Tabs.Content value={chartPeriod} className="mt-2">
+              {chartPeriod === "1W" && (
+                <button
+                  onClick={() => setShowCandlestick(!showCandlestick)}
+                  className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all ${showCandlestick
+                      ? "bg-blue-50 text-blue-700 border-blue-200"
+                      : "text-slate-600 hover:text-slate-900 bg-white border-slate-200 hover:border-slate-300 shadow-sm"
+                    }`}
+                >
+                  {showCandlestick ? "Line Chart" : "Candlesticks"}
+                </button>
+              )}
+            </div>
+
+            {/* Main Chart Area */}
+            <div className="h-[450px] w-full bg-white relative">
               {showCandlestick && chartPeriod === "1W" ? (
                 <CandlestickChart data={chartData} />
               ) : (
                 <Chart data={chartData} period={chartPeriod} />
               )}
-            </Tabs.Content>
-          </Tabs.Root>
-        </div>
-
-        {/* Quick Stats Grid */}
-        <div className="grid grid-cols-2 gap-3">
-          <KeyStatCard
-            icon={<ArrowUp className="w-5 h-5" />}
-            label="Open"
-            value={formatCurrency(quote.open)}
-          />
-          <KeyStatCard
-            icon={<ArrowDown className="w-5 h-5" />}
-            label="Previous Close"
-            value={formatCurrency(quote.previousClose)}
-          />
-          <KeyStatCard
-            icon={<TrendingUp className="w-5 h-5" />}
-            label="Day High"
-            value={formatCurrency(quote.dayHigh)}
-          />
-          <KeyStatCard
-            icon={<TrendingDown className="w-5 h-5" />}
-            label="Day Low"
-            value={formatCurrency(quote.dayLow)}
-          />
-          <KeyStatCard
-            icon={<BarChart3 className="w-5 h-5" />}
-            label="Volume"
-            value={formatVolume(quote.volume)}
-          />
-          <KeyStatCard
-            icon={<DollarSign className="w-5 h-5" />}
-            label="Market Cap"
-            value={formatLargeNumber(quote.marketCap)}
-          />
-        </div>
-
-        {/* Company Overview */}
-        <div className="stock-details-card">
-          <CompanyOverview profile={profile} />
-        </div>
-
-        {/* Financials Section */}
-        <div className="stock-details-card">
-          <FinancialsSection financials={financials} />
-        </div>
-
-        {/* News Section */}
-        {news && news.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-lg p-5 border border-gray-200/50 stock-details-card">
-            <div className="flex items-center gap-2 mb-5">
-              <div className="w-1 h-6 bg-blue-600 rounded-full"></div>
-              <h3 className="text-xl font-bold text-gray-900">
-                Latest News
-              </h3>
             </div>
-            <div className="space-y-3">
-              {news.map((item, index) => (
-                <NewsCard key={index} news={item} />
-              ))}
+
+            {/* Key Price Indicators (Footer of Left Col) */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6 border-t border-slate-100">
+              <FooterStat label="Open" value={formatCurrency(quote.open)} />
+              <FooterStat label="High" value={formatCurrency(quote.dayHigh)} />
+              <FooterStat label="Low" value={formatCurrency(quote.dayLow)} />
+              <FooterStat label="Prev Close" value={formatCurrency(quote.previousClose)} />
             </div>
+
+            {/* MOVED: A. Trading Metrics Card */}
+            <div className="space-y-4 pt-6 border-t border-slate-100">
+              <h3 className="font-bold text-slate-900 text-lg">Key Metrics</h3>
+              <div className="bg-white rounded-xl shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] border border-slate-200/60 p-5">
+                {/* Changed grid-cols-2 to grid-cols-3 lg:grid-cols-6 for wider layout */}
+                <div className="grid grid-cols-3 lg:grid-cols-6 gap-y-6 gap-x-4">
+                  <MetricItem label="Open" value={formatCurrency(quote.open)} />
+                  <MetricItem label="Prev Close" value={formatCurrency(quote.previousClose)} />
+                  <MetricItem label="High" value={formatCurrency(quote.dayHigh)} />
+                  <MetricItem label="Low" value={formatCurrency(quote.dayLow)} />
+                  <MetricItem label="Volume" value={formatVolume(quote.volume)} />
+                  <MetricItem label="Market Cap" value={formatLargeNumber(quote.marketCap)} />
+                </div>
+              </div>
+            </div>
+
+            {/* MOVED: B. Company Information Card */}
+            <div className="space-y-4">
+              <h3 className="font-bold text-slate-900 text-lg">Company Overview</h3>
+              <div className="bg-white rounded-xl shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] border border-slate-200/60 p-5 space-y-5">
+                <p className="text-sm text-slate-600 leading-relaxed transition-all cursor-default">
+                  {profile.description}
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-slate-50">
+                  <InfoRow label="Industry" value={profile.industry || "N/A"} />
+                  <InfoRow label="Sector" value={profile.sector || "N/A"} />
+                  {profile.website && (
+                    <div className="flex flex-col gap-1">
+                      <span className="text-slate-500 font-medium text-sm">Website</span>
+                      <a href={profile.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1 text-sm font-semibold">
+                        {profile.website.replace(/^https?:\/\/(www\.)?/, '')}
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
           </div>
-        )}
 
-        {/* Peers Section */}
-        <div className="stock-details-card">
-          <PeersList peers={peers} />
+          {/* RIGHT COLUMN (35%) */}
+          <div className="lg:col-span-4 bg-slate-50/30 p-6 lg:p-8 space-y-8">
+
+
+
+            {/* C. News Feed Card */}
+            <StockNewsFeed symbol={symbol || ""} />
+
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
+// Inline Helper Components for this specific high-fidelity design
+
+function FooterStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex flex-col">
+      <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">{label}</span>
+      <span className="text-lg font-bold text-slate-900">{value}</span>
+    </div>
+  );
+}
+
+function MetricItem({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="text-sm font-medium text-slate-500">{label}</span>
+      <span className="text-base font-bold text-slate-900 tabular-nums tracking-tight">{value}</span>
+    </div>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between items-start text-sm">
+      <span className="text-slate-500 font-medium">{label}</span>
+      <span className="text-slate-900 font-semibold text-right max-w-[60%]">{value}</span>
+    </div>
+  );
+}

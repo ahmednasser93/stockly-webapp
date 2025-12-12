@@ -1,11 +1,6 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { axiosClient } from "../api/axios-client";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ??
-  (import.meta.env.DEV
-    ? "http://localhost:8787"
-    : "https://stockly-api.ahmednasser1993.workers.dev");
 
 interface NotificationPreferences {
   userId: string;
@@ -36,10 +31,10 @@ export function PreferencesPage() {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`${API_BASE_URL}/v1/api/preferences/${userId}`);
+      const response = await axiosClient.get(`/v1/api/preferences/${userId}`);
       const prefs = response.data as NotificationPreferences;
       setPreferences(prefs);
-      
+
       // Update form state
       setEnabled(prefs.enabled);
       setQuietStart(prefs.quietStart || "");
@@ -88,7 +83,7 @@ export function PreferencesPage() {
         allowedSymbols: symbolsArray,
       };
 
-      await axios.put(`${API_BASE_URL}/v1/api/preferences`, payload);
+      await axiosClient.put(`/v1/api/preferences`, payload);
       setSuccessMessage("Preferences saved successfully!");
       await loadPreferences();
     } catch (err) {
