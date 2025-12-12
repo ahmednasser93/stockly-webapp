@@ -5,6 +5,7 @@ import { fetchStocks } from "../api/client";
 import { AlertForm } from "../components/AlertForm";
 import { DeleteAlertDialog } from "../components/DeleteAlertDialog";
 import { axiosClient } from "../api/axios-client";
+import { useAuth } from "../state/AuthContext";
 import type {
   Alert,
   CreateAlertRequest,
@@ -42,6 +43,7 @@ interface NotificationLog {
 }
 
 export function AlertsPage() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<AlertTab>("alerts");
   const {
     alerts,
@@ -71,7 +73,7 @@ export function AlertsPage() {
   } | null>(null);
 
   // Preferences state
-  const [userId] = useState("demo-user");
+  // userId is now from authenticated user
   const [, setPreferences] = useState<NotificationPreferences | null>(null);
   const [prefsLoading, setPrefsLoading] = useState(false);
   const [prefsSaving, setPrefsSaving] = useState(false);
@@ -283,7 +285,7 @@ export function AlertsPage() {
     try {
       setPrefsLoading(true);
       setPrefsError(null);
-      const response = await axiosClient.get(`/v1/api/preferences/${userId}`);
+      const response = await axiosClient.get(`/v1/api/preferences`);
       const prefs = response.data as NotificationPreferences;
       setPreferences(prefs);
       setEnabled(prefs.enabled);
@@ -314,7 +316,7 @@ export function AlertsPage() {
         ? allowedSymbols.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean)
         : null;
       await axiosClient.put(`/v1/api/preferences`, {
-        userId,
+        // userId is automatically extracted from JWT in cookie
         enabled,
         quietStart: quietStart || null,
         quietEnd: quietEnd || null,
@@ -408,7 +410,7 @@ export function AlertsPage() {
     setTestingDeviceId(userId);
     try {
       const response = await axiosClient.post(
-        `/v1/api/devices/${encodeURIComponent(userId)}/test`,
+        `/v1/api/devices/test`,
         customMessage ? { message: customMessage } : {},
         { headers: { "Content-Type": "application/json" } }
       );
@@ -437,7 +439,7 @@ export function AlertsPage() {
     setDeletingDeviceId(userId);
     try {
       const response = await axiosClient.delete(
-        `/v1/api/devices/${encodeURIComponent(userId)}`
+        `/v1/api/devices`
       );
 
       if (response.data.success) {

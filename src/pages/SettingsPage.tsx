@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAdminConfig } from "../hooks/useAdminConfig";
 import { useMonitoringSnapshot } from "../hooks/useMonitoringSnapshot";
 import { simulateProviderFailure, disableProviderFailure } from "../api/adminConfig";
+import { useAuth } from "../state/AuthContext";
 import {
   getUserSettings,
   updateUserSettings,
@@ -15,10 +16,8 @@ type SettingsTab = "settings" | "monitoring" | "developer";
 const PROVIDER_OPTIONS = ["alpha-feed", "beta-feed", "gamma-fallback"];
 
 export function SettingsPage() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<SettingsTab>("settings");
-  
-  // User ID - in real app, get from auth context
-  const [userId] = useState("demo-user");
   
   // Admin Settings
   const { config, loading: adminLoading, error: adminError, saveConfig } = useAdminConfig();
@@ -126,7 +125,7 @@ export function SettingsPage() {
     return () => {
       mounted = false;
     };
-  }, [userId]);
+  }, [user?.id]);
 
   // Load user preferences
   useEffect(() => {
@@ -135,7 +134,7 @@ export function SettingsPage() {
       try {
         setPreferencesLoading(true);
         setPreferencesError(null);
-        const prefs = await getUserPreferences(userId);
+        const prefs = await getUserPreferences();
         if (mounted) {
           setEnabled(prefs.enabled);
           setQuietStart(prefs.quietStart || "");
@@ -167,7 +166,7 @@ export function SettingsPage() {
     return () => {
       mounted = false;
     };
-  }, [userId]);
+  }, [user?.id]);
 
   const handleSettingsSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -193,7 +192,7 @@ export function SettingsPage() {
       const cacheStaleTimeMinutesNum = Math.max(0, Math.min(60, Math.round(Number(cacheStaleTimeMinutes) || 5)));
       const cacheGcTimeMinutesNum = Math.max(1, Math.min(120, Math.round(Number(cacheGcTimeMinutes) || 10)));
       await updateUserSettings({
-        userId,
+        // userId is automatically extracted from JWT in cookie
         refreshIntervalMinutes: refreshIntervalMinutesNum,
         cacheStaleTimeMinutes: cacheStaleTimeMinutesNum,
         cacheGcTimeMinutes: cacheGcTimeMinutesNum,
@@ -205,7 +204,7 @@ export function SettingsPage() {
         : null;
       
       await updateUserPreferences({
-        userId,
+        // userId is automatically extracted from JWT in cookie
         enabled,
         quietStart: quietStart || null,
         quietEnd: quietEnd || null,
@@ -218,7 +217,7 @@ export function SettingsPage() {
         .split(",")
         .map((s) => s.trim().toUpperCase())
         .filter(Boolean);
-      await updateNewsFavoriteSymbols(userId, newsSymbolsArray);
+      await updateNewsFavoriteSymbols(newsSymbolsArray);
       
       setSettingsStatus("Settings saved successfully");
       setTimeout(() => setSettingsStatus(""), 3000);

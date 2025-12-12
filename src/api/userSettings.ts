@@ -10,6 +10,7 @@ async function userRequest<T>(path: string, init?: RequestInit, allow404 = false
   try {
     const response = await fetch(url, {
       headers: DEFAULT_HEADERS,
+      credentials: "include", // Include cookies for JWT authentication
       ...init,
     });
 
@@ -60,7 +61,7 @@ export type UserSettings = {
 };
 
 export type UpdateUserSettingsRequest = {
-  userId: string;
+  // userId is automatically extracted from JWT in cookie
   refreshIntervalMinutes: number;
   cacheStaleTimeMinutes?: number;
   cacheGcTimeMinutes?: number;
@@ -77,7 +78,7 @@ export type NotificationPreferences = {
 };
 
 export type UpdatePreferencesRequest = {
-  userId: string;
+  // userId is automatically extracted from JWT in cookie
   enabled: boolean;
   quietStart?: string | null;
   quietEnd?: string | null;
@@ -92,12 +93,12 @@ export type ApiResponse<T> = {
   [key: string]: unknown;
 };
 
-export async function getUserSettings(userId: string): Promise<UserSettings> {
-  const result = await userRequest<UserSettings>(`/v1/api/settings/${userId}`, undefined, true);
+export async function getUserSettings(): Promise<UserSettings> {
+  const result = await userRequest<UserSettings>(`/v1/api/settings`, undefined, true);
   if (result === null) {
     // Return default settings for new users
     return {
-      userId,
+      userId: "", // Will be set by API from JWT
       refreshIntervalMinutes: 5,
       cacheStaleTimeMinutes: 5,
       cacheGcTimeMinutes: 10,
@@ -126,14 +127,12 @@ export async function updateUserSettings(
   return result;
 }
 
-export async function getUserPreferences(
-  userId: string
-): Promise<NotificationPreferences> {
-  const result = await userRequest<NotificationPreferences>(`/v1/api/preferences/${userId}`, undefined, true);
+export async function getUserPreferences(): Promise<NotificationPreferences> {
+  const result = await userRequest<NotificationPreferences>(`/v1/api/preferences`, undefined, true);
   if (result === null) {
     // Return default preferences for new users
     return {
-      userId,
+      userId: "", // Will be set by API from JWT
       enabled: true,
       quietStart: null,
       quietEnd: null,
@@ -161,15 +160,15 @@ export async function updateUserPreferences(
 /**
  * Update news favorite symbols for a user
  * Uses POST /v1/api/users/preferences/update endpoint
+ * userId is automatically extracted from JWT in cookie
  */
 export async function updateNewsFavoriteSymbols(
-  userId: string,
   newsFavoriteSymbols: string[]
 ): Promise<ApiResponse<void>> {
   const result = await userRequest<ApiResponse<void>>("/v1/api/users/preferences/update", {
     method: "POST",
     body: JSON.stringify({
-      userId,
+      // userId is automatically extracted from JWT in cookie
       newsFavoriteSymbols,
     }),
   });

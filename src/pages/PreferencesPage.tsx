@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { axiosClient } from "../api/axios-client";
+import { useAuth } from "../state/AuthContext";
 
 
 interface NotificationPreferences {
@@ -13,7 +14,7 @@ interface NotificationPreferences {
 }
 
 export function PreferencesPage() {
-  const [userId] = useState("demo-user"); // In real app, get from auth context
+  const { user } = useAuth();
   const [, setPreferences] = useState<NotificationPreferences | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -31,7 +32,7 @@ export function PreferencesPage() {
     try {
       setLoading(true);
       setError(null);
-      const response = await axiosClient.get(`/v1/api/preferences/${userId}`);
+      const response = await axiosClient.get(`/v1/api/preferences`);
       const prefs = response.data as NotificationPreferences;
       setPreferences(prefs);
 
@@ -75,7 +76,7 @@ export function PreferencesPage() {
         : null;
 
       const payload = {
-        userId,
+        // userId is automatically extracted from JWT in cookie
         enabled,
         quietStart: quietStart || null,
         quietEnd: quietEnd || null,
