@@ -5,7 +5,6 @@ import { fetchStocks } from "../api/client";
 import { AlertForm } from "../components/AlertForm";
 import { DeleteAlertDialog } from "../components/DeleteAlertDialog";
 import { axiosClient } from "../api/axios-client";
-import { useAuth } from "../state/AuthContext";
 import type {
   Alert,
   CreateAlertRequest,
@@ -43,7 +42,6 @@ interface NotificationLog {
 }
 
 export function AlertsPage() {
-  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<AlertTab>("alerts");
   const {
     alerts,

@@ -33,10 +33,10 @@ describe("User Settings API", () => {
         json: async () => mockSettings,
       });
 
-      const result = await getUserSettings("user123");
+      const result = await getUserSettings();
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining("/v1/api/settings/user123"),
+        expect.stringContaining("/v1/api/settings"),
         expect.any(Object)
       );
       expect(result).toEqual(mockSettings);
@@ -50,10 +50,10 @@ describe("User Settings API", () => {
         text: async () => "not found",
       });
 
-      const result = await getUserSettings("new-user");
+      const result = await getUserSettings();
 
       expect(result).toEqual({
-        userId: "new-user",
+        userId: "",
         refreshIntervalMinutes: 5,
         cacheStaleTimeMinutes: 5,
         cacheGcTimeMinutes: 10,
@@ -86,10 +86,10 @@ describe("User Settings API", () => {
       // userRequest with allow404=true treats network errors as 404
       mockFetch.mockRejectedValueOnce(new TypeError("fetch failed"));
 
-      const result = await getUserSettings("user123");
+      const result = await getUserSettings();
 
       expect(result).toEqual({
-        userId: "user123",
+        userId: "",
         refreshIntervalMinutes: 5,
         cacheStaleTimeMinutes: 5,
         cacheGcTimeMinutes: 10,
@@ -102,7 +102,6 @@ describe("User Settings API", () => {
   describe("updateUserSettings", () => {
     it("should update user settings with all fields", async () => {
       const updateRequest = {
-        userId: "user123",
         refreshIntervalMinutes: 15,
         cacheStaleTimeMinutes: 8,
         cacheGcTimeMinutes: 15,
@@ -138,7 +137,6 @@ describe("User Settings API", () => {
 
     it("should update user settings with only refresh interval", async () => {
       const updateRequest = {
-        userId: "user123",
         refreshIntervalMinutes: 20,
       };
 
@@ -167,7 +165,6 @@ describe("User Settings API", () => {
 
     it("should throw error on failed request", async () => {
       const updateRequest = {
-        userId: "user123",
         refreshIntervalMinutes: 15,
       };
 
@@ -199,10 +196,10 @@ describe("User Settings API", () => {
         json: async () => mockPreferences,
       });
 
-      const result = await getUserPreferences("user123");
+      const result = await getUserPreferences();
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining("/v1/api/preferences/user123"),
+        expect.stringContaining("/v1/api/preferences"),
         expect.any(Object)
       );
       expect(result).toEqual(mockPreferences);
@@ -216,10 +213,10 @@ describe("User Settings API", () => {
         text: async () => "not found",
       });
 
-      const result = await getUserPreferences("new-user");
+      const result = await getUserPreferences();
 
       expect(result).toEqual({
-        userId: "new-user",
+        userId: "",
         enabled: true,
         quietStart: null,
         quietEnd: null,
@@ -233,7 +230,6 @@ describe("User Settings API", () => {
   describe("updateUserPreferences", () => {
     it("should update user preferences", async () => {
       const updateRequest = {
-        userId: "user123",
         enabled: true,
         quietStart: "22:00",
         quietEnd: "08:00",
@@ -267,7 +263,6 @@ describe("User Settings API", () => {
 
     it("should throw error on failed request", async () => {
       const updateRequest = {
-        userId: "user123",
         enabled: true,
       };
 

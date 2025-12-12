@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SettingsProvider } from "../state/SettingsContext";
+import { AuthProvider } from "../state/AuthContext";
 import { AlertsPage } from "../pages/AlertsPage";
 import * as alertsApi from "../api/alerts";
 import * as clientApi from "../api/client";
@@ -91,6 +92,20 @@ describe("AlertsPage", () => {
     mockListAlerts.mockResolvedValue(mockAlerts);
     mockFetchStocks.mockResolvedValue(mockStockPrices);
     
+    // Mock auth check
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        user: {
+          id: "test-user-id",
+          email: "test@example.com",
+          name: "Test User",
+          picture: null,
+          username: "testuser",
+        },
+      }),
+    });
+    
     // Reset axios mocks
     vi.mocked(axios.get).mockReset();
     vi.mocked(axios.post).mockReset();
@@ -109,9 +124,11 @@ describe("AlertsPage", () => {
 
   const renderWithProviders = (component: React.ReactElement) => {
     return render(
-      <SettingsProvider>
-        <QueryClientProvider client={queryClient}>{component}</QueryClientProvider>
-      </SettingsProvider>
+      <AuthProvider>
+        <SettingsProvider>
+          <QueryClientProvider client={queryClient}>{component}</QueryClientProvider>
+        </SettingsProvider>
+      </AuthProvider>
     );
   };
 
@@ -363,7 +380,7 @@ describe("AlertsPage", () => {
 
     await waitFor(() => {
       expect(axiosClient.post).toHaveBeenCalledWith(
-        expect.stringContaining("/devices/user-1/test"),
+        expect.stringContaining("/v1/api/devices/test"),
         {},
         expect.objectContaining({ headers: { "Content-Type": "application/json" } })
       );

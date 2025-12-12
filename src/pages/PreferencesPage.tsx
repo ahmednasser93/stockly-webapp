@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { axiosClient } from "../api/axios-client";
-import { useAuth } from "../state/AuthContext";
 
 
 interface NotificationPreferences {
@@ -14,7 +13,6 @@ interface NotificationPreferences {
 }
 
 export function PreferencesPage() {
-  const { user } = useAuth();
   const [, setPreferences] = useState<NotificationPreferences | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

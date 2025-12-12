@@ -96,7 +96,7 @@ export function SettingsPage() {
       try {
         setUserSettingsLoading(true);
         setUserSettingsError(null);
-        const settings = await getUserSettings(userId);
+        const settings = await getUserSettings();
         if (mounted) {
           setRefreshIntervalMinutes(settings.refreshIntervalMinutes);
           setCacheStaleTimeMinutes(settings.cacheStaleTimeMinutes ?? 5);
