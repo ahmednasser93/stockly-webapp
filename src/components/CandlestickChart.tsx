@@ -112,9 +112,9 @@ export function CandlestickChart({ data }: CandlestickChartProps) {
                 color: "#1F2937",
                 fontSize: 12,
             },
-            formatter: (params: any) => {
-                if (!params || params.length === 0) return "";
-                const param = params[0];
+            formatter: (params: unknown) => {
+                if (!Array.isArray(params) || params.length === 0) return "";
+                const param = params[0] as { dataIndex: number; data: number[] };
                 const point = data[param.dataIndex];
                 const date = new Date(point.date);
 

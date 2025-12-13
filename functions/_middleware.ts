@@ -1,5 +1,10 @@
-// @ts-ignore
-type PagesFunction = any;
+// @ts-expect-error - Cloudflare Pages types may not be available
+type PagesFunction = (context: {
+  request: Request;
+  next: () => Promise<Response>;
+  env: Record<string, unknown>;
+  waitUntil: (promise: Promise<unknown>) => void;
+}) => Promise<Response>;
 
 export const onRequest: PagesFunction = async (context) => {
     const { request, next } = context;

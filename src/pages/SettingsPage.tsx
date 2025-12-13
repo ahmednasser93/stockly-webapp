@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useAdminConfig } from "../hooks/useAdminConfig";
 import { useMonitoringSnapshot } from "../hooks/useMonitoringSnapshot";
 import { simulateProviderFailure, disableProviderFailure } from "../api/adminConfig";
@@ -10,6 +11,7 @@ import {
   updateUserPreferences,
   updateNewsFavoriteSymbols,
 } from "../api/userSettings";
+import { getFavoriteStocks } from "../api/favoriteStocks";
 
 type SettingsTab = "settings" | "monitoring" | "developer";
 
@@ -55,6 +57,15 @@ export function SettingsPage() {
 
   // Monitoring
   const { snapshot, loading: monitoringLoading, error: monitoringError } = useMonitoringSnapshot();
+
+  // Load dashboard favorite stocks
+  const dashboardStocksQuery = useQuery({
+    queryKey: ["dashboardStocks"],
+    queryFn: getFavoriteStocks,
+    enabled: !!user?.id,
+    retry: false,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
   // Helper function to format interval in human-readable format
   const formatInterval = (seconds: number): string => {
@@ -595,6 +606,127 @@ export function SettingsPage() {
                     </div>
                   </div>
 
+                  {/* Stock Preferences Section */}
+                  <div style={{ marginBottom: "2rem", paddingBottom: "2rem", borderBottom: "1px solid var(--ghost-border)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1.5rem" }}>
+                      <h3 style={{ margin: 0 }}>Stock Preferences</h3>
+                      <span style={{ 
+                        fontSize: "0.75rem", 
+                        padding: "0.25rem 0.5rem", 
+                        background: "rgba(34, 197, 94, 0.1)", 
+                        color: "#22c55e", 
+                        borderRadius: "4px",
+                        fontWeight: "600"
+                      }}>VIEW-ONLY</span>
+                    </div>
+                    <p style={{ marginBottom: "1.5rem", fontSize: "0.875rem", color: "var(--text-muted)", lineHeight: "1.5" }}>
+                      View your selected stocks for dashboard and news preferences. To modify these, use the dashboard homepage or the settings below.
+                    </p>
+
+                    {/* Dashboard Stocks */}
+                    <div style={{ 
+                      marginBottom: "1.5rem", 
+                      padding: "1rem", 
+                      background: "rgba(34, 197, 94, 0.05)", 
+                      border: "1px solid rgba(34, 197, 94, 0.2)", 
+                      borderRadius: "8px"
+                    }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.75rem" }}>
+                        <span style={{ fontSize: "1.125rem" }}>📊</span>
+                        <h4 style={{ margin: 0, fontSize: "1rem", fontWeight: "600" }}>Dashboard Selected Stocks</h4>
+                        <span style={{ 
+                          fontSize: "0.75rem", 
+                          padding: "0.125rem 0.375rem", 
+                          background: "rgba(34, 197, 94, 0.1)", 
+                          color: "#22c55e", 
+                          borderRadius: "4px",
+                          fontWeight: "500"
+                        }}>DASHBOARD</span>
+                      </div>
+                      <p style={{ margin: "0 0 0.75rem 0", fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                        These stocks are displayed on your dashboard homepage. Add or remove stocks from the <a href="/" style={{ color: "#3b82f6", textDecoration: "underline" }}>homepage</a>.
+                      </p>
+                      {dashboardStocksQuery.isLoading ? (
+                        <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--text-muted)" }}>Loading...</p>
+                      ) : dashboardStocksQuery.error ? (
+                        <p style={{ margin: 0, fontSize: "0.875rem", color: "#f87171" }}>
+                          {!user?.id ? "Please log in to view your dashboard stocks" : "Failed to load dashboard stocks"}
+                        </p>
+                      ) : !dashboardStocksQuery.data || dashboardStocksQuery.data.length === 0 ? (
+                        <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--text-muted)" }}>
+                          No stocks selected. Add stocks from the <a href="/" style={{ color: "#3b82f6", textDecoration: "underline" }}>dashboard</a>.
+                        </p>
+                      ) : (
+                        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                          {dashboardStocksQuery.data.map((stock) => (
+                            <span
+                              key={stock.symbol}
+                              style={{
+                                padding: "0.375rem 0.75rem",
+                                background: "rgba(34, 197, 94, 0.1)",
+                                border: "1px solid rgba(34, 197, 94, 0.3)",
+                                borderRadius: "6px",
+                                fontSize: "0.875rem",
+                                fontWeight: "600",
+                                color: "#22c55e",
+                              }}
+                            >
+                              {stock.symbol}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* News Favorite Stocks */}
+                    <div style={{ 
+                      padding: "1rem", 
+                      background: "rgba(59, 130, 246, 0.05)", 
+                      border: "1px solid rgba(59, 130, 246, 0.2)", 
+                      borderRadius: "8px"
+                    }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.75rem" }}>
+                        <span style={{ fontSize: "1.125rem" }}>📰</span>
+                        <h4 style={{ margin: 0, fontSize: "1rem", fontWeight: "600" }}>News Favorite Stocks</h4>
+                        <span style={{ 
+                          fontSize: "0.75rem", 
+                          padding: "0.125rem 0.375rem", 
+                          background: "rgba(59, 130, 246, 0.1)", 
+                          color: "#3b82f6", 
+                          borderRadius: "4px",
+                          fontWeight: "500"
+                        }}>NEWS</span>
+                      </div>
+                      <p style={{ margin: "0 0 0.75rem 0", fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                        These stocks are used to fetch personalized news in the news feed and send notifications. Configure them in the "Favorite Stock Preference" field below.
+                      </p>
+                      {newsFavoriteSymbols.length === 0 ? (
+                        <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--text-muted)" }}>
+                          No news favorite stocks selected. Add symbols in the "Favorite Stock Preference" field below.
+                        </p>
+                      ) : (
+                        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                          {newsFavoriteSymbols.map((symbol, idx) => (
+                            <span
+                              key={idx}
+                              style={{
+                                padding: "0.375rem 0.75rem",
+                                background: "rgba(59, 130, 246, 0.1)",
+                                border: "1px solid rgba(59, 130, 246, 0.3)",
+                                borderRadius: "6px",
+                                fontSize: "0.875rem",
+                                fontWeight: "600",
+                                color: "#3b82f6",
+                              }}
+                            >
+                              {symbol}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
                   {/* User Settings Section */}
                   <div style={{ marginBottom: "2rem", paddingBottom: "2rem", borderBottom: "1px solid var(--ghost-border)" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1.5rem" }}>
@@ -738,7 +870,7 @@ export function SettingsPage() {
 
                     <label style={{ marginTop: "1.5rem" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
-                        <span style={{ fontWeight: "600" }}>News Favorite Symbols</span>
+                        <span style={{ fontWeight: "600" }}>Favorite Stock Preference</span>
                         <span style={{ 
                           fontSize: "0.75rem", 
                           padding: "0.125rem 0.375rem", 
@@ -768,10 +900,10 @@ export function SettingsPage() {
                         <span style={{ fontSize: "1.125rem", lineHeight: "1" }}>📰</span>
                         <div style={{ flex: 1 }}>
                           <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--text-primary)", fontWeight: "500" }}>
-                            Stock symbols for personalized news feed
+                            Select stocks to receive personalized news
                           </p>
                           <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: "1.4" }}>
-                            Comma-separated list of stock symbols (e.g., "AAPL, MSFT, GOOGL"). These symbols will be used to fetch personalized news in the news feed. Leave empty to disable favorite news.
+                            Comma-separated list of stock symbols (e.g., "AAPL, MSFT, GOOGL"). These symbols will be used to fetch personalized news in the news feed and send you notifications when new news is available. Leave empty to disable favorite news.
                           </p>
                           {newsFavoriteSymbols.length > 0 && (
                             <div style={{ marginTop: "0.5rem", display: "flex", gap: "0.25rem", flexWrap: "wrap" }}>

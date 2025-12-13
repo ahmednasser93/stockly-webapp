@@ -1,12 +1,14 @@
 import { Link } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchStocks, searchSymbols } from "../api/client";
+import { getFavoriteStocks, updateFavoriteStocks } from "../api/favoriteStocks";
 import type { StockQuote } from "../types";
 import { SearchBar } from "../components/SearchBar";
 import { TrackedSymbols } from "../components/TrackedSymbols";
 import { StockCard } from "../components/StockCard";
 import { useSettings } from "../state/SettingsContext";
+import { useAuth } from "../state/AuthContext";
 import { AuroraBackground } from "../components/reactbits/AuroraBackground";
 import { useGsapFadeIn } from "../hooks/useGsapFadeIn";
 import { useGsapStaggerList } from "../hooks/useGsapStaggerList";
@@ -15,8 +17,23 @@ import { NeonStat } from "../components/reactbits/NeonStat";
 const TRACKED_STORAGE_KEY = "stockly-webapp-tracked";
 
 export function HomePage() {
+  const { isAuthenticated } = useAuth();
+  const queryClient = useQueryClient();
   const [query, setQuery] = useState("");
+  
+  // Load favorite stocks from API if authenticated, otherwise from localStorage
+  const favoriteStocksQuery = useQuery({
+    queryKey: ["favoriteStocks"],
+    queryFn: getFavoriteStocks,
+    enabled: isAuthenticated,
+    retry: false,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Initialize trackedSymbols from API (if authenticated) or localStorage (fallback)
   const [trackedSymbols, setTrackedSymbols] = useState<string[]>(() => {
+    // If authenticated, we'll load from API via the query
+    // For now, fallback to localStorage for backward compatibility
     try {
       const stored = localStorage.getItem(TRACKED_STORAGE_KEY);
       if (!stored) return [];
@@ -28,15 +45,43 @@ export function HomePage() {
     }
   });
 
+  // Update trackedSymbols when favorite stocks are loaded from API
+  useEffect(() => {
+    if (isAuthenticated && favoriteStocksQuery.data) {
+      const symbols = favoriteStocksQuery.data.map((stock) => stock.symbol);
+      setTrackedSymbols(symbols);
+    }
+  }, [isAuthenticated, favoriteStocksQuery.data]);
+
+  // Mutation to save favorite stocks to API
+  const saveFavoriteStocksMutation = useMutation({
+    mutationFn: (symbols: string[]) => updateFavoriteStocks(symbols),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["favoriteStocks"] });
+    },
+  });
+
   const { refreshInterval } = useSettings();
   const heroRef = useRef<HTMLDivElement>(null);
   const statsRef = useRef<HTMLDivElement>(null);
   useGsapFadeIn(heroRef);
   useGsapStaggerList(statsRef);
 
+  // Save to API if authenticated, otherwise save to localStorage
   useEffect(() => {
-    localStorage.setItem(TRACKED_STORAGE_KEY, JSON.stringify(trackedSymbols));
-  }, [trackedSymbols]);
+    if (isAuthenticated) {
+      // Save to API (debounced to avoid too many requests)
+      const timeoutId = setTimeout(() => {
+        saveFavoriteStocksMutation.mutate(trackedSymbols);
+      }, 1000); // 1 second debounce
+
+      return () => clearTimeout(timeoutId);
+    } else {
+      // Fallback to localStorage for non-authenticated users
+      localStorage.setItem(TRACKED_STORAGE_KEY, JSON.stringify(trackedSymbols));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trackedSymbols, isAuthenticated]);
 
   const searchQuery = useQuery({
     queryKey: ["search", query],
@@ -65,8 +110,9 @@ export function HomePage() {
   };
 
   const handleSelectSuggestion = (symbol: string) => {
-    if (!trackedSymbols.includes(symbol)) {
-      setTrackedSymbols((prev) => [...prev, symbol.toUpperCase()]);
+    const upperSymbol = symbol.toUpperCase();
+    if (!trackedSymbols.includes(upperSymbol)) {
+      setTrackedSymbols((prev) => [...prev, upperSymbol]);
     }
     setQuery("");
   };

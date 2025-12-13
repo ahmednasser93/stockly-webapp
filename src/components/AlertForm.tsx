@@ -11,6 +11,7 @@ import type {
 } from "../types";
 
 interface Device {
+  username?: string | null;
   userId: string;
   pushToken: string;
   deviceInfo: string | null;

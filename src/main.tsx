@@ -10,15 +10,9 @@ import App from "./App";
 import { AuthProvider } from "./state/AuthContext";
 import { SettingsProvider } from "./state/SettingsContext";
 import { ThemeProvider } from "./state/ThemeContext";
+import { GOOGLE_CLIENT_ID } from "./config/google-oauth";
 
 const queryClient = new QueryClient();
-
-// Get Google Client ID from environment variable
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
-
-if (!GOOGLE_CLIENT_ID) {
-  console.warn("VITE_GOOGLE_CLIENT_ID is not set. Google Sign-In will not work.");
-}
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

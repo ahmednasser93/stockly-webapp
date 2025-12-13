@@ -246,15 +246,21 @@ describe("AlertsPage", () => {
     const mockDevices = [
       {
         userId: "user-1",
+        username: "testuser1",
         pushToken: "dXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-        deviceInfo: "Android Device",
+        deviceInfo: JSON.stringify({ platform: "Android", model: "Honor" }),
+        alertCount: 1,
+        activeAlertCount: 1,
         createdAt: "2025-11-14T10:30:00.000Z",
         updatedAt: "2025-11-14T10:30:00.000Z",
       },
       {
         userId: "user-2",
+        username: null,
         pushToken: "eYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY",
         deviceInfo: null,
+        alertCount: 0,
+        activeAlertCount: 0,
         createdAt: "2025-11-13T08:20:00.000Z",
         updatedAt: "2025-11-14T12:00:00.000Z",
       },
@@ -289,10 +295,9 @@ describe("AlertsPage", () => {
     devicesTab.click();
 
     await waitFor(() => {
-      expect(screen.getByText("user-1")).toBeInTheDocument();
-      expect(screen.getByText("user-2")).toBeInTheDocument();
-      expect(screen.getByText("Android Device")).toBeInTheDocument();
-      expect(screen.getByText("No info")).toBeInTheDocument();
+      expect(screen.getByText("Android Honor")).toBeInTheDocument();
+      expect(screen.getByText("@testuser1")).toBeInTheDocument();
+      expect(screen.getByText("Unknown")).toBeInTheDocument();
     }, { timeout: 5000 });
   });
 
@@ -334,8 +339,11 @@ describe("AlertsPage", () => {
     const mockDevices = [
       {
         userId: "user-1",
+        username: "testuser1",
         pushToken: "dXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-        deviceInfo: "Android Device",
+        deviceInfo: JSON.stringify({ platform: "Android", model: "Honor" }),
+        alertCount: 1,
+        activeAlertCount: 1,
         createdAt: "2025-11-14T10:30:00.000Z",
         updatedAt: "2025-11-14T10:30:00.000Z",
       },
@@ -371,7 +379,7 @@ describe("AlertsPage", () => {
     devicesTab.click();
 
     await waitFor(() => {
-      expect(screen.getByText("user-1")).toBeInTheDocument();
+      expect(screen.getByText("Android Honor")).toBeInTheDocument();
     }, { timeout: 3000 });
 
     // Click Test button
@@ -381,7 +389,7 @@ describe("AlertsPage", () => {
     await waitFor(() => {
       expect(axiosClient.post).toHaveBeenCalledWith(
         expect.stringContaining("/v1/api/devices/test"),
-        {},
+        { pushToken: "dXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" },
         expect.objectContaining({ headers: { "Content-Type": "application/json" } })
       );
     });

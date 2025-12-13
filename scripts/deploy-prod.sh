@@ -44,17 +44,23 @@ echo ""
 echo "🔨 Building Web App..."
 echo "------------------------------------------------"
 
-# Check if VITE_GOOGLE_CLIENT_ID is set, if not, use default production value
+# Google OAuth Client ID - will be used from .env.production or config file
+# The config file (src/config/google-oauth.ts) has a hardcoded fallback,
+# so the build will always work even if env var is not set
+PRODUCTION_CLIENT_ID="272719199106-9hpeemg60nqoph9t52audf6hmri27mb6.apps.googleusercontent.com"
+
+# Set VITE_GOOGLE_CLIENT_ID if not already set (for explicit override)
 if [ -z "$VITE_GOOGLE_CLIENT_ID" ]; then
-  echo "⚠️  VITE_GOOGLE_CLIENT_ID not set in environment"
-  echo "   Using default production Google Client ID..."
-  export VITE_GOOGLE_CLIENT_ID="272719199106-9hpeemg60nqoph9t52audf6hmri27mb6.apps.googleusercontent.com"
-  echo "   Note: For Cloudflare Pages, you can also set VITE_GOOGLE_CLIENT_ID as a build environment variable"
-  echo "   in the Cloudflare Pages dashboard (Settings → Environment Variables → Build)"
-  echo ""
+  export VITE_GOOGLE_CLIENT_ID="$PRODUCTION_CLIENT_ID"
+  echo "✅ Using production Google Client ID: $PRODUCTION_CLIENT_ID"
+  echo "   (This is also configured in .env.production and src/config/google-oauth.ts as fallback)"
+else
+  echo "✅ Using VITE_GOOGLE_CLIENT_ID from environment: $VITE_GOOGLE_CLIENT_ID"
 fi
+echo ""
 
 # Build with environment variable
+# Note: Vite will also read from .env.production automatically
 VITE_GOOGLE_CLIENT_ID="${VITE_GOOGLE_CLIENT_ID}" npm run build || {
   echo "❌ Build failed. Aborting deployment."
   exit 1

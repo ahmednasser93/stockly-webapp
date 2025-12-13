@@ -72,34 +72,38 @@ export function StockDetailsPage() {
     refetchOnWindowFocus: false,
   });
 
-  // Loading State
+  // Loading State - Minimal skeleton
   const showSkeleton = isLoading && !data;
   if (showSkeleton) {
     return (
-      <div className="min-h-screen bg-[#f4f7f9] p-6">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 p-4 lg:p-6">
         <LoadingBar isLoading={true} />
-        <div className="max-w-[1400px] mx-auto bg-white rounded-xl shadow-sm border border-slate-200 min-h-[800px] p-8 animate-pulse">
-          <div className="h-10 bg-slate-100 rounded w-1/3 mb-8"></div>
-          <div className="grid grid-cols-12 gap-8">
-            <div className="col-span-8 h-[600px] bg-slate-50 rounded"></div>
-            <div className="col-span-4 space-y-4">
-              <div className="h-64 bg-slate-50 rounded"></div>
-              <div className="h-64 bg-slate-50 rounded"></div>
-            </div>
+        <div className="max-w-[1400px] mx-auto space-y-6">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/50 p-6 lg:p-8 animate-pulse">
+            <div className="h-8 bg-slate-100 rounded w-1/3 mb-4"></div>
+            <div className="h-12 bg-slate-100 rounded w-1/4"></div>
+          </div>
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/50 p-6 lg:p-8 h-[500px] animate-pulse">
+            <div className="h-full bg-slate-50 rounded"></div>
           </div>
         </div>
       </div>
     );
   }
 
-  // Error State
+  // Error State - Minimal design
   if (isError) {
     return (
-      <div className="min-h-screen bg-[#f4f7f9] flex items-center justify-center p-6">
-        <div className="bg-white rounded-xl shadow-sm p-8 border border-red-200 max-w-md text-center">
-          <h3 className="text-red-900 font-semibold text-lg mb-2">Unavailable</h3>
-          <p className="text-slate-600 mb-6">{error?.message}</p>
-          <button onClick={() => refetch()} className="px-4 py-2 bg-blue-600 text-white rounded-lg">Retry</button>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 flex items-center justify-center p-6">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm p-8 border border-slate-200/50 max-w-md text-center">
+          <h3 className="text-slate-900 font-semibold text-lg mb-2">Unable to Load</h3>
+          <p className="text-slate-600 mb-6 text-sm">{error?.message}</p>
+          <button 
+            onClick={() => refetch()} 
+            className="px-6 py-2.5 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
@@ -108,7 +112,15 @@ export function StockDetailsPage() {
   if (!data) return null;
 
   const { profile, quote } = data;
-  const chartData = historicalData?.historical?.map((d: any) => ({
+  interface HistoricalDataPoint {
+    date: string;
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+    volume: number;
+  }
+  const chartData = historicalData?.historical?.map((d: HistoricalDataPoint) => ({
     date: d.date,
     price: d.close,
     open: d.open,
@@ -123,166 +135,169 @@ export function StockDetailsPage() {
   const priceChange = quote.change;
   const priceChangePercent = quote.changesPercentage;
   const isPositive = priceChange >= 0;
-  const priceColor = isPositive ? "text-green-600" : "text-[#d63031]";
 
   return (
-    <div className="min-h-screen bg-[#f4f7f9] p-4 lg:p-8 font-sans text-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 p-4 lg:p-6 font-sans text-slate-900">
       <LoadingBar isLoading={isFetching} />
 
-      {/* Main Container Card */}
-      <div className="max-w-[1400px] mx-auto bg-white rounded-[20px] shadow-sm border border-slate-200/60 overflow-hidden">
+      {/* Main Container - Cleaner, more minimal */}
+      <div className="max-w-[1400px] mx-auto space-y-6">
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
-
-          {/* LEFT COLUMN (65%) */}
-          <div className="lg:col-span-8 p-6 lg:p-10 space-y-8">
-
-            {/* Header Section */}
+        {/* Header Card - Minimal, clean */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/50 p-6 lg:p-8">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-slate-900 mb-1">
-                {data.symbol} <span className="text-slate-400 font-normal ml-2 text-xl">- {profile.companyName}</span>
-              </h1>
-
-              <div className="mt-4 flex items-baseline gap-4">
-                <span className="text-[48px] font-bold tracking-tight text-slate-900 leading-none">
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-slate-900">
+                  {data.symbol}
+                </h1>
+                <span className="text-slate-400 text-sm lg:text-base font-medium">
+                  {profile.companyName}
+                </span>
+              </div>
+              <div className="flex items-baseline gap-3 mt-2">
+                <span className="text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 leading-none">
                   {formatCurrency(quote.price)}
                 </span>
-                <span className={`text-xl font-semibold flex items-center gap-1 ${priceColor}`}>
-                  {isPositive ? <ArrowUp className="w-5 h-5" /> : <ArrowDown className="w-5 h-5" />}
+                <span className={`text-base lg:text-lg font-semibold flex items-center gap-1.5 px-2.5 py-1 rounded-lg ${isPositive ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                  {isPositive ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />}
                   {priceChange.toFixed(2)} ({priceChangePercent.toFixed(2)}%)
                 </span>
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* Chart Controls */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex bg-slate-100 p-1 rounded-lg gap-1">
-                {(["1D", "1W", "1M", "3M", "1Y", "ALL"] as ChartPeriod[]).map((period) => (
-                  <button
-                    key={period}
-                    onClick={() => setChartPeriod(period)}
-                    className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 ${chartPeriod === period
-                      ? "bg-white text-blue-600 shadow-sm ring-1 ring-slate-200"
-                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/50"
-                      }`}
-                  >
-                    {period}
-                  </button>
-                ))}
-              </div>
-
-              {chartPeriod === "1W" && (
+        {/* Chart Section - Clean, minimal */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/50 p-6 lg:p-8">
+          {/* Chart Controls - Minimal design */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex bg-slate-50/80 p-1 rounded-xl gap-1">
+              {(["1D", "1W", "1M", "3M", "1Y", "ALL"] as ChartPeriod[]).map((period) => (
                 <button
-                  onClick={() => setShowCandlestick(!showCandlestick)}
-                  className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all ${showCandlestick
-                      ? "bg-blue-50 text-blue-700 border-blue-200"
-                      : "text-slate-600 hover:text-slate-900 bg-white border-slate-200 hover:border-slate-300 shadow-sm"
+                  key={period}
+                  onClick={() => setChartPeriod(period)}
+                  className={`px-4 py-2 text-xs font-medium rounded-lg transition-all duration-200 ${chartPeriod === period
+                    ? "bg-white text-slate-900 shadow-sm"
+                    : "text-slate-500 hover:text-slate-700"
                     }`}
                 >
-                  {showCandlestick ? "Line Chart" : "Candlesticks"}
+                  {period}
                 </button>
-              )}
+              ))}
             </div>
 
-            {/* Main Chart Area */}
-            <div className="h-[450px] w-full bg-white relative">
-              {showCandlestick && chartPeriod === "1W" ? (
-                <CandlestickChart data={chartData} />
-              ) : (
-                <Chart data={chartData} period={chartPeriod} />
-              )}
-            </div>
+            {chartPeriod === "1W" && (
+              <button
+                onClick={() => setShowCandlestick(!showCandlestick)}
+                className={`text-xs font-medium px-4 py-2 rounded-lg transition-all ${showCandlestick
+                    ? "bg-slate-900 text-white"
+                    : "text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200"
+                  }`}
+              >
+                {showCandlestick ? "Line" : "Candles"}
+              </button>
+            )}
+          </div>
 
-            {/* Key Price Indicators (Footer of Left Col) */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6 border-t border-slate-100">
-              <FooterStat label="Open" value={formatCurrency(quote.open)} />
-              <FooterStat label="High" value={formatCurrency(quote.dayHigh)} />
-              <FooterStat label="Low" value={formatCurrency(quote.dayLow)} />
-              <FooterStat label="Prev Close" value={formatCurrency(quote.previousClose)} />
-            </div>
+          {/* Main Chart Area - Cleaner background */}
+          <div className="h-[400px] lg:h-[500px] w-full relative -mx-2">
+            {showCandlestick && chartPeriod === "1W" ? (
+              <CandlestickChart data={chartData} />
+            ) : (
+              <Chart data={chartData} period={chartPeriod} />
+            )}
+          </div>
 
-            {/* MOVED: A. Trading Metrics Card */}
-            <div className="space-y-4 pt-6 border-t border-slate-100">
-              <h3 className="font-bold text-slate-900 text-lg">Key Metrics</h3>
-              <div className="bg-white rounded-xl shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] border border-slate-200/60 p-5">
-                {/* Changed grid-cols-2 to grid-cols-3 lg:grid-cols-6 for wider layout */}
-                <div className="grid grid-cols-3 lg:grid-cols-6 gap-y-6 gap-x-4">
-                  <MetricItem label="Open" value={formatCurrency(quote.open)} />
-                  <MetricItem label="Prev Close" value={formatCurrency(quote.previousClose)} />
-                  <MetricItem label="High" value={formatCurrency(quote.dayHigh)} />
-                  <MetricItem label="Low" value={formatCurrency(quote.dayLow)} />
-                  <MetricItem label="Volume" value={formatVolume(quote.volume)} />
-                  <MetricItem label="Market Cap" value={formatLargeNumber(quote.marketCap)} />
-                </div>
+          {/* Key Price Indicators - Minimal grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8 pt-8 border-t border-slate-100">
+            <FooterStat label="Open" value={formatCurrency(quote.open)} />
+            <FooterStat label="High" value={formatCurrency(quote.dayHigh)} />
+            <FooterStat label="Low" value={formatCurrency(quote.dayLow)} />
+            <FooterStat label="Prev Close" value={formatCurrency(quote.previousClose)} />
+          </div>
+        </div>
+
+        {/* Content Grid - Two columns on large screens */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          {/* LEFT COLUMN - Main content (2/3 width) */}
+          <div className="lg:col-span-2 space-y-6">
+
+            {/* Key Metrics - Minimal card */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/50 p-6 lg:p-8">
+              <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-6">Key Metrics</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                <MetricItem label="Open" value={formatCurrency(quote.open)} />
+                <MetricItem label="Prev Close" value={formatCurrency(quote.previousClose)} />
+                <MetricItem label="High" value={formatCurrency(quote.dayHigh)} />
+                <MetricItem label="Low" value={formatCurrency(quote.dayLow)} />
+                <MetricItem label="Volume" value={formatVolume(quote.volume)} />
+                <MetricItem label="Market Cap" value={formatLargeNumber(quote.marketCap)} />
               </div>
             </div>
 
-            {/* MOVED: B. Company Information Card */}
-            <div className="space-y-4">
-              <h3 className="font-bold text-slate-900 text-lg">Company Overview</h3>
-              <div className="bg-white rounded-xl shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] border border-slate-200/60 p-5 space-y-5">
-                <p className="text-sm text-slate-600 leading-relaxed transition-all cursor-default">
-                  {profile.description}
-                </p>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-slate-50">
-                  <InfoRow label="Industry" value={profile.industry || "N/A"} />
-                  <InfoRow label="Sector" value={profile.sector || "N/A"} />
-                  {profile.website && (
-                    <div className="flex flex-col gap-1">
-                      <span className="text-slate-500 font-medium text-sm">Website</span>
-                      <a href={profile.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1 text-sm font-semibold">
-                        {profile.website.replace(/^https?:\/\/(www\.)?/, '')}
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                    </div>
-                  )}
-                </div>
+            {/* Company Overview - Clean, minimal */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/50 p-6 lg:p-8">
+              <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-6">Company Overview</h3>
+              <p className="text-sm text-slate-600 leading-relaxed mb-6">
+                {profile.description}
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-slate-100">
+                <InfoRow label="Industry" value={profile.industry || "N/A"} />
+                <InfoRow label="Sector" value={profile.sector || "N/A"} />
+                {profile.website && (
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Website</span>
+                    <a href={profile.website} target="_blank" rel="noopener noreferrer" className="text-slate-900 hover:text-blue-600 flex items-center gap-1.5 text-sm font-medium transition-colors">
+                      {profile.website.replace(/^https?:\/\/(www\.)?/, '')}
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
 
           </div>
 
-          {/* RIGHT COLUMN (35%) */}
-          <div className="lg:col-span-4 bg-slate-50/30 p-6 lg:p-8 space-y-8">
-
-
-
-            {/* C. News Feed Card */}
-            <StockNewsFeed symbol={symbol || ""} />
-
+          {/* RIGHT COLUMN - News feed (1/3 width) */}
+          <div className="lg:col-span-1">
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/50 p-6 lg:p-8 sticky top-6">
+              <StockNewsFeed symbol={symbol || ""} />
+            </div>
           </div>
+
         </div>
       </div>
     </div>
   );
 }
 
-// Inline Helper Components for this specific high-fidelity design
+// Minimal Helper Components
 
 function FooterStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col">
-      <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">{label}</span>
-      <span className="text-lg font-bold text-slate-900">{value}</span>
+    <div className="flex flex-col gap-1.5">
+      <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{label}</span>
+      <span className="text-lg font-bold text-slate-900 tabular-nums">{value}</span>
     </div>
   );
 }
 
 function MetricItem({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col gap-1">
-      <span className="text-sm font-medium text-slate-500">{label}</span>
-      <span className="text-base font-bold text-slate-900 tabular-nums tracking-tight">{value}</span>
+    <div className="flex flex-col gap-1.5">
+      <span className="text-xs font-medium text-slate-500">{label}</span>
+      <span className="text-base font-bold text-slate-900 tabular-nums">{value}</span>
     </div>
   );
 }
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between items-start text-sm">
-      <span className="text-slate-500 font-medium">{label}</span>
-      <span className="text-slate-900 font-semibold text-right max-w-[60%]">{value}</span>
+    <div className="flex flex-col gap-1.5">
+      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{label}</span>
+      <span className="text-sm font-medium text-slate-900">{value}</span>
     </div>
   );
 }

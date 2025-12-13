@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 interface LoadingBarProps {
     isLoading: boolean;
@@ -7,11 +7,20 @@ interface LoadingBarProps {
 export function LoadingBar({ isLoading }: LoadingBarProps) {
     const [progress, setProgress] = useState(0);
     const [isVisible, setIsVisible] = useState(false);
+    const isLoadingRef = useRef(isLoading);
+
+    // Update ref when isLoading changes
+    useEffect(() => {
+        isLoadingRef.current = isLoading;
+    }, [isLoading]);
 
     useEffect(() => {
-        if (isLoading) {
-            setIsVisible(true);
-            setProgress(0);
+        if (isLoadingRef.current) {
+            // Use setTimeout to avoid synchronous setState
+            const showTimer = setTimeout(() => {
+                setIsVisible(true);
+                setProgress(0);
+            }, 0);
             // Fast start
             const t1 = setTimeout(() => setProgress(30), 100);
             // Slow crunch
@@ -19,18 +28,24 @@ export function LoadingBar({ isLoading }: LoadingBarProps) {
             const t3 = setTimeout(() => setProgress(90), 1500);
 
             return () => {
+                clearTimeout(showTimer);
                 clearTimeout(t1);
                 clearTimeout(t2);
                 clearTimeout(t3);
             };
         } else {
-            // Complete
-            setProgress(100);
+            // Complete - use setTimeout to avoid synchronous setState
+            const completeTimer = setTimeout(() => {
+                setProgress(100);
+            }, 0);
             const t = setTimeout(() => {
                 setIsVisible(false);
                 setProgress(0);
             }, 400); // Wait for fade out
-            return () => clearTimeout(t);
+            return () => {
+                clearTimeout(completeTimer);
+                clearTimeout(t);
+            };
         }
     }, [isLoading]);
 

@@ -14,7 +14,7 @@ import type {
 
 type SortField = "symbol" | "threshold" | "status" | "createdAt";
 type SortOrder = "asc" | "desc";
-type AlertTab = "alerts" | "preferences" | "logs" | "devices";
+type AlertTab = "alerts" | "preferences" | "logs" | "devices" | "favoriteStocks";
 
 
 interface NotificationPreferences {
@@ -56,6 +56,7 @@ export function AlertsPage() {
     isDeleting,
     createError,
     updateError,
+    refetch: refetchAlerts,
   } = useAlerts();
 
   const [showForm, setShowForm] = useState(false);
@@ -101,6 +102,7 @@ export function AlertsPage() {
 
   // Devices state
   interface Device {
+    username?: string | null;
     userId: string;
     pushToken: string;
     deviceInfo: string | null;
@@ -114,6 +116,22 @@ export function AlertsPage() {
   const [devicesError, setDevicesError] = useState<string | null>(null);
   const [testingDeviceId, setTestingDeviceId] = useState<string | null>(null);
   const [deletingDeviceId, setDeletingDeviceId] = useState<string | null>(null);
+
+  // Favorite Stocks state
+  interface StockWithNews {
+    symbol: string;
+    hasNews: boolean;
+  }
+  interface UserFavoriteStocks {
+    userId: string;
+    username: string | null;
+    stocks: string[];
+    stocksWithNews?: StockWithNews[];
+    count: number;
+  }
+  const [favoriteStocks, setFavoriteStocks] = useState<UserFavoriteStocks[]>([]);
+  const [favoriteStocksLoading, setFavoriteStocksLoading] = useState(false);
+  const [favoriteStocksError, setFavoriteStocksError] = useState<string | null>(null);
 
   // Fetch current prices for all unique symbols
   const symbolsInAlerts = useMemo(
@@ -348,6 +366,28 @@ export function AlertsPage() {
   };
 
   // Load devices
+  const loadFavoriteStocks = async () => {
+    setFavoriteStocksLoading(true);
+    setFavoriteStocksError(null);
+    try {
+      const response = await axiosClient.get("/v1/api/favorite-stocks/all");
+      if (response.data && response.data.users) {
+        setFavoriteStocks(response.data.users);
+      } else {
+        setFavoriteStocksError("Invalid response format");
+        setFavoriteStocks([]);
+      }
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } }; message?: string };
+      const errorMessage = error?.response?.data?.error || error?.message || "Failed to load favorite stocks";
+      setFavoriteStocksError(errorMessage);
+      setFavoriteStocks([]);
+      console.error("Failed to load favorite stocks:", err);
+    } finally {
+      setFavoriteStocksLoading(false);
+    }
+  };
+
   const loadDevices = async () => {
     setDevicesLoading(true);
     setDevicesError(null);
@@ -403,13 +443,13 @@ export function AlertsPage() {
     }
   };
 
-  // Send test notification
-  const handleSendTestNotification = async (userId: string, customMessage?: string) => {
-    setTestingDeviceId(userId);
+  // Send test notification to a specific device by pushToken
+  const handleSendTestNotification = async (pushToken: string, customMessage?: string) => {
+    setTestingDeviceId(pushToken);
     try {
       const response = await axiosClient.post(
         `/v1/api/devices/test`,
-        customMessage ? { message: customMessage } : {},
+        { pushToken, ...(customMessage ? { message: customMessage } : {}) },
         { headers: { "Content-Type": "application/json" } }
       );
 
@@ -428,16 +468,16 @@ export function AlertsPage() {
     }
   };
 
-  // Delete device
-  const handleDeleteDevice = async (userId: string) => {
-    if (!confirm(`Are you sure you want to delete device for user "${userId}"? This will remove their push token and they will need to re-register.`)) {
+  // Delete device by pushToken
+  const handleDeleteDevice = async (pushToken: string) => {
+    if (!confirm(`Are you sure you want to delete this device? This will remove the push token and the device will need to re-register.`)) {
       return;
     }
 
-    setDeletingDeviceId(userId);
+    setDeletingDeviceId(pushToken);
     try {
       const response = await axiosClient.delete(
-        `/v1/api/devices`
+        `/v1/api/devices?pushToken=${encodeURIComponent(pushToken)}`
       );
 
       if (response.data.success) {
@@ -464,6 +504,8 @@ export function AlertsPage() {
       loadNotifications();
     } else if (activeTab === "devices") {
       loadDevices();
+    } else if (activeTab === "favoriteStocks") {
+      loadFavoriteStocks();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, viewMode]);
@@ -531,18 +573,126 @@ export function AlertsPage() {
   return (
     <section className="page">
       <div className="card">
-        <div className="alerts-header">
+        <div className="alerts-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <h1>Price Alerts</h1>
-            <p className="muted">
-              Get notified when stocks reach your target prices
-            </p>
+            {activeTab === "alerts" && (
+              <button type="button" onClick={() => setShowForm(true)}>
+                + Create Alert
+              </button>
+            )}
           </div>
-          {activeTab === "alerts" && (
-            <button type="button" onClick={() => setShowForm(true)}>
-              + Create Alert
-            </button>
-          )}
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            {activeTab === "alerts" && (
+              <button
+                type="button"
+                onClick={() => refetchAlerts()}
+                disabled={isLoading}
+                style={{
+                  padding: "0.5rem 1rem",
+                  fontSize: "0.875rem",
+                  background: "var(--ghost-border)",
+                  color: "var(--text-primary)",
+                  border: "1px solid var(--ghost-border)",
+                  borderRadius: "6px",
+                  cursor: isLoading ? "not-allowed" : "pointer",
+                  opacity: isLoading ? 0.6 : 1,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                }}
+              >
+                {isLoading ? "🔄" : "↻"} Refresh
+              </button>
+            )}
+            {activeTab === "preferences" && (
+              <button
+                type="button"
+                onClick={() => loadPreferences()}
+                disabled={prefsLoading}
+                style={{
+                  padding: "0.5rem 1rem",
+                  fontSize: "0.875rem",
+                  background: "var(--ghost-border)",
+                  color: "var(--text-primary)",
+                  border: "1px solid var(--ghost-border)",
+                  borderRadius: "6px",
+                  cursor: prefsLoading ? "not-allowed" : "pointer",
+                  opacity: prefsLoading ? 0.6 : 1,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                }}
+              >
+                {prefsLoading ? "🔄" : "↻"} Refresh
+              </button>
+            )}
+            {activeTab === "logs" && (
+              <button
+                type="button"
+                onClick={() => loadNotifications()}
+                disabled={logsLoading}
+                style={{
+                  padding: "0.5rem 1rem",
+                  fontSize: "0.875rem",
+                  background: "var(--ghost-border)",
+                  color: "var(--text-primary)",
+                  border: "1px solid var(--ghost-border)",
+                  borderRadius: "6px",
+                  cursor: logsLoading ? "not-allowed" : "pointer",
+                  opacity: logsLoading ? 0.6 : 1,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                }}
+              >
+                {logsLoading ? "🔄" : "↻"} Refresh
+              </button>
+            )}
+            {activeTab === "devices" && (
+              <button
+                type="button"
+                onClick={() => loadDevices()}
+                disabled={devicesLoading}
+                style={{
+                  padding: "0.5rem 1rem",
+                  fontSize: "0.875rem",
+                  background: "var(--ghost-border)",
+                  color: "var(--text-primary)",
+                  border: "1px solid var(--ghost-border)",
+                  borderRadius: "6px",
+                  cursor: devicesLoading ? "not-allowed" : "pointer",
+                  opacity: devicesLoading ? 0.6 : 1,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                }}
+              >
+                {devicesLoading ? "🔄" : "↻"} Refresh
+              </button>
+            )}
+            {activeTab === "favoriteStocks" && (
+              <button
+                type="button"
+                onClick={() => loadFavoriteStocks()}
+                disabled={favoriteStocksLoading}
+                style={{
+                  padding: "0.5rem 1rem",
+                  fontSize: "0.875rem",
+                  background: "var(--ghost-border)",
+                  color: "var(--text-primary)",
+                  border: "1px solid var(--ghost-border)",
+                  borderRadius: "6px",
+                  cursor: favoriteStocksLoading ? "not-allowed" : "pointer",
+                  opacity: favoriteStocksLoading ? 0.6 : 1,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                }}
+              >
+                {favoriteStocksLoading ? "🔄" : "↻"} Refresh
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Tabs */}
@@ -574,6 +724,13 @@ export function AlertsPage() {
             onClick={() => setActiveTab("devices")}
           >
             Devices
+          </button>
+          <button
+            type="button"
+            className={activeTab === "favoriteStocks" ? "active" : ""}
+            onClick={() => setActiveTab("favoriteStocks")}
+          >
+            Favorite Stock
           </button>
         </div>
 
@@ -1253,11 +1410,10 @@ export function AlertsPage() {
                     <table className="alerts-table">
                       <thead>
                         <tr>
+                          <th>Device Type</th>
+                          <th>Username</th>
                           <th>User ID</th>
-                          <th>FCM Token</th>
-                          <th>Device Info</th>
                           <th>Alerts</th>
-                          <th>Registered</th>
                           <th>Last Updated</th>
                           <th>Actions</th>
                         </tr>
@@ -1270,28 +1426,46 @@ export function AlertsPage() {
                           const displayAlertCount = device.alertCount !== undefined ? device.alertCount : deviceAlerts.length;
                           const displayActiveCount = device.activeAlertCount !== undefined ? device.activeAlertCount : activeAlerts.length;
 
+                          // Parse device info to extract device type
+                          let deviceType = "Unknown";
+                          if (device.deviceInfo) {
+                            try {
+                              const deviceInfo = typeof device.deviceInfo === "string" 
+                                ? JSON.parse(device.deviceInfo) 
+                                : device.deviceInfo;
+                              if (deviceInfo.platform) {
+                                deviceType = `${deviceInfo.platform}${deviceInfo.model ? ` ${deviceInfo.model}` : ""}`;
+                              } else if (typeof device.deviceInfo === "string") {
+                                deviceType = device.deviceInfo;
+                              }
+                            } catch {
+                              // If parsing fails, use the raw string
+                              deviceType = device.deviceInfo || "Unknown";
+                            }
+                          }
+
                           return (
                             <tr key={device.userId}>
                               <td>
-                                <span style={{ fontWeight: 600, color: "var(--accent-color)" }}>
-                                  {device.userId}
-                                </span>
-                              </td>
-                              <td className="target-cell">
-                                <span className="truncate" style={{ maxWidth: "200px", fontFamily: "monospace", fontSize: "0.85rem" }}>
-                                  {device.pushToken.substring(0, 40)}...
+                                <span style={{ fontSize: "0.875rem", fontWeight: 500 }}>
+                                  {deviceType}
                                 </span>
                               </td>
                               <td>
-                                {device.deviceInfo ? (
-                                  <span style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>
-                                    {device.deviceInfo}
+                                {device.username ? (
+                                  <span style={{ fontWeight: 600, color: "var(--accent-color)" }}>
+                                    @{device.username}
                                   </span>
                                 ) : (
                                   <span style={{ fontSize: "0.875rem", color: "var(--text-muted)", fontStyle: "italic" }}>
-                                    No info
+                                    No username
                                   </span>
                                 )}
+                              </td>
+                              <td>
+                                <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
+                                  {device.userId.substring(0, 20)}...
+                                </span>
                               </td>
                               <td>
                                 <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
@@ -1304,48 +1478,161 @@ export function AlertsPage() {
                                 </div>
                               </td>
                               <td className="date-cell">
-                                {new Date(device.createdAt).toLocaleString()}
-                              </td>
-                              <td className="date-cell">
                                 {new Date(device.updatedAt).toLocaleString()}
                               </td>
                               <td>
                                 <div style={{ display: "flex", gap: "0.5rem" }}>
                                   <button
                                     type="button"
-                                    onClick={() => handleSendTestNotification(device.userId)}
-                                    disabled={testingDeviceId === device.userId || deletingDeviceId === device.userId}
+                                    onClick={() => handleSendTestNotification(device.pushToken)}
+                                    disabled={testingDeviceId === device.pushToken || deletingDeviceId === device.pushToken}
                                     style={{
                                       padding: "0.5rem 1rem",
                                       fontSize: "0.875rem",
-                                      background: testingDeviceId === device.userId ? "var(--ghost-border)" : "var(--accent-color)",
-                                      color: testingDeviceId === device.userId ? "var(--text-muted)" : "white",
+                                      background: testingDeviceId === device.pushToken ? "var(--ghost-border)" : "var(--accent-color)",
+                                      color: testingDeviceId === device.pushToken ? "var(--text-muted)" : "white",
                                       border: "none",
                                       borderRadius: "6px",
-                                      cursor: testingDeviceId === device.userId ? "not-allowed" : "pointer",
-                                      opacity: testingDeviceId === device.userId || deletingDeviceId === device.userId ? 0.6 : 1,
+                                      cursor: testingDeviceId === device.pushToken ? "not-allowed" : "pointer",
+                                      opacity: testingDeviceId === device.pushToken || deletingDeviceId === device.pushToken ? 0.6 : 1,
                                     }}
                                   >
-                                    {testingDeviceId === device.userId ? "Sending..." : "Test"}
+                                    {testingDeviceId === device.pushToken ? "Sending..." : "Test"}
                                   </button>
                                   <button
                                     type="button"
-                                    onClick={() => handleDeleteDevice(device.userId)}
-                                    disabled={deletingDeviceId === device.userId || testingDeviceId === device.userId}
+                                    onClick={() => handleDeleteDevice(device.pushToken)}
+                                    disabled={deletingDeviceId === device.pushToken || testingDeviceId === device.pushToken}
                                     style={{
                                       padding: "0.5rem 1rem",
                                       fontSize: "0.875rem",
-                                      background: deletingDeviceId === device.userId ? "var(--ghost-border)" : "#dc2626",
-                                      color: deletingDeviceId === device.userId ? "var(--text-muted)" : "white",
+                                      background: deletingDeviceId === device.pushToken ? "var(--ghost-border)" : "#dc2626",
+                                      color: deletingDeviceId === device.pushToken ? "var(--text-muted)" : "white",
                                       border: "none",
                                       borderRadius: "6px",
-                                      cursor: deletingDeviceId === device.userId ? "not-allowed" : "pointer",
-                                      opacity: deletingDeviceId === device.userId || testingDeviceId === device.userId ? 0.6 : 1,
+                                      cursor: deletingDeviceId === device.pushToken ? "not-allowed" : "pointer",
+                                      opacity: deletingDeviceId === device.pushToken || testingDeviceId === device.pushToken ? 0.6 : 1,
                                     }}
                                   >
-                                    {deletingDeviceId === device.userId ? "Deleting..." : "Delete"}
+                                    {deletingDeviceId === device.pushToken ? "Deleting..." : "Delete"}
                                   </button>
                                 </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Favorite Stocks Tab */}
+        {activeTab === "favoriteStocks" && (
+          <div>
+            {favoriteStocksLoading ? (
+              <div className="loading-state">
+                <div className="spinner"></div>
+                <p>Loading favorite stocks...</p>
+              </div>
+            ) : (
+              <>
+                {favoriteStocksError && (
+                  <div className="error-banner" style={{ marginBottom: "1.5rem", padding: "1rem", background: "rgba(248, 113, 113, 0.1)", border: "1px solid rgba(248, 113, 113, 0.3)", borderRadius: "8px" }}>
+                    <p style={{ color: "#f87171", margin: 0 }}>❌ {favoriteStocksError}</p>
+                  </div>
+                )}
+                {favoriteStocks.length === 0 ? (
+                  <div className="empty-state">
+                    <div className="empty-icon">📊</div>
+                    <h3>No favorite stocks found</h3>
+                    <p>No users have selected favorite stocks yet.</p>
+                  </div>
+                ) : (
+                  <div className="alerts-table-container">
+                    <table className="alerts-table">
+                      <thead>
+                        <tr>
+                          <th>Username</th>
+                          <th>Favorite Stocks</th>
+                          <th>Count</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {favoriteStocks.map((user) => {
+                          // Create a map for quick lookup of which stocks have news
+                          const stocksWithNewsMap = new Map<string, boolean>();
+                          if (user.stocksWithNews) {
+                            user.stocksWithNews.forEach(({ symbol, hasNews }) => {
+                              stocksWithNewsMap.set(symbol.toUpperCase(), hasNews);
+                            });
+                          }
+
+                          return (
+                            <tr key={user.userId}>
+                              <td>
+                                <strong>{user.username || user.userId}</strong>
+                              </td>
+                              <td>
+                                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                                  {user.stocks.length > 0 ? (
+                                    user.stocks.map((symbol, idx) => {
+                                      const hasNews = stocksWithNewsMap.get(symbol.toUpperCase()) || false;
+                                      return (
+                                        <span
+                                          key={idx}
+                                          style={{
+                                            padding: "0.25rem 0.5rem",
+                                            background: hasNews 
+                                              ? "rgba(59, 130, 246, 0.15)" 
+                                              : "rgba(34, 197, 94, 0.1)",
+                                            border: hasNews
+                                              ? "1px solid rgba(59, 130, 246, 0.4)"
+                                              : "1px solid rgba(34, 197, 94, 0.3)",
+                                            borderRadius: "4px",
+                                            fontSize: "0.875rem",
+                                            fontWeight: "600",
+                                            color: hasNews ? "#3b82f6" : "#22c55e",
+                                            position: "relative",
+                                          }}
+                                          title={hasNews ? `${symbol} has news` : `${symbol} - no news`}
+                                        >
+                                          {symbol}
+                                          {hasNews && (
+                                            <span
+                                              style={{
+                                                marginLeft: "0.25rem",
+                                                fontSize: "0.75rem",
+                                              }}
+                                              title="Has news"
+                                            >
+                                              📰
+                                            </span>
+                                          )}
+                                        </span>
+                                      );
+                                    })
+                                  ) : (
+                                    <span style={{ color: "var(--text-muted)", fontStyle: "italic" }}>
+                                      No stocks
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                              <td>
+                                <span style={{
+                                  padding: "0.25rem 0.5rem",
+                                  background: "rgba(168, 85, 247, 0.1)",
+                                  color: "#a855f7",
+                                  borderRadius: "4px",
+                                  fontSize: "0.875rem",
+                                  fontWeight: "600",
+                                }}>
+                                  {user.count}
+                                </span>
                               </td>
                             </tr>
                           );

@@ -16,12 +16,6 @@ export function UsernameSelectionPage() {
 
   useGsapFadeIn(formRef);
 
-  // If user already has a username, redirect to home (after hooks are called)
-  if (user?.username) {
-    window.location.href = "/";
-    return null;
-  }
-
   // Debounced username availability check
   const checkAvailability = useCallback(async (value: string) => {
     if (!value || value.length < 3) {
@@ -222,3 +216,4 @@ export function UsernameSelectionPage() {
     </AuroraBackground>
   );
 }
+

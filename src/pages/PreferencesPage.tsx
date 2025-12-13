@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { axiosClient } from "../api/axios-client";
 
 
@@ -26,7 +26,7 @@ export function PreferencesPage() {
   const [maxDaily, setMaxDaily] = useState("");
   const [allowedSymbols, setAllowedSymbols] = useState("");
 
-  const loadPreferences = async () => {
+  const loadPreferences = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -55,12 +55,11 @@ export function PreferencesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadPreferences();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [loadPreferences]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
