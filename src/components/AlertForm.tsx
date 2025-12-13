@@ -11,10 +11,10 @@ import type {
 } from "../types";
 
 interface Device {
-  username?: string | null;
-  userId: string;
+  username: string | null;
   pushToken: string;
   deviceInfo: string | null;
+  deviceType: string | null;
   alertCount?: number;
   activeAlertCount?: number;
 }
@@ -43,7 +43,7 @@ export function AlertForm({
   const getInitialDeviceId = (): string => {
     if (alert?.target) {
       const matchingDevice = devices.find((d) => d.pushToken === alert.target);
-      return matchingDevice?.userId ?? "";
+      return matchingDevice?.pushToken ?? "";
     }
     return "";
   };
@@ -84,7 +84,7 @@ export function AlertForm({
         setStatus(alert.status);
         setTarget(alert.target);
         const matchingDevice = devices.find((d) => d.pushToken === alert.target);
-        setSelectedDeviceId(matchingDevice?.userId ?? "");
+        setSelectedDeviceId(matchingDevice?.pushToken ?? "");
       } else {
         setSymbol("");
         setDirection("above");
@@ -100,7 +100,7 @@ export function AlertForm({
   // When device is selected, update target field
   useEffect(() => {
     if (selectedDeviceId && !alert) {
-      const selectedDevice = devices.find((d) => d.userId === selectedDeviceId);
+      const selectedDevice = devices.find((d) => d.pushToken === selectedDeviceId);
       if (selectedDevice) {
         setTarget(selectedDevice.pushToken);
       }
@@ -355,7 +355,7 @@ export function AlertForm({
                   value={selectedDeviceId}
                   onChange={(e) => {
                     setSelectedDeviceId(e.target.value);
-                    const selectedDevice = devices.find((d) => d.userId === e.target.value);
+                    const selectedDevice = devices.find((d) => d.pushToken === e.target.value);
                     if (selectedDevice) {
                       setTarget(selectedDevice.pushToken);
                     }
@@ -375,8 +375,8 @@ export function AlertForm({
                 >
                   <option value="">Select a device...</option>
                   {devices.map((device) => (
-                    <option key={device.userId} value={device.userId}>
-                      {device.userId} {device.deviceInfo ? `(${device.deviceInfo})` : ""} 
+                    <option key={device.pushToken} value={device.pushToken}>
+                      {device.username || "Unknown"} {device.deviceInfo ? `(${device.deviceInfo})` : ""} {device.deviceType ? `[${device.deviceType}]` : ""} 
                       {device.alertCount !== undefined ? ` - ${device.alertCount} alert${device.alertCount !== 1 ? "s" : ""}` : ""}
                     </option>
                   ))}
@@ -397,7 +397,7 @@ export function AlertForm({
                 setTarget(e.target.value);
                 // Clear device selection if manually editing token
                 if (selectedDeviceId) {
-                  const selectedDevice = devices.find((d) => d.userId === selectedDeviceId);
+                  const selectedDevice = devices.find((d) => d.pushToken === selectedDeviceId);
                   if (selectedDevice && e.target.value !== selectedDevice.pushToken) {
                     setSelectedDeviceId("");
                   }

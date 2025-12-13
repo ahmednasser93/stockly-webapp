@@ -86,3 +86,5 @@ export async function deleteFavoriteStock(symbol: string): Promise<void> {
     throw new Error(`Failed to delete favorite stock: ${errorText}`);
   }
 }
+
+

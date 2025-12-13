@@ -22,6 +22,7 @@ describe("Alerts API Client", () => {
     channel: "notification",
     target: "dXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     notes: "Watch for breakout",
+    username: "testuser",
     createdAt: "2025-11-14T10:30:00.000Z",
     updatedAt: "2025-11-14T10:30:00.000Z",
   };

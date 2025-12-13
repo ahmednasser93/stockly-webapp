@@ -28,6 +28,7 @@ export interface Alert {
   channel: AlertChannel;
   target: string;
   notes: string | null;
+  username?: string | null;
   createdAt: string; // ISO 8601 timestamp
   updatedAt: string; // ISO 8601 timestamp
 }
