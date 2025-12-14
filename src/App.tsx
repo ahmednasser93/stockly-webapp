@@ -7,10 +7,8 @@ import { SettingsPage } from "./pages/SettingsPage";
 import { LoginPage } from "./pages/LoginPage";
 import { UsernameSelectionPage } from "./pages/UsernameSelectionPage";
 import { DocsPage } from "./pages/DocsPage";
-import { AlertsPage } from "./pages/AlertsPage";
-import { PreferencesPage } from "./pages/PreferencesPage";
+import { MonitoringPage } from "./pages/MonitoringPage";
 import { StockDetailsPage } from "./pages/StockDetailsPage";
-import { NewsFeedPage } from "./pages/NewsFeedPage";
 
 function App() {
   return (
@@ -25,11 +23,9 @@ function App() {
         }
       >
         <Route path="/" element={<HomePage />} />
-        <Route path="/alerts" element={<AlertsPage />} />
+        <Route path="/monitoring" element={<MonitoringPage />} />
         <Route path="/docs" element={<DocsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/preferences" element={<PreferencesPage />} />
-        <Route path="/news" element={<NewsFeedPage />} />
         <Route path="/stocks/:symbol" element={<StockDetailsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

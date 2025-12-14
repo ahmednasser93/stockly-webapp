@@ -225,12 +225,13 @@ export function AlertForm({
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="direction">
+              <label htmlFor="direction-above">
                 Direction <span className="required">*</span>
               </label>
               <div className="radio-group">
                 <label className="radio-label">
                   <input
+                    id="direction-above"
                     type="radio"
                     name="direction"
                     value="above"

@@ -3,7 +3,8 @@
 # ==============================================================================
 # Stockly Web App Production Deployment Script
 # ==============================================================================
-# Runs linting (with warnings), tests, builds, and deploys the web app
+# Runs tests (REQUIRED), linting (with warnings), builds, and deploys the web app
+# Tests MUST pass or deployment will be aborted
 # ==============================================================================
 
 set -e
@@ -16,6 +17,25 @@ cd "$WEBAPP_DIR"
 echo "🚀 Deploying Stockly Web App to Production"
 echo "================================================"
 echo ""
+
+# Check if SKIP_TESTS environment variable is set (for emergency overrides only)
+if [ "${SKIP_TESTS}" = "true" ]; then
+  echo "⚠️  WARNING: SKIP_TESTS is set to true. Skipping tests (NOT RECOMMENDED)."
+  echo "   This should only be used in emergency situations."
+  echo ""
+else
+  echo "🧪 Running Tests (REQUIRED - deployment will abort on failure)..."
+  echo "------------------------------------------------"
+  if ! npm run test; then
+    echo ""
+    echo "❌ ❌ ❌ TESTS FAILED ❌ ❌ ❌"
+    echo "   Deployment aborted. Please fix all failing tests before deploying."
+    echo "   Run 'npm run test' to see detailed test output."
+    exit 1
+  fi
+  echo "✅ All tests passed"
+  echo ""
+fi
 
 echo "🔍 Running Linter..."
 echo "------------------------------------------------"
@@ -30,15 +50,6 @@ else
   echo "⚠️  Linting found issues (continuing with deployment)"
   echo "   Note: Some linting errors are non-blocking"
 fi
-echo ""
-
-echo "🧪 Running Tests..."
-echo "------------------------------------------------"
-npm run test || {
-  echo "❌ Tests failed. Aborting deployment."
-  exit 1
-}
-echo "✅ Tests passed"
 echo ""
 
 echo "🔨 Building Web App..."
@@ -60,9 +71,13 @@ fi
 echo ""
 
 # Build with environment variable
+# Note: The build command also runs tests internally as a safety check
 # Note: Vite will also read from .env.production automatically
+echo "   Note: Build process will run tests again as a safety check"
 VITE_GOOGLE_CLIENT_ID="${VITE_GOOGLE_CLIENT_ID}" npm run build || {
+  echo ""
   echo "❌ Build failed. Aborting deployment."
+  echo "   This may be due to test failures, TypeScript errors, or build issues."
   exit 1
 }
 echo "✅ Build complete"

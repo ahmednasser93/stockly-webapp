@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SettingsProvider } from "../state/SettingsContext";
 import { AuthProvider } from "../state/AuthContext";
-import { AlertsPage } from "../pages/AlertsPage";
+import { MonitoringPage } from "../pages/MonitoringPage";
 import * as alertsApi from "../api/alerts";
 import * as clientApi from "../api/client";
 import axios from "axios";
@@ -32,7 +32,7 @@ vi.mock("../api/axios-client", () => {
 const mockListAlerts = vi.mocked(alertsApi.listAlerts);
 const mockFetchStocks = vi.mocked(clientApi.fetchStocks);
 
-describe("AlertsPage", () => {
+describe("MonitoringPage", () => {
   let queryClient: QueryClient;
 
   const mockAlerts: Alert[] = [
@@ -134,18 +134,22 @@ describe("AlertsPage", () => {
     );
   };
 
-  it("should render loading state initially", () => {
+  it("should render loading state initially", async () => {
     mockListAlerts.mockImplementation(
       () => new Promise(() => {}) // Never resolves
     );
 
-    renderWithProviders(<AlertsPage />);
+    await act(async () => {
+      renderWithProviders(<MonitoringPage />);
+    });
 
     expect(screen.getByText(/loading alerts/i)).toBeInTheDocument();
   });
 
   it("should render alerts table with data", async () => {
-    renderWithProviders(<AlertsPage />);
+    await act(async () => {
+      renderWithProviders(<MonitoringPage />);
+    });
 
     await waitFor(() => {
       expect(screen.getByText("AAPL")).toBeInTheDocument();
@@ -164,7 +168,9 @@ describe("AlertsPage", () => {
   it("should display empty state when no alerts", async () => {
     mockListAlerts.mockResolvedValue([]);
 
-    renderWithProviders(<AlertsPage />);
+    await act(async () => {
+      renderWithProviders(<MonitoringPage />);
+    });
 
     await waitFor(() => {
       expect(screen.getByText(/no alerts configured/i)).toBeInTheDocument();
@@ -174,7 +180,9 @@ describe("AlertsPage", () => {
   it("should render error state on API failure", async () => {
     mockListAlerts.mockRejectedValue(new Error("Network error"));
 
-    renderWithProviders(<AlertsPage />);
+    await act(async () => {
+      renderWithProviders(<MonitoringPage />);
+    });
 
     await waitFor(() => {
       expect(screen.getByText(/error loading alerts/i)).toBeInTheDocument();
@@ -183,7 +191,9 @@ describe("AlertsPage", () => {
   });
 
   it("should display current prices for symbols", async () => {
-    renderWithProviders(<AlertsPage />);
+    await act(async () => {
+      renderWithProviders(<MonitoringPage />);
+    });
 
     await waitFor(() => {
       expect(screen.getByText("$195.50")).toBeInTheDocument();
@@ -192,7 +202,9 @@ describe("AlertsPage", () => {
   });
 
   it("should display threshold prices", async () => {
-    renderWithProviders(<AlertsPage />);
+    await act(async () => {
+      renderWithProviders(<MonitoringPage />);
+    });
 
     await waitFor(() => {
       expect(screen.getByText("$200.50")).toBeInTheDocument();
@@ -201,7 +213,9 @@ describe("AlertsPage", () => {
   });
 
   it("should show filter tabs with correct counts", async () => {
-    renderWithProviders(<AlertsPage />);
+    await act(async () => {
+      renderWithProviders(<MonitoringPage />);
+    });
 
     await waitFor(() => {
       expect(screen.getByText(/all \(2\)/i)).toBeInTheDocument();
@@ -211,7 +225,9 @@ describe("AlertsPage", () => {
   });
 
   it("should display Create Alert button", async () => {
-    renderWithProviders(<AlertsPage />);
+    await act(async () => {
+      renderWithProviders(<MonitoringPage />);
+    });
 
     await waitFor(() => {
       const createButtons = screen.getAllByText(/create alert/i);
@@ -220,7 +236,9 @@ describe("AlertsPage", () => {
   });
 
   it("should show channel badges", async () => {
-    renderWithProviders(<AlertsPage />);
+    await act(async () => {
+      renderWithProviders(<MonitoringPage />);
+    });
 
     await waitFor(() => {
       const notificationBadges = screen.getAllByText(/Mobile Notification/i);
@@ -236,7 +254,9 @@ describe("AlertsPage", () => {
       data: { devices: [] },
     });
 
-    renderWithProviders(<AlertsPage />);
+    await act(async () => {
+      renderWithProviders(<MonitoringPage />);
+    });
 
     await waitFor(() => {
       const devicesTab = screen.getByText("Devices");
@@ -285,7 +305,9 @@ describe("AlertsPage", () => {
       return Promise.resolve({ data: {} });
     });
 
-    renderWithProviders(<AlertsPage />);
+    await act(async () => {
+      renderWithProviders(<MonitoringPage />);
+    });
 
     // Wait for initial load
     await waitFor(() => {
@@ -293,8 +315,10 @@ describe("AlertsPage", () => {
     });
 
     // Click on Devices tab
-    const devicesTab = screen.getByText("Devices");
-    devicesTab.click();
+    await act(async () => {
+      const devicesTab = screen.getByText("Devices");
+      devicesTab.click();
+    });
 
     await waitFor(() => {
       expect(screen.getByText("Android Honor")).toBeInTheDocument();
@@ -320,7 +344,9 @@ describe("AlertsPage", () => {
       return Promise.reject(new Error(`Unexpected URL: ${url}`));
     });
 
-    renderWithProviders(<AlertsPage />);
+    await act(async () => {
+      renderWithProviders(<MonitoringPage />);
+    });
 
     // Wait for initial load
     await waitFor(() => {
@@ -328,8 +354,10 @@ describe("AlertsPage", () => {
     });
 
     // Click on Devices tab
-    const devicesTab = screen.getByText("Devices");
-    devicesTab.click();
+    await act(async () => {
+      const devicesTab = screen.getByText("Devices");
+      devicesTab.click();
+    });
 
     await waitFor(() => {
       expect(screen.getByText(/no devices registered/i)).toBeInTheDocument();
@@ -369,7 +397,9 @@ describe("AlertsPage", () => {
       data: { success: true, message: "Test notification sent successfully" },
     });
 
-    renderWithProviders(<AlertsPage />);
+    await act(async () => {
+      renderWithProviders(<MonitoringPage />);
+    });
 
     // Wait for initial load
     await waitFor(() => {
@@ -377,16 +407,20 @@ describe("AlertsPage", () => {
     });
 
     // Click on Devices tab
-    const devicesTab = screen.getByText("Devices");
-    devicesTab.click();
+    await act(async () => {
+      const devicesTab = screen.getByText("Devices");
+      devicesTab.click();
+    });
 
     await waitFor(() => {
       expect(screen.getByText("Android Honor")).toBeInTheDocument();
     }, { timeout: 3000 });
 
     // Click Test button
-    const sendTestButton = screen.getByText("Test");
-    sendTestButton.click();
+    await act(async () => {
+      const sendTestButton = screen.getByText("Test");
+      sendTestButton.click();
+    });
 
     await waitFor(() => {
       expect(axiosClient.post).toHaveBeenCalledWith(

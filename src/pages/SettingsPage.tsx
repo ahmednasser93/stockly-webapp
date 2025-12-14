@@ -13,7 +13,7 @@ import {
 } from "../api/userSettings";
 import { getFavoriteStocks } from "../api/favoriteStocks";
 
-type SettingsTab = "settings" | "monitoring" | "developer";
+type SettingsTab = "settings" | "monitoring" | "developer" | "notifications";
 
 const PROVIDER_OPTIONS = ["alpha-feed", "beta-feed", "gamma-fallback"];
 
@@ -294,6 +294,13 @@ export function SettingsPage() {
             onClick={() => setActiveTab("monitoring")}
           >
             Monitoring
+          </button>
+          <button
+            type="button"
+            className={activeTab === "notifications" ? "active" : ""}
+            onClick={() => setActiveTab("notifications")}
+          >
+            Push Notifications
           </button>
           <button
             type="button"
@@ -1183,6 +1190,143 @@ export function SettingsPage() {
                     ))}
                   </ul>
                 </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Push Notifications Tab */}
+        {activeTab === "notifications" && (
+          <div>
+            {preferencesLoading ? (
+              <div className="loading-state">
+                <div className="spinner"></div>
+                <p>Loading preferences…</p>
+              </div>
+            ) : (
+              <>
+                {preferencesError && (
+                  <div className="error-banner" style={{ marginBottom: "1.5rem", padding: "1rem", background: "rgba(248, 113, 113, 0.1)", border: "1px solid rgba(248, 113, 113, 0.3)", borderRadius: "8px" }}>
+                    <p style={{ color: "#f87171", margin: 0 }}>❌ {preferencesError}</p>
+                  </div>
+                )}
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  setPreferencesError(null);
+                  try {
+                    const symbolsArray = allowedSymbols
+                      ? allowedSymbols.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean)
+                      : null;
+                    await updateUserPreferences({
+                      enabled,
+                      quietStart: quietStart || null,
+                      quietEnd: quietEnd || null,
+                      maxDaily: maxDaily ? parseInt(maxDaily, 10) : null,
+                      allowedSymbols: symbolsArray,
+                    });
+                    setSettingsStatus("Preferences saved successfully!");
+                    setTimeout(() => setSettingsStatus(""), 3000);
+                    // Reload preferences
+                    const prefs = await getUserPreferences();
+                    setEnabled(prefs.enabled);
+                    setQuietStart(prefs.quietStart || "");
+                    setQuietEnd(prefs.quietEnd || "");
+                    setMaxDaily(prefs.maxDaily ? String(prefs.maxDaily) : "");
+                    setAllowedSymbols(prefs.allowedSymbols ? prefs.allowedSymbols.join(", ") : "");
+                  } catch {
+                    setPreferencesError("Failed to save preferences");
+                  }
+                }} style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+                  <div className="form-group">
+                    <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
+                      <input
+                        type="checkbox"
+                        checked={enabled}
+                        onChange={(e) => setEnabled(e.target.checked)}
+                        style={{ width: "18px", height: "18px" }}
+                      />
+                      <span style={{ fontWeight: 500 }}>Enable Push Notifications</span>
+                    </label>
+                    <p className="help-text" style={{ marginTop: "0.5rem", marginLeft: "26px" }}>
+                      When disabled, no notifications will be sent
+                    </p>
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="quietStart">Quiet Hours Start</label>
+                    <input
+                      id="quietStart"
+                      type="time"
+                      value={quietStart}
+                      onChange={(e) => setQuietStart(e.target.value)}
+                      placeholder="22:00"
+                      disabled={!enabled}
+                    />
+                    <p className="help-text">No notifications will be sent during quiet hours</p>
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="quietEnd">Quiet Hours End</label>
+                    <input
+                      id="quietEnd"
+                      type="time"
+                      value={quietEnd}
+                      onChange={(e) => setQuietEnd(e.target.value)}
+                      placeholder="08:00"
+                      disabled={!enabled}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="maxDaily">Max Notifications Per Day</label>
+                    <input
+                      id="maxDaily"
+                      type="number"
+                      min="1"
+                      max="100"
+                      value={maxDaily}
+                      onChange={(e) => setMaxDaily(e.target.value)}
+                      placeholder="10"
+                      disabled={!enabled}
+                    />
+                    <p className="help-text">Limit the number of daily notifications</p>
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="allowedSymbols">Allowed Symbols (comma-separated)</label>
+                    <input
+                      id="allowedSymbols"
+                      type="text"
+                      value={allowedSymbols}
+                      onChange={(e) => setAllowedSymbols(e.target.value)}
+                      placeholder="AAPL, MSFT, GOOGL"
+                      disabled={!enabled}
+                    />
+                    <p className="help-text">
+                      Only receive notifications for these symbols. Leave empty for all symbols.
+                    </p>
+                  </div>
+                  <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const prefs = await getUserPreferences();
+                        setEnabled(prefs.enabled);
+                        setQuietStart(prefs.quietStart || "");
+                        setQuietEnd(prefs.quietEnd || "");
+                        setMaxDaily(prefs.maxDaily ? String(prefs.maxDaily) : "");
+                        setAllowedSymbols(prefs.allowedSymbols ? prefs.allowedSymbols.join(", ") : "");
+                      }}
+                      style={{ background: "transparent", border: "1px solid var(--ghost-border)" }}
+                    >
+                      Reset
+                    </button>
+                    <button type="submit">
+                      Save Preferences
+                    </button>
+                  </div>
+                </form>
+                {settingsStatus && (
+                  <div className="success-banner" style={{ marginTop: "1rem", padding: "1rem", background: "rgba(56, 189, 248, 0.1)", border: "1px solid rgba(56, 189, 248, 0.3)", borderRadius: "8px" }}>
+                    <p style={{ color: "#38bdf8", margin: 0 }}>✅ {settingsStatus}</p>
+                  </div>
+                )}
               </>
             )}
           </div>

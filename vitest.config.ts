@@ -8,5 +8,28 @@ export default defineConfig({
     globals: true,
     setupFiles: "./vitest.setup.ts",
     css: false,
+    exclude: [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/e2e/**",
+      "**/.{idea,git,cache,output,temp}/**",
+    ],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      exclude: [
+        'node_modules/',
+        'src/__tests__/',
+        '**/*.test.ts',
+        '**/*.test.tsx',
+        '**/*.spec.ts',
+        '**/*.spec.tsx',
+      ],
+    },
+    reporters: ['default', 'json', 'junit'],
+    outputFile: {
+      json: './test-results/results.json',
+      junit: './test-results/junit.xml',
+    },
   },
 });

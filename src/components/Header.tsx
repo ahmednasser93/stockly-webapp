@@ -39,19 +39,12 @@ export function Header() {
             </svg>
             <span>Dashboard</span>
           </NavLink>
-          <NavLink to="/alerts" end className="nav-item">
+          <NavLink to="/monitoring" end className="nav-item">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
-            <span>Alerts</span>
-          </NavLink>
-          <NavLink to="/news" end className="nav-item">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-            </svg>
-            <span>News</span>
+            <span>Monitoring</span>
           </NavLink>
           <NavLink to="/docs" end className="nav-item">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
