@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import { API_BASE_URL } from "../api/client";
+import { navigateTo } from "../utils/navigation";
 
 export interface User {
   id: string;
@@ -109,7 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // If user already has username, redirect to home immediately
       if (data.user.username) {
-        window.location.href = "/";
+        navigateTo("/");
       }
       // Otherwise, ProtectedRoute will handle redirect to username-selection
     } catch (err) {
@@ -139,14 +140,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         const errorMessage = errorData.error || "Failed to set username";
-        
+
         // If username already set (409), refresh auth state and don't throw
         if (response.status === 409) {
           await checkAuth();
           // Return success since username is already set
           return;
         }
-        
+
         throw new Error(errorMessage);
       }
 
@@ -176,7 +177,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsAuthenticated(false);
       setRequiresUsername(false);
       // Navigation will be handled by ProtectedRoute
-      window.location.href = "/login";
+      navigateTo("/login");
     }
   }, []);
 

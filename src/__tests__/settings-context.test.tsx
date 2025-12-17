@@ -1,10 +1,10 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { render, screen, fireEvent, renderHook } from "@testing-library/react";
 import { SettingsProvider, useSettings } from "../state/SettingsContext";
 
 function SettingsConsumer() {
-  const { 
-    refreshInterval, 
+  const {
+    refreshInterval,
     cacheStaleTimeMinutes,
     cacheGcTimeMinutes,
     updateRefreshInterval,
@@ -211,5 +211,48 @@ describe("SettingsProvider", () => {
       cacheStaleTimeMinutes: 6,
       cacheGcTimeMinutes: 12,
     });
+  });
+
+  it("handles corrupted settings in localStorage", () => {
+    // Suppress console.warn for this test
+    const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => { });
+    localStorage.setItem("stockly-webapp-settings", "invalid-json{");
+
+    render(
+      <SettingsProvider>
+        <SettingsConsumer />
+      </SettingsProvider>
+    );
+
+    // Should fall back to defaults
+    expect(screen.getByTestId("interval")).toHaveTextContent("30");
+    expect(screen.getByTestId("stale-time")).toHaveTextContent("5");
+    expect(screen.getByTestId("gc-time")).toHaveTextContent("10");
+
+    consoleSpy.mockRestore();
+  });
+
+  it("handles partial settings in localStorage", () => {
+    const partial = { refreshInterval: 45 }; // missing other fields
+    localStorage.setItem("stockly-webapp-settings", JSON.stringify(partial));
+
+    render(
+      <SettingsProvider>
+        <SettingsConsumer />
+      </SettingsProvider>
+    );
+
+    expect(screen.getByTestId("interval")).toHaveTextContent("45");
+    // Others should be defaults
+    expect(screen.getByTestId("stale-time")).toHaveTextContent("5");
+    expect(screen.getByTestId("gc-time")).toHaveTextContent("10");
+  });
+
+  it("throws if useSettings is used outside provider", () => {
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => { });
+
+    expect(() => renderHook(() => useSettings())).toThrow("useSettings must be used within SettingsProvider");
+
+    consoleSpy.mockRestore();
   });
 });

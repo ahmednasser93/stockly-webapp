@@ -25,6 +25,12 @@ export default defineConfig({
         '**/*.spec.ts',
         '**/*.spec.tsx',
       ],
+      thresholds: {
+        lines: 50,
+        functions: 50,
+        branches: 40,
+        statements: 50,
+      },
     },
     reporters: ['default', 'json', 'junit'],
     outputFile: {

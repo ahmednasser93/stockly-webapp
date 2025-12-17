@@ -6,6 +6,7 @@
 import axios, { AxiosError } from "axios";
 import type { InternalAxiosRequestConfig } from "axios";
 import { API_BASE_URL } from "./client";
+import { navigateTo } from "../utils/navigation";
 
 // Create axios instance
 // Use a factory function to allow proper mocking in tests
@@ -89,12 +90,12 @@ axiosClient.interceptors.response.use(
         } else {
           // Refresh failed, redirect to login
           processQueue(error, null);
-          window.location.href = "/login";
+          navigateTo("/login");
           return Promise.reject(error);
         }
       } catch (refreshError) {
         processQueue(error, null);
-        window.location.href = "/login";
+        navigateTo("/login");
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
