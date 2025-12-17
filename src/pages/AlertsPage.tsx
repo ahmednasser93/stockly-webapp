@@ -156,9 +156,12 @@ export function AlertsPage() {
     return map;
   }, [pricesQuery.data]);
 
-  // Detect orphaned alerts (alerts with push tokens that don't match any device)
-  const orphanedAlerts = useMemo(() => {
-    return alerts.filter((alert) => !devices.some((d) => d.pushToken === alert.target));
+  // Detect alerts with username but no registered devices (these won't receive notifications)
+  const alertsWithoutDevices = useMemo(() => {
+    return alerts.filter((alert) => {
+      if (!alert.username) return false;
+      return !devices.some((d) => d.username === alert.username);
+    });
   }, [alerts, devices]);
 
   // Get unique usernames from alerts, notifications, devices, and favorite stocks
@@ -191,7 +194,6 @@ export function AlertsPage() {
       filtered = filtered.filter(
         (alert) =>
           alert.symbol.toLowerCase().includes(query) ||
-          alert.target.toLowerCase().includes(query) ||
           alert.notes?.toLowerCase().includes(query) ||
           alert.username?.toLowerCase().includes(query)
       );
@@ -239,9 +241,11 @@ export function AlertsPage() {
       Math.abs(alert.threshold - currentPrice) / currentPrice <
       0.05;
 
-    // Find matching device for this alert
-    const matchingDevice = devices.find((d) => d.pushToken === alert.target);
-    const isOrphaned = !matchingDevice;
+    // Find devices for this alert's user (alerts are now associated with username, not target)
+    const userDevices = alert.username 
+      ? devices.filter((d) => d.username === alert.username)
+      : [];
+    const isOrphaned = alert.username ? userDevices.length === 0 : false;
 
     return (
       <tr
@@ -307,32 +311,29 @@ export function AlertsPage() {
           )}
         </td>
         <td className="target-cell">
-          {matchingDevice ? (
+          {alert.username ? (
             <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                 <span style={{ fontWeight: "600", color: "var(--accent-color)" }}>
-                  {matchingDevice.username || "Unknown"}
+                  @{alert.username}
                 </span>
-                {matchingDevice.deviceInfo && (
+                {userDevices.length > 0 && (
                   <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-                    ({matchingDevice.deviceInfo})
+                    ({userDevices.length} device{userDevices.length !== 1 ? "s" : ""})
                   </span>
                 )}
               </div>
-              <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
-                {alert.target.substring(0, 30)}...
-              </span>
+              {userDevices.length === 0 && (
+                <span style={{ fontSize: "0.75rem", color: "#f59e0b", fontStyle: "italic" }}>
+                  No devices registered
+                </span>
+              )}
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <span style={{ color: "#ef4444", fontWeight: "600" }}>⚠️ Orphaned</span>
-              </div>
-              <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
-                {alert.target.substring(0, 30)}...
-              </span>
+              <span style={{ color: "#ef4444", fontWeight: "600" }}>⚠️ No username</span>
               <span style={{ fontSize: "0.75rem", color: "#ef4444", fontStyle: "italic" }}>
-                Device not found
+                Alert not associated with user
               </span>
             </div>
           )}
@@ -369,7 +370,10 @@ export function AlertsPage() {
 
   // Helper function to render a device row
   const renderDeviceRow = (device: Device) => {
-    const deviceAlerts = alerts.filter(a => a.target === device.pushToken);
+    // Find alerts for this device's user (alerts are now associated with username, not target)
+    const deviceAlerts = device.username 
+      ? alerts.filter(a => a.username === device.username)
+      : [];
     const activeAlerts = deviceAlerts.filter(a => a.status === "active");
 
     // Parse deviceInfo if it's a JSON string
@@ -971,19 +975,19 @@ export function AlertsPage() {
               </div>
             ) : (
               <>
-                {orphanedAlerts.length > 0 && (
+                {alertsWithoutDevices.length > 0 && (
                   <div style={{
                     marginBottom: "1.5rem",
                     padding: "1rem",
-                    background: "rgba(239, 68, 68, 0.1)",
-                    border: "1px solid rgba(239, 68, 68, 0.3)",
+                    background: "rgba(245, 158, 11, 0.1)",
+                    border: "1px solid rgba(245, 158, 11, 0.3)",
                     borderRadius: "8px"
                   }}>
-                    <p style={{ margin: 0, color: "#ef4444", fontWeight: "600", marginBottom: "0.5rem" }}>
-                      ⚠️ Warning: {orphanedAlerts.length} orphaned alert{orphanedAlerts.length !== 1 ? "s" : ""} detected
+                    <p style={{ margin: 0, color: "#f59e0b", fontWeight: "600", marginBottom: "0.5rem" }}>
+                      ⚠️ Warning: {alertsWithoutDevices.length} alert{alertsWithoutDevices.length !== 1 ? "s" : ""} without registered devices
                     </p>
                     <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--text-muted)" }}>
-                      These alerts have push tokens that don't match any registered device. They will not receive notifications until the device is registered or the alert is updated with a valid token. Orphaned alerts are highlighted in red in the table below.
+                      These alerts are associated with users who don't have any registered devices. They will not receive notifications until a device is registered for the user's account.
                     </p>
                   </div>
                 )}
@@ -1505,19 +1509,19 @@ export function AlertsPage() {
                     <p style={{ color: "#f87171", margin: 0 }}>❌ {devicesError}</p>
                   </div>
                 )}
-                {orphanedAlerts.length > 0 && (
+                {alertsWithoutDevices.length > 0 && (
                   <div style={{
                     marginBottom: "1.5rem",
                     padding: "1rem",
-                    background: "rgba(239, 68, 68, 0.1)",
-                    border: "1px solid rgba(239, 68, 68, 0.3)",
+                    background: "rgba(245, 158, 11, 0.1)",
+                    border: "1px solid rgba(245, 158, 11, 0.3)",
                     borderRadius: "8px"
                   }}>
-                    <p style={{ margin: 0, color: "#ef4444", fontWeight: "600", marginBottom: "0.5rem" }}>
-                      ⚠️ Warning: {orphanedAlerts.length} orphaned alert{orphanedAlerts.length !== 1 ? "s" : ""} detected
+                    <p style={{ margin: 0, color: "#f59e0b", fontWeight: "600", marginBottom: "0.5rem" }}>
+                      ⚠️ Warning: {alertsWithoutDevices.length} alert{alertsWithoutDevices.length !== 1 ? "s" : ""} without registered devices
                     </p>
                     <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--text-muted)" }}>
-                      These alerts have push tokens that don't match any registered device. They will not receive notifications until the device is registered or the alert is updated with a valid token.
+                      These alerts are associated with users who don't have any registered devices. They will not receive notifications until a device is registered for the user's account.
                     </p>
                   </div>
                 )}
@@ -1701,7 +1705,6 @@ export function AlertsPage() {
             onSubmit={handleCreateAlert}
             onCancel={() => setShowForm(false)}
             isSubmitting={isCreating}
-            devices={devices}
           />
         )}
 
@@ -1711,7 +1714,6 @@ export function AlertsPage() {
             onSubmit={handleUpdateAlert}
             onCancel={() => setEditingAlert(null)}
             isSubmitting={isUpdating}
-            devices={devices}
           />
         )}
 

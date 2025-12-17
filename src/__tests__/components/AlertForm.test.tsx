@@ -53,10 +53,6 @@ describe('AlertForm', () => {
     const aboveRadio = screen.getByRole('radio', { name: /above/i });
     await user.click(aboveRadio);
     
-    // Provide a valid FCM token (must be at least 50 alphanumeric characters)
-    const validFcmToken = 'a'.repeat(50) + '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    await user.type(getByLabelText(/fcm token/i), validFcmToken);
-    
     const submitButton = getByRole('button', { name: /create/i });
     await user.click(submitButton);
 

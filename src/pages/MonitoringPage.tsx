@@ -135,10 +135,8 @@ export function MonitoringPage() {
     return map;
   }, [pricesQuery.data]);
 
-  // Detect orphaned alerts (alerts with push tokens that don't match any device)
-  const orphanedAlerts = useMemo(() => {
-    return alerts.filter((alert) => !devices.some((d) => d.pushToken === alert.target));
-  }, [alerts, devices]);
+  // Note: Orphaned alerts detection removed - alerts are now associated with users, not specific devices
+  // Notifications are sent to all devices for a user's username
 
   // Get unique usernames from alerts, notifications, devices, and favorite stocks
   const uniqueUsernames = useMemo(() => {
@@ -149,6 +147,11 @@ export function MonitoringPage() {
     favoriteStocks.forEach(f => f.username && usernames.add(f.username));
     return Array.from(usernames).sort();
   }, [alerts, notifications, devices, favoriteStocks]);
+
+  // Count devices without username (unregistered)
+  const unregisteredDevicesCount = useMemo(() => {
+    return devices.filter(d => !d.username).length;
+  }, [devices]);
 
   // Filter and sort alerts
   const filteredAlerts = useMemo(() => {
@@ -170,7 +173,6 @@ export function MonitoringPage() {
       filtered = filtered.filter(
         (alert) =>
           alert.symbol.toLowerCase().includes(query) ||
-          alert.target.toLowerCase().includes(query) ||
           alert.notes?.toLowerCase().includes(query) ||
           alert.username?.toLowerCase().includes(query)
       );
@@ -218,18 +220,13 @@ export function MonitoringPage() {
       Math.abs(alert.threshold - currentPrice) / currentPrice <
       0.05;
 
-    // Find matching device for this alert
-    const matchingDevice = devices.find((d) => d.pushToken === alert.target);
-    const isOrphaned = !matchingDevice;
+    // Find devices for this alert's username (notifications go to all user devices)
+    const userDevices = alert.username ? devices.filter((d) => d.username === alert.username) : [];
 
     return (
       <tr
         key={alert.id}
-        className={alert.status === "paused" ? "paused" : isOrphaned ? "orphaned" : ""}
-        style={isOrphaned ? {
-          background: "rgba(239, 68, 68, 0.05)",
-          borderLeft: "3px solid #ef4444"
-        } : {}}
+        className={alert.status === "paused" ? "paused" : ""}
       >
         {(groupByUsername || usernameFilter !== "all") && (
           <td>
@@ -247,7 +244,7 @@ export function MonitoringPage() {
               ${currentPrice.toFixed(2)}
             </span>
           ) : (
-            <span className="muted">—</span>
+            <span className="muted">�</span>
           )}
         </td>
         <td>
@@ -268,7 +265,7 @@ export function MonitoringPage() {
               {distance}
             </span>
           ) : (
-            <span className="muted">—</span>
+            <span className="muted">�</span>
           )}
         </td>
         <td>
@@ -286,34 +283,28 @@ export function MonitoringPage() {
           )}
         </td>
         <td className="target-cell">
-          {matchingDevice ? (
+          {alert.username ? (
             <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                 <span style={{ fontWeight: "600", color: "var(--accent-color)" }}>
-                  {matchingDevice.username || "Unknown"}
+                  @{alert.username}
                 </span>
-                {matchingDevice.deviceInfo && (
+                {userDevices.length > 0 && (
                   <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-                    ({matchingDevice.deviceInfo})
+                    ({userDevices.length} device{userDevices.length !== 1 ? "s" : ""})
                   </span>
                 )}
               </div>
-              <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
-                {alert.target.substring(0, 30)}...
+              {userDevices.length === 0 && (
+                <span style={{ fontSize: "0.75rem", color: "#f59e0b", fontStyle: "italic" }}>
+                  No devices registered
               </span>
+              )}
             </div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <span style={{ color: "#ef4444", fontWeight: "600" }}>⚠️ Orphaned</span>
-              </div>
-              <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
-                {alert.target.substring(0, 30)}...
+            <span style={{ fontSize: "0.875rem", color: "var(--text-muted)", fontStyle: "italic" }}>
+              Unknown user
               </span>
-              <span style={{ fontSize: "0.75rem", color: "#ef4444", fontStyle: "italic" }}>
-                Device not found
-              </span>
-            </div>
           )}
         </td>
         <td>
@@ -348,7 +339,10 @@ export function MonitoringPage() {
 
   // Helper function to render a device row
   const renderDeviceRow = (device: Device) => {
-    const deviceAlerts = alerts.filter(a => a.target === device.pushToken);
+    // Find alerts for this device's user (alerts are now associated with username, not target)
+    const deviceAlerts = device.username 
+      ? alerts.filter(a => a.username === device.username)
+      : [];
     const activeAlerts = deviceAlerts.filter(a => a.status === "active");
 
     // Parse deviceInfo if it's a JSON string
@@ -372,16 +366,35 @@ export function MonitoringPage() {
     }
 
     return (
-      <tr key={device.pushToken}>
+      <tr 
+        key={device.pushToken}
+        style={!device.username ? {
+          background: "rgba(245, 158, 11, 0.05)",
+          borderLeft: "3px solid #f59e0b"
+        } : {}}
+      >
         <td>
           <span style={{ textTransform: "capitalize", fontWeight: 500 }}>
             {deviceDisplayName}
           </span>
         </td>
         <td>
+          {device.username ? (
           <span style={{ fontWeight: 600, color: "var(--accent-color)" }}>
-            {device.username ? `@${device.username}` : "Unknown"}
+              @{device.username}
           </span>
+          ) : (
+            <span style={{ 
+              fontWeight: 600, 
+              color: "#f59e0b",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.25rem"
+            }}>
+              <span>??</span>
+              <span>Unregistered</span>
+            </span>
+          )}
         </td>
         <td>
           <span style={{ fontSize: "0.75rem", fontFamily: "monospace", color: "var(--text-muted)" }}>
@@ -395,7 +408,7 @@ export function MonitoringPage() {
         </td>
         <td>
           <span className="muted">
-            {device.updatedAt ? new Date(device.updatedAt).toLocaleDateString() : "—"}
+            {device.updatedAt ? new Date(device.updatedAt).toLocaleDateString() : "�"}
           </span>
         </td>
         <td>
@@ -487,10 +500,10 @@ export function MonitoringPage() {
     const percentage = (Math.abs(difference) / currentPrice) * 100;
 
     if (alert.direction === "above") {
-      if (currentPrice >= alert.threshold) return "Triggered! 🎯";
+      if (currentPrice >= alert.threshold) return "Triggered! ??";
       return `${percentage.toFixed(1)}% below`;
     } else {
-      if (currentPrice <= alert.threshold) return "Triggered! 🎯";
+      if (currentPrice <= alert.threshold) return "Triggered! ??";
       return `${percentage.toFixed(1)}% above`;
     }
   };
@@ -686,7 +699,7 @@ export function MonitoringPage() {
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: string } }; message?: string };
       const errorMessage = error?.response?.data?.error || error?.message || "Failed to retry notification";
-      setRetryLogs([`[${new Date().toISOString()}] ❌ Error: ${errorMessage}`]);
+      setRetryLogs([`[${new Date().toISOString()}] ? Error: ${errorMessage}`]);
       setRetryResult({
         success: false,
         errorMessage,
@@ -709,11 +722,11 @@ export function MonitoringPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "success":
-        return <span style={{ color: "#38bdf8", fontWeight: 500 }}>✅ Success</span>;
+        return <span style={{ color: "#38bdf8", fontWeight: 500 }}>? Success</span>;
       case "failed":
-        return <span style={{ color: "#f87171", fontWeight: 500 }}>❌ Failed</span>;
+        return <span style={{ color: "#f87171", fontWeight: 500 }}>? Failed</span>;
       case "error":
-        return <span style={{ color: "#fbbf24", fontWeight: 500 }}>⚠️ Error</span>;
+        return <span style={{ color: "#fbbf24", fontWeight: 500 }}>?? Error</span>;
       default:
         return <span style={{ color: "#94a3b8" }}>{status}</span>;
     }
@@ -750,7 +763,7 @@ export function MonitoringPage() {
                   gap: "0.5rem",
                 }}
               >
-                {isLoading ? "🔄" : "↻"} Refresh
+                {isLoading ? "??" : "?"} Refresh
               </button>
             )}
             {activeTab === "users" && (
@@ -772,7 +785,7 @@ export function MonitoringPage() {
                   gap: "0.5rem",
                 }}
               >
-                {favoriteStocksLoading ? "🔄" : "↻"} Refresh
+                {favoriteStocksLoading ? "??" : "?"} Refresh
               </button>
             )}
             {activeTab === "logs" && (
@@ -794,7 +807,7 @@ export function MonitoringPage() {
                   gap: "0.5rem",
                 }}
               >
-                {logsLoading ? "🔄" : "↻"} Refresh
+                {logsLoading ? "??" : "?"} Refresh
               </button>
             )}
             {activeTab === "devices" && (
@@ -816,7 +829,7 @@ export function MonitoringPage() {
                   gap: "0.5rem",
                 }}
               >
-                {devicesLoading ? "🔄" : "↻"} Refresh
+                {devicesLoading ? "??" : "?"} Refresh
               </button>
             )}
             {activeTab === "users" && (
@@ -838,7 +851,7 @@ export function MonitoringPage() {
                   gap: "0.5rem",
                 }}
               >
-                {favoriteStocksLoading ? "🔄" : "↻"} Refresh
+                {favoriteStocksLoading ? "??" : "?"} Refresh
               </button>
             )}
           </div>
@@ -886,26 +899,10 @@ export function MonitoringPage() {
               </div>
             ) : isError ? (
               <div className="error-banner" style={{ padding: "1rem", background: "rgba(248, 113, 113, 0.1)", border: "1px solid rgba(248, 113, 113, 0.3)", borderRadius: "8px" }}>
-                <p style={{ color: "#f87171", margin: 0 }}>❌ Error Loading Alerts: {error?.message || "Failed to load alerts"}</p>
+                <p style={{ color: "#f87171", margin: 0 }}>? Error Loading Alerts: {error?.message || "Failed to load alerts"}</p>
               </div>
             ) : (
               <>
-                {orphanedAlerts.length > 0 && (
-                  <div style={{
-                    marginBottom: "1.5rem",
-                    padding: "1rem",
-                    background: "rgba(239, 68, 68, 0.1)",
-                    border: "1px solid rgba(239, 68, 68, 0.3)",
-                    borderRadius: "8px"
-                  }}>
-                    <p style={{ margin: 0, color: "#ef4444", fontWeight: "600", marginBottom: "0.5rem" }}>
-                      ⚠️ Warning: {orphanedAlerts.length} orphaned alert{orphanedAlerts.length !== 1 ? "s" : ""} detected
-                    </p>
-                    <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--text-muted)" }}>
-                      These alerts have push tokens that don't match any registered device. They will not receive notifications until the device is registered or the alert is updated with a valid token. Orphaned alerts are highlighted in red in the table below.
-                    </p>
-                  </div>
-                )}
                 <div className="alerts-controls">
                   <div className="search-wrapper">
                     <input
@@ -946,7 +943,7 @@ export function MonitoringPage() {
                   <div className="empty-state">
                     {alerts.length === 0 ? (
                       <>
-                        <div className="empty-icon">🔔</div>
+                        <div className="empty-icon">??</div>
                         <h3>No alerts configured</h3>
                         <p>Create your first alert to get started!</p>
                         <button type="button" onClick={() => setShowForm(true)}>
@@ -967,26 +964,26 @@ export function MonitoringPage() {
                           {(groupByUsername || usernameFilter !== "all") && <th>Username</th>}
                           <th onClick={() => handleSort("symbol")}>
                             Symbol{" "}
-                            {sortField === "symbol" && (sortOrder === "asc" ? "↑" : "↓")}
+                            {sortField === "symbol" && (sortOrder === "asc" ? "?" : "?")}
                           </th>
                           <th>Current Price</th>
                           <th>Direction</th>
                           <th onClick={() => handleSort("threshold")}>
                             Threshold{" "}
                             {sortField === "threshold" &&
-                              (sortOrder === "asc" ? "↑" : "↓")}
+                              (sortOrder === "asc" ? "?" : "?")}
                           </th>
                           <th>Distance</th>
                           <th onClick={() => handleSort("status")}>
                             Status{" "}
-                            {sortField === "status" && (sortOrder === "asc" ? "↑" : "↓")}
+                            {sortField === "status" && (sortOrder === "asc" ? "?" : "?")}
                           </th>
                           <th>Channel</th>
                           <th>Device / Target</th>
                           <th onClick={() => handleSort("createdAt")}>
                             Created{" "}
                             {sortField === "createdAt" &&
-                              (sortOrder === "asc" ? "↑" : "↓")}
+                              (sortOrder === "asc" ? "?" : "?")}
                           </th>
                           <th>Actions</th>
                         </tr>
@@ -1038,7 +1035,7 @@ export function MonitoringPage() {
               <>
                 {favoriteStocksError && (
                   <div className="error-banner" style={{ marginBottom: "1.5rem", padding: "1rem", background: "rgba(248, 113, 113, 0.1)", border: "1px solid rgba(248, 113, 113, 0.3)", borderRadius: "8px" }}>
-                    <p style={{ color: "#f87171", margin: 0 }}>❌ {favoriteStocksError}</p>
+                    <p style={{ color: "#f87171", margin: 0 }}>? {favoriteStocksError}</p>
                   </div>
                 )}
                 {favoriteStocks.length === 0 ? (
@@ -1132,7 +1129,7 @@ export function MonitoringPage() {
               <>
                 {logsError && (
                   <div className="error-banner" style={{ marginBottom: "1.5rem", padding: "1rem", background: "rgba(248, 113, 113, 0.1)", border: "1px solid rgba(248, 113, 113, 0.3)", borderRadius: "8px" }}>
-                    <p style={{ color: "#f87171", margin: 0 }}>❌ {logsError}</p>
+                    <p style={{ color: "#f87171", margin: 0 }}>? {logsError}</p>
                   </div>
                 )}
                 <div style={{ display: "flex", gap: "1rem", marginBottom: "1.5rem", flexWrap: "wrap" }}>
@@ -1184,7 +1181,7 @@ export function MonitoringPage() {
                 </div>
                 {filteredNotifications.length === 0 ? (
                   <div className="empty-state">
-                    <div className="empty-icon">📭</div>
+                    <div className="empty-icon">??</div>
                     <h3>No notifications found</h3>
                     <p>No notification logs match your filters.</p>
                   </div>
@@ -1222,7 +1219,7 @@ export function MonitoringPage() {
                                     color: notification.direction === "above" ? "#38bdf8" : "#fbbf24",
                                   }}
                                 >
-                                  {notification.direction === "above" ? "⬆️ Above" : "⬇️ Below"}
+                                  {notification.direction === "above" ? "↑ Above" : "↓ Below"}
                                 </span>
                               </td>
                               <td>{getStatusBadge(notification.status)}</td>
@@ -1231,7 +1228,7 @@ export function MonitoringPage() {
                                   fontWeight: notification.username ? 500 : 400,
                                   color: notification.username ? "var(--text-primary)" : "var(--text-muted)"
                                 }}>
-                                  {notification.username || "—"}
+                                  {notification.username || "�"}
                                 </span>
                               </td>
                               <td className="target-cell">
@@ -1252,7 +1249,7 @@ export function MonitoringPage() {
                                     {notification.errorMessage.length > 50 ? "..." : ""}
                                   </span>
                                 ) : (
-                                  <span style={{ color: "var(--text-muted)" }}>—</span>
+                                  <span style={{ color: "var(--text-muted)" }}>�</span>
                                 )}
                               </td>
                               {viewMode === "failed" && (
@@ -1274,7 +1271,7 @@ export function MonitoringPage() {
                                       opacity: retryingLogId === notification.id ? 0.6 : 1,
                                     }}
                                   >
-                                    {retryingLogId === notification.id ? "Retrying..." : "🔄 Retry"}
+                                    {retryingLogId === notification.id ? "Retrying..." : "?? Retry"}
                                   </button>
                                 </td>
                               )}
@@ -1340,7 +1337,7 @@ export function MonitoringPage() {
                               marginBottom: "0.5rem",
                             }}>
                               <span style={{ fontSize: "1.25rem" }}>
-                                {retryResult.success ? "✅" : "❌"}
+                                {retryResult.success ? "?" : "?"}
                               </span>
                               <strong style={{
                                 color: retryResult.success ? "#38bdf8" : "#f87171",
@@ -1378,9 +1375,9 @@ export function MonitoringPage() {
                             retryLogs.map((log, index) => (
                               <div key={index} style={{
                                 marginBottom: "0.5rem",
-                                color: log.includes("✅")
+                                color: log.includes("?")
                                   ? "#38bdf8"
-                                  : log.includes("❌")
+                                  : log.includes("?")
                                     ? "#f87171"
                                     : "var(--text)",
                               }}>
@@ -1410,28 +1407,28 @@ export function MonitoringPage() {
               <>
                 {devicesError && (
                   <div className="error-banner" style={{ marginBottom: "1.5rem", padding: "1rem", background: "rgba(248, 113, 113, 0.1)", border: "1px solid rgba(248, 113, 113, 0.3)", borderRadius: "8px" }}>
-                    <p style={{ color: "#f87171", margin: 0 }}>❌ {devicesError}</p>
+                    <p style={{ color: "#f87171", margin: 0 }}>? {devicesError}</p>
                   </div>
                 )}
-                {orphanedAlerts.length > 0 && (
+                {unregisteredDevicesCount > 0 && (
                   <div style={{
                     marginBottom: "1.5rem",
                     padding: "1rem",
-                    background: "rgba(239, 68, 68, 0.1)",
-                    border: "1px solid rgba(239, 68, 68, 0.3)",
+                    background: "rgba(245, 158, 11, 0.1)",
+                    border: "1px solid rgba(245, 158, 11, 0.3)",
                     borderRadius: "8px"
                   }}>
-                    <p style={{ margin: 0, color: "#ef4444", fontWeight: "600", marginBottom: "0.5rem" }}>
-                      ⚠️ Warning: {orphanedAlerts.length} orphaned alert{orphanedAlerts.length !== 1 ? "s" : ""} detected
+                    <p style={{ margin: 0, color: "#f59e0b", fontWeight: "600", marginBottom: "0.5rem" }}>
+                      ?? Info: {unregisteredDevicesCount} unregistered device{unregisteredDevicesCount !== 1 ? "s" : ""} found
                     </p>
                     <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--text-muted)" }}>
-                      These alerts have push tokens that don't match any registered device. They will not receive notifications until the device is registered or the alert is updated with a valid token.
+                      These devices have push tokens but are not associated with any user account. They are shown with "?? Unregistered" in the Username column below.
                     </p>
                   </div>
                 )}
                 {devices.length === 0 ? (
                   <div className="empty-state">
-                    <div className="empty-icon">📱</div>
+                    <div className="empty-icon">??</div>
                     <h3>No devices registered</h3>
                     <p>No devices have registered their push tokens yet.</p>
                   </div>
@@ -1500,12 +1497,12 @@ export function MonitoringPage() {
               <>
                 {favoriteStocksError && (
                   <div className="error-banner" style={{ marginBottom: "1.5rem", padding: "1rem", background: "rgba(248, 113, 113, 0.1)", border: "1px solid rgba(248, 113, 113, 0.3)", borderRadius: "8px" }}>
-                    <p style={{ color: "#f87171", margin: 0 }}>❌ {favoriteStocksError}</p>
+                    <p style={{ color: "#f87171", margin: 0 }}>? {favoriteStocksError}</p>
                   </div>
                 )}
                 {favoriteStocks.length === 0 ? (
                   <div className="empty-state">
-                    <div className="empty-icon">📊</div>
+                    <div className="empty-icon">??</div>
                     <h3>No favorite stocks found</h3>
                     <p>No users have selected favorite stocks yet.</p>
                   </div>
@@ -1567,7 +1564,7 @@ export function MonitoringPage() {
                                               }}
                                               title="Has news"
                                             >
-                                              📰
+                                              ??
                                             </span>
                                           )}
                                         </span>
@@ -1609,7 +1606,6 @@ export function MonitoringPage() {
             onSubmit={handleCreateAlert}
             onCancel={() => setShowForm(false)}
             isSubmitting={isCreating}
-            devices={devices}
           />
         )}
 
@@ -1619,7 +1615,6 @@ export function MonitoringPage() {
             onSubmit={handleUpdateAlert}
             onCancel={() => setEditingAlert(null)}
             isSubmitting={isUpdating}
-            devices={devices}
           />
         )}
 
@@ -1640,7 +1635,7 @@ export function MonitoringPage() {
               className="toast-close"
               onClick={() => setToast(null)}
             >
-              ✕
+              ?
             </button>
           </div>
         )}

@@ -10,21 +10,11 @@ import type {
   AlertStatus,
 } from "../types";
 
-interface Device {
-  username: string | null;
-  pushToken: string;
-  deviceInfo: string | null;
-  deviceType: string | null;
-  alertCount?: number;
-  activeAlertCount?: number;
-}
-
 interface AlertFormProps {
   alert?: Alert | null;
   onSubmit: (data: CreateAlertRequest | UpdateAlertRequest) => Promise<void>;
   onCancel: () => void;
   isSubmitting: boolean;
-  devices?: Device[];
 }
 
 export function AlertForm({
@@ -32,28 +22,17 @@ export function AlertForm({
   onSubmit,
   onCancel,
   isSubmitting,
-  devices = [],
 }: AlertFormProps) {
   // Initialize state from alert prop, reset when alert changes
   const getInitialSymbol = () => alert?.symbol ?? "";
   const getInitialDirection = (): AlertDirection => alert?.direction ?? "above";
   const getInitialThreshold = () => alert?.threshold?.toString() ?? "";
   const getInitialStatus = (): AlertStatus => alert?.status ?? "active";
-  const getInitialTarget = () => alert?.target ?? "";
-  const getInitialDeviceId = (): string => {
-    if (alert?.target) {
-      const matchingDevice = devices.find((d) => d.pushToken === alert.target);
-      return matchingDevice?.pushToken ?? "";
-    }
-    return "";
-  };
 
   const [symbol, setSymbol] = useState(getInitialSymbol);
   const [direction, setDirection] = useState<AlertDirection>(getInitialDirection);
   const [threshold, setThreshold] = useState(getInitialThreshold);
   const [status, setStatus] = useState<AlertStatus>(getInitialStatus);
-  const [target, setTarget] = useState(getInitialTarget);
-  const [selectedDeviceId, setSelectedDeviceId] = useState<string>(getInitialDeviceId);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showSuggestions, setShowSuggestions] = useState(false);
 
@@ -82,30 +61,15 @@ export function AlertForm({
         setDirection(alert.direction);
         setThreshold(alert.threshold.toString());
         setStatus(alert.status);
-        setTarget(alert.target);
-        const matchingDevice = devices.find((d) => d.pushToken === alert.target);
-        setSelectedDeviceId(matchingDevice?.pushToken ?? "");
       } else {
         setSymbol("");
         setDirection("above");
         setThreshold("");
         setStatus("active");
-        setTarget("");
-        setSelectedDeviceId("");
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- alert.id is the key we track, devices is needed for device lookup
-  }, [alert?.id, devices]);
-
-  // When device is selected, update target field
-  useEffect(() => {
-    if (selectedDeviceId && !alert) {
-      const selectedDevice = devices.find((d) => d.pushToken === selectedDeviceId);
-      if (selectedDevice) {
-        setTarget(selectedDevice.pushToken);
-      }
-    }
-  }, [selectedDeviceId, devices, alert]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- alert.id is the key we track
+  }, [alert?.id]);
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -117,12 +81,6 @@ export function AlertForm({
     const thresholdNum = parseFloat(threshold);
     if (!threshold || isNaN(thresholdNum) || thresholdNum <= 0) {
       newErrors.threshold = "Must be a positive number";
-    }
-
-    if (!target.trim()) {
-      newErrors.target = "FCM Token is required";
-    } else if (target.length < 50 || !/^[A-Za-z0-9_-]+$/.test(target)) {
-      newErrors.target = "Invalid FCM token format (must be at least 50 alphanumeric characters)";
     }
 
     setErrors(newErrors);
@@ -144,14 +102,12 @@ export function AlertForm({
             threshold: parseFloat(threshold),
             status,
             channel: "notification", // Always use notification channel
-            target,
           }
         : {
             symbol: symbol.toUpperCase(),
             direction,
             threshold: parseFloat(threshold),
             channel: "notification", // Always use notification channel
-            target,
           };
 
       await onSubmit(data);
@@ -346,77 +302,10 @@ export function AlertForm({
           </div>
 
           <div className="form-group">
-            <label htmlFor="device-select">
-              Device / User <span className="required">*</span>
-            </label>
-            {devices.length > 0 && !alert ? (
-              <>
-                <select
-                  id="device-select"
-                  value={selectedDeviceId}
-                  onChange={(e) => {
-                    setSelectedDeviceId(e.target.value);
-                    const selectedDevice = devices.find((d) => d.pushToken === e.target.value);
-                    if (selectedDevice) {
-                      setTarget(selectedDevice.pushToken);
-                    }
-                  }}
-                  disabled={isSubmitting}
-                  className={errors.target ? "error" : ""}
-                  style={{
-                    width: "100%",
-                    padding: "0.75rem",
-                    fontSize: "0.875rem",
-                    border: "1px solid var(--ghost-border)",
-                    borderRadius: "6px",
-                    background: "var(--bg)",
-                    color: "var(--text-primary)",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  <option value="">Select a device...</option>
-                  {devices.map((device) => (
-                    <option key={device.pushToken} value={device.pushToken}>
-                      {device.username || "Unknown"} {device.deviceInfo ? `(${device.deviceInfo})` : ""} {device.deviceType ? `[${device.deviceType}]` : ""} 
-                      {device.alertCount !== undefined ? ` - ${device.alertCount} alert${device.alertCount !== 1 ? "s" : ""}` : ""}
-                    </option>
-                  ))}
-                </select>
-                <p className="help-text">
-                  Select a registered device to automatically use its push token. Or enter a token manually below.
-                </p>
-              </>
-            ) : null}
-            <label htmlFor="target" style={{ marginTop: devices.length > 0 && !alert ? "1rem" : "0" }}>
-              FCM Token (Notification Target) <span className="required">*</span>
-            </label>
-            <input
-              id="target"
-              type="text"
-              value={target}
-              onChange={(e) => {
-                setTarget(e.target.value);
-                // Clear device selection if manually editing token
-                if (selectedDeviceId) {
-                  const selectedDevice = devices.find((d) => d.pushToken === selectedDeviceId);
-                  if (selectedDevice && e.target.value !== selectedDevice.pushToken) {
-                    setSelectedDeviceId("");
-                  }
-                }
-              }}
-              placeholder="Enter FCM token from mobile app"
-              disabled={isSubmitting}
-              readOnly={false}
-              className={errors.target ? "error" : ""}
-            />
             <p className="help-text">
-              {alert 
-                ? "The FCM token for this alert. Update it if the device token has changed."
-                : "The FCM token is used to send push notifications to your device. Select a device above or enter the token manually."}
+              Notifications will be sent to all devices registered for your account. 
+              You can manage your registered devices in the Monitoring section.
             </p>
-            {errors.target && (
-              <span className="error-message">{errors.target}</span>
-            )}
           </div>
 
 

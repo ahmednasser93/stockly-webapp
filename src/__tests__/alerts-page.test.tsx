@@ -43,7 +43,6 @@ describe("MonitoringPage", () => {
       threshold: 200.5,
       status: "active",
       channel: "notification",
-      target: "dXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
       notes: "Watch for breakout",
       username: "testuser",
       createdAt: "2025-11-14T10:30:00.000Z",
@@ -56,7 +55,6 @@ describe("MonitoringPage", () => {
       threshold: 350.0,
       status: "paused",
       channel: "notification",
-      target: "eYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY",
       notes: null,
       username: "testuser2",
       createdAt: "2025-11-13T08:20:00.000Z",
@@ -315,16 +313,18 @@ describe("MonitoringPage", () => {
     });
 
     // Click on Devices tab
+    const devicesTab = screen.getByText("Devices");
     await act(async () => {
-      const devicesTab = screen.getByText("Devices");
       devicesTab.click();
     });
 
+    // Wait for devices to load
     await waitFor(() => {
       expect(screen.getByText("Android Honor")).toBeInTheDocument();
-      expect(screen.getByText("@testuser1")).toBeInTheDocument();
-      expect(screen.getByText("Unknown")).toBeInTheDocument();
     }, { timeout: 5000 });
+
+    expect(screen.getByText("@testuser1")).toBeInTheDocument();
+    expect(screen.getByText("Unregistered")).toBeInTheDocument();
   });
 
   it("should show empty state when no devices are registered", async () => {

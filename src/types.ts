@@ -26,7 +26,6 @@ export interface Alert {
   threshold: number;
   status: AlertStatus;
   channel: AlertChannel;
-  target: string;
   notes: string | null;
   username?: string | null;
   createdAt: string; // ISO 8601 timestamp
@@ -38,7 +37,6 @@ export interface CreateAlertRequest {
   direction: AlertDirection;
   threshold: number;
   channel: AlertChannel;
-  target: string;
   notes?: string;
 }
 
@@ -48,7 +46,6 @@ export interface UpdateAlertRequest {
   threshold?: number;
   status?: AlertStatus;
   channel?: AlertChannel;
-  target?: string;
   notes?: string | null;
 }
 
