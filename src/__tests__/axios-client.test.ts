@@ -1,9 +1,9 @@
 
-import { describe, it, expect, vi, beforeEach, afterEach, beforeAll, Mock } from 'vitest';
-import axios from 'axios';
+import { describe, it, expect, vi, beforeEach, beforeAll, Mock } from 'vitest';
 
 // Define mocks using vi.hoisted to survive hoisting
 const mocks = vi.hoisted(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mockFn: any = vi.fn(() => Promise.resolve({ data: 'retry-success' }));
     mockFn.interceptors = {
         request: { use: vi.fn() },
@@ -19,16 +19,18 @@ const mocks = vi.hoisted(() => {
 
 const { mockAxiosInstance } = mocks;
 
-vi.mock('axios', async (importOriginal) => {
+vi.mock('axios', async () => {
     return {
         default: {
             create: () => mocks.mockAxiosInstance,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             isAxiosError: (payload: any) => payload?.isAxiosError === true,
         },
         AxiosError: class extends Error {
             isAxiosError = true;
             config = {};
             response = {};
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             constructor(message: string, code?: string, config?: any, request?: any, response?: any) {
                 super(message);
                 this.config = config;
@@ -54,6 +56,7 @@ global.fetch = fetchMock;
 
 describe('axios-client', () => {
     // Variable to hold the error interceptor logic, captured in beforeEach
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let responseInterceptorError: any;
 
     beforeAll(() => {
@@ -117,8 +120,8 @@ describe('axios-client', () => {
         const config = { _retry: false };
         try {
             await responseInterceptorError({ config, response: { status: 401 }, isAxiosError: true });
-        } catch (e) {
-            // expected
+        } catch {
+            // expected - error is caught and handled
         }
 
         expect(navigateTo).toHaveBeenCalledWith('/login');
@@ -130,8 +133,8 @@ describe('axios-client', () => {
         const config = { _retry: false };
         try {
             await responseInterceptorError({ config, response: { status: 401 }, isAxiosError: true });
-        } catch (e) {
-            // expected
+        } catch {
+            // expected - error is caught and handled
         }
 
         expect(navigateTo).toHaveBeenCalledWith('/login');

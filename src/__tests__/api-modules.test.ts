@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { getFavoriteStocks, updateFavoriteStocks, deleteFavoriteStock } from '../api/favoriteStocks';
 import { fetchStockNews, fetchMultipleStockNews } from '../api/news';
 import { fetchStockDetails } from '../api/stockDetails';
-import { searchSymbols, fetchStocks, API_BASE_URL } from '../api/client';
+// Note: searchSymbols, fetchStocks, and API_BASE_URL are imported but not used in these tests
 import { getAdminConfig, updateAdminConfig, getMonitoringSnapshot, fetchOpenApiSpec, simulateProviderFailure, disableProviderFailure } from '../api/adminConfig';
 
 // Mock fetch global

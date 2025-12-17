@@ -3,8 +3,8 @@
 # ==============================================================================
 # Stockly Web App Production Deployment Script
 # ==============================================================================
-# Runs tests (REQUIRED), linting (with warnings), builds, and deploys the web app
-# Tests MUST pass or deployment will be aborted
+# Runs tests (REQUIRED), linting (REQUIRED), builds, and deploys the web app
+# Tests and linting MUST pass or deployment will be aborted
 # ==============================================================================
 
 set -e
@@ -37,19 +37,16 @@ else
   echo ""
 fi
 
-echo "🔍 Running Linter..."
+echo "🔍 Running Linter (REQUIRED - deployment will abort on failure)..."
 echo "------------------------------------------------"
-set +e  # Temporarily disable exit on error for linting
-npm run lint
-LINT_EXIT_CODE=$?
-set -e  # Re-enable exit on error
-if [ $LINT_EXIT_CODE -eq 0 ]; then
-  echo "✅ Linting passed"
-else
+if ! npm run lint; then
   echo ""
-  echo "⚠️  Linting found issues (continuing with deployment)"
-  echo "   Note: Some linting errors are non-blocking"
+  echo "❌ ❌ ❌ LINTING FAILED ❌ ❌ ❌"
+  echo "   Deployment aborted. Please fix all linting errors before deploying."
+  echo "   Run 'npm run lint' to see detailed linting output."
+  exit 1
 fi
+echo "✅ Linting passed"
 echo ""
 
 echo "🔨 Building Web App..."
