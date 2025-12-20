@@ -328,8 +328,9 @@ describe("MonitoringSection (Legacy MonitoringPage Tests)", () => {
       {
         userId: "user-1",
         username: "testuser1",
-        pushToken: "dXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        pushTokens: ["dXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"],
         deviceInfo: JSON.stringify({ platform: "Android", model: "Honor" }),
+        deviceType: "Android",
         alertCount: 1,
         activeAlertCount: 1,
         createdAt: "2025-11-14T10:30:00.000Z",
@@ -338,8 +339,9 @@ describe("MonitoringSection (Legacy MonitoringPage Tests)", () => {
       {
         userId: "user-2",
         username: null,
-        pushToken: "eYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY",
+        pushTokens: ["eYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"],
         deviceInfo: null,
+        deviceType: null,
         alertCount: 0,
         activeAlertCount: 0,
         createdAt: "2025-11-13T08:20:00.000Z",
@@ -443,8 +445,9 @@ describe("MonitoringSection (Legacy MonitoringPage Tests)", () => {
       {
         userId: "user-1",
         username: "testuser1",
-        pushToken: "dXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        pushTokens: ["dXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"],
         deviceInfo: JSON.stringify({ platform: "Android", model: "Honor" }),
+        deviceType: "Android",
         alertCount: 1,
         activeAlertCount: 1,
         createdAt: "2025-11-14T10:30:00.000Z",

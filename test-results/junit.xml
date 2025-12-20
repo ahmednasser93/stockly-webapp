@@ -1,93 +1,93 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="137" failures="0" errors="0" time="3.069287762">
-    <testsuite name="src/__tests__/alerts-api.test.ts" timestamp="2025-12-20T12:12:06.867Z" hostname="sngvahmed" tests="12" failures="0" errors="0" skipped="0" time="0.017252692">
-        <testcase classname="src/__tests__/alerts-api.test.ts" name="Alerts API Client &gt; listAlerts &gt; should fetch and return list of alerts" time="0.006267858">
+<testsuites name="vitest tests" tests="137" failures="0" errors="0" time="3.070927374">
+    <testsuite name="src/__tests__/alerts-api.test.ts" timestamp="2025-12-20T13:54:44.278Z" hostname="sngvahmed" tests="12" failures="0" errors="0" skipped="0" time="0.018545509">
+        <testcase classname="src/__tests__/alerts-api.test.ts" name="Alerts API Client &gt; listAlerts &gt; should fetch and return list of alerts" time="0.005102746">
         </testcase>
-        <testcase classname="src/__tests__/alerts-api.test.ts" name="Alerts API Client &gt; listAlerts &gt; should return empty array when no alerts" time="0.000421114">
+        <testcase classname="src/__tests__/alerts-api.test.ts" name="Alerts API Client &gt; listAlerts &gt; should return empty array when no alerts" time="0.000441101">
         </testcase>
-        <testcase classname="src/__tests__/alerts-api.test.ts" name="Alerts API Client &gt; listAlerts &gt; should throw error on failed request" time="0.001789193">
+        <testcase classname="src/__tests__/alerts-api.test.ts" name="Alerts API Client &gt; listAlerts &gt; should throw error on failed request" time="0.001780134">
         </testcase>
-        <testcase classname="src/__tests__/alerts-api.test.ts" name="Alerts API Client &gt; getAlert &gt; should fetch and return single alert" time="0.000855253">
+        <testcase classname="src/__tests__/alerts-api.test.ts" name="Alerts API Client &gt; getAlert &gt; should fetch and return single alert" time="0.001049187">
         </testcase>
-        <testcase classname="src/__tests__/alerts-api.test.ts" name="Alerts API Client &gt; getAlert &gt; should throw error when alert not found" time="0.000475076">
+        <testcase classname="src/__tests__/alerts-api.test.ts" name="Alerts API Client &gt; getAlert &gt; should throw error when alert not found" time="0.000540999">
         </testcase>
-        <testcase classname="src/__tests__/alerts-api.test.ts" name="Alerts API Client &gt; createAlert &gt; should create alert and return created alert" time="0.001426139">
+        <testcase classname="src/__tests__/alerts-api.test.ts" name="Alerts API Client &gt; createAlert &gt; should create alert and return created alert" time="0.0016083">
         </testcase>
-        <testcase classname="src/__tests__/alerts-api.test.ts" name="Alerts API Client &gt; createAlert &gt; should throw validation error on invalid data" time="0.000484133">
+        <testcase classname="src/__tests__/alerts-api.test.ts" name="Alerts API Client &gt; createAlert &gt; should throw validation error on invalid data" time="0.000570535">
         </testcase>
-        <testcase classname="src/__tests__/alerts-api.test.ts" name="Alerts API Client &gt; updateAlert &gt; should update alert and return updated alert" time="0.000860263">
+        <testcase classname="src/__tests__/alerts-api.test.ts" name="Alerts API Client &gt; updateAlert &gt; should update alert and return updated alert" time="0.001923405">
         </testcase>
-        <testcase classname="src/__tests__/alerts-api.test.ts" name="Alerts API Client &gt; updateAlert &gt; should throw error when alert not found" time="0.000840675">
+        <testcase classname="src/__tests__/alerts-api.test.ts" name="Alerts API Client &gt; updateAlert &gt; should throw error when alert not found" time="0.001197507">
         </testcase>
-        <testcase classname="src/__tests__/alerts-api.test.ts" name="Alerts API Client &gt; updateAlert &gt; should throw error when no fields provided" time="0.000492449">
+        <testcase classname="src/__tests__/alerts-api.test.ts" name="Alerts API Client &gt; updateAlert &gt; should throw error when no fields provided" time="0.000639415">
         </testcase>
-        <testcase classname="src/__tests__/alerts-api.test.ts" name="Alerts API Client &gt; deleteAlert &gt; should delete alert and return success" time="0.000693398">
+        <testcase classname="src/__tests__/alerts-api.test.ts" name="Alerts API Client &gt; deleteAlert &gt; should delete alert and return success" time="0.000809756">
         </testcase>
-        <testcase classname="src/__tests__/alerts-api.test.ts" name="Alerts API Client &gt; deleteAlert &gt; should throw error when alert not found" time="0.000443477">
+        <testcase classname="src/__tests__/alerts-api.test.ts" name="Alerts API Client &gt; deleteAlert &gt; should throw error when alert not found" time="0.00052529">
         </testcase>
     </testsuite>
-    <testsuite name="src/__tests__/alerts-page.test.tsx" timestamp="2025-12-20T12:12:06.869Z" hostname="sngvahmed" tests="13" failures="0" errors="0" skipped="0" time="0.548483682">
-        <testcase classname="src/__tests__/alerts-page.test.tsx" name="MonitoringSection (Legacy MonitoringPage Tests) &gt; should render loading state initially" time="0.109334313">
+    <testsuite name="src/__tests__/alerts-page.test.tsx" timestamp="2025-12-20T13:54:44.281Z" hostname="sngvahmed" tests="13" failures="0" errors="0" skipped="0" time="0.592988674">
+        <testcase classname="src/__tests__/alerts-page.test.tsx" name="MonitoringSection (Legacy MonitoringPage Tests) &gt; should render loading state initially" time="0.110886102">
             <system-out>
 Loaded 0 device(s) { total: 0, withUsername: 0, withoutUsername: 0 }
 
             </system-out>
         </testcase>
-        <testcase classname="src/__tests__/alerts-page.test.tsx" name="MonitoringSection (Legacy MonitoringPage Tests) &gt; should render alerts table with data" time="0.06906986">
+        <testcase classname="src/__tests__/alerts-page.test.tsx" name="MonitoringSection (Legacy MonitoringPage Tests) &gt; should render alerts table with data" time="0.075321612">
             <system-out>
 Loaded 0 device(s) { total: 0, withUsername: 0, withoutUsername: 0 }
 
             </system-out>
         </testcase>
-        <testcase classname="src/__tests__/alerts-page.test.tsx" name="MonitoringSection (Legacy MonitoringPage Tests) &gt; should display empty state when no alerts" time="0.028761954">
+        <testcase classname="src/__tests__/alerts-page.test.tsx" name="MonitoringSection (Legacy MonitoringPage Tests) &gt; should display empty state when no alerts" time="0.028335508">
             <system-out>
 Loaded 0 device(s) { total: 0, withUsername: 0, withoutUsername: 0 }
 
             </system-out>
         </testcase>
-        <testcase classname="src/__tests__/alerts-page.test.tsx" name="MonitoringSection (Legacy MonitoringPage Tests) &gt; should render error state on API failure" time="0.031602791">
+        <testcase classname="src/__tests__/alerts-page.test.tsx" name="MonitoringSection (Legacy MonitoringPage Tests) &gt; should render error state on API failure" time="0.025491919">
             <system-out>
 Loaded 0 device(s) { total: 0, withUsername: 0, withoutUsername: 0 }
 
             </system-out>
         </testcase>
-        <testcase classname="src/__tests__/alerts-page.test.tsx" name="MonitoringSection (Legacy MonitoringPage Tests) &gt; should display current prices for symbols" time="0.031561674">
+        <testcase classname="src/__tests__/alerts-page.test.tsx" name="MonitoringSection (Legacy MonitoringPage Tests) &gt; should display current prices for symbols" time="0.035507353">
             <system-out>
 Loaded 0 device(s) { total: 0, withUsername: 0, withoutUsername: 0 }
 
             </system-out>
         </testcase>
-        <testcase classname="src/__tests__/alerts-page.test.tsx" name="MonitoringSection (Legacy MonitoringPage Tests) &gt; should display threshold prices" time="0.032425703">
+        <testcase classname="src/__tests__/alerts-page.test.tsx" name="MonitoringSection (Legacy MonitoringPage Tests) &gt; should display threshold prices" time="0.038538846">
             <system-out>
 Loaded 0 device(s) { total: 0, withUsername: 0, withoutUsername: 0 }
 
             </system-out>
         </testcase>
-        <testcase classname="src/__tests__/alerts-page.test.tsx" name="MonitoringSection (Legacy MonitoringPage Tests) &gt; should show filter tabs with correct counts" time="0.032531202">
+        <testcase classname="src/__tests__/alerts-page.test.tsx" name="MonitoringSection (Legacy MonitoringPage Tests) &gt; should show filter tabs with correct counts" time="0.048445194">
             <system-out>
 Loaded 0 device(s) { total: 0, withUsername: 0, withoutUsername: 0 }
 
             </system-out>
         </testcase>
-        <testcase classname="src/__tests__/alerts-page.test.tsx" name="MonitoringSection (Legacy MonitoringPage Tests) &gt; should display Create Alert button" time="0.032598809">
+        <testcase classname="src/__tests__/alerts-page.test.tsx" name="MonitoringSection (Legacy MonitoringPage Tests) &gt; should display Create Alert button" time="0.034485116">
             <system-out>
 Loaded 0 device(s) { total: 0, withUsername: 0, withoutUsername: 0 }
 
             </system-out>
         </testcase>
-        <testcase classname="src/__tests__/alerts-page.test.tsx" name="MonitoringSection (Legacy MonitoringPage Tests) &gt; should show channel badges" time="0.026381476">
+        <testcase classname="src/__tests__/alerts-page.test.tsx" name="MonitoringSection (Legacy MonitoringPage Tests) &gt; should show channel badges" time="0.030667493">
             <system-out>
 Loaded 0 device(s) { total: 0, withUsername: 0, withoutUsername: 0 }
 
             </system-out>
         </testcase>
-        <testcase classname="src/__tests__/alerts-page.test.tsx" name="MonitoringSection (Legacy MonitoringPage Tests) &gt; should render Devices tab" time="0.013858723">
+        <testcase classname="src/__tests__/alerts-page.test.tsx" name="MonitoringSection (Legacy MonitoringPage Tests) &gt; should render Devices tab" time="0.017940649">
             <system-out>
 Loaded 0 device(s) { total: 0, withUsername: 0, withoutUsername: 0 }
 
             </system-out>
         </testcase>
-        <testcase classname="src/__tests__/alerts-page.test.tsx" name="MonitoringSection (Legacy MonitoringPage Tests) &gt; should load and display devices when Devices tab is clicked" time="0.053617182">
+        <testcase classname="src/__tests__/alerts-page.test.tsx" name="MonitoringSection (Legacy MonitoringPage Tests) &gt; should load and display devices when Devices tab is clicked" time="0.049416414">
             <system-out>
 Loaded 2 device(s) { total: 2, withUsername: 1, withoutUsername: 1 }
 
@@ -95,7 +95,7 @@ Loaded 2 device(s) { total: 2, withUsername: 1, withoutUsername: 1 }
 
             </system-out>
         </testcase>
-        <testcase classname="src/__tests__/alerts-page.test.tsx" name="MonitoringSection (Legacy MonitoringPage Tests) &gt; should show empty state when no devices are registered" time="0.040026995">
+        <testcase classname="src/__tests__/alerts-page.test.tsx" name="MonitoringSection (Legacy MonitoringPage Tests) &gt; should show empty state when no devices are registered" time="0.045600473">
             <system-out>
 Loaded 0 device(s) { total: 0, withUsername: 0, withoutUsername: 0 }
 
@@ -104,10 +104,10 @@ Loaded 0 device(s) { total: 0, withUsername: 0, withoutUsername: 0 }
             </system-out>
             <system-err>
 Failed to load users: Error: Unexpected URL: /v1/api/users/all
-    at Object.&lt;anonymous&gt; (/home/sngvahmed/workspace/stockly/webapp/src/__tests__/alerts-page.test.tsx:411:29)
+    at Object.&lt;anonymous&gt; (/home/sngvahmed/workspace/stockly/webapp/src/__tests__/alerts-page.test.tsx:413:29)
     at Object.Mock [as get] (file:///home/sngvahmed/workspace/stockly/webapp/node_modules/@vitest/spy/dist/index.js:280:34)
     at loadAllUsers (/home/sngvahmed/workspace/stockly/webapp/src/components/MonitoringSection.tsx:267:42)
-    at /home/sngvahmed/workspace/stockly/webapp/src/components/MonitoringSection.tsx:343:7
+    at /home/sngvahmed/workspace/stockly/webapp/src/components/MonitoringSection.tsx:386:7
     at Object.react_stack_bottom_frame (/home/sngvahmed/workspace/stockly/webapp/node_modules/react-dom/cjs/react-dom-client.development.js:25989:20)
     at runWithFiberInDEV (/home/sngvahmed/workspace/stockly/webapp/node_modules/react-dom/cjs/react-dom-client.development.js:874:13)
     at commitHookEffectListMount (/home/sngvahmed/workspace/stockly/webapp/node_modules/react-dom/cjs/react-dom-client.development.js:13249:29)
@@ -117,7 +117,7 @@ Failed to load users: Error: Unexpected URL: /v1/api/users/all
 
             </system-err>
         </testcase>
-        <testcase classname="src/__tests__/alerts-page.test.tsx" name="MonitoringSection (Legacy MonitoringPage Tests) &gt; should send test notification when Send Test button is clicked" time="0.044841524">
+        <testcase classname="src/__tests__/alerts-page.test.tsx" name="MonitoringSection (Legacy MonitoringPage Tests) &gt; should send test notification when Send Test button is clicked" time="0.050537276">
             <system-out>
 Loaded 1 device(s) { total: 1, withUsername: 1, withoutUsername: 0 }
 
@@ -126,10 +126,10 @@ Loaded 1 device(s) { total: 1, withUsername: 1, withoutUsername: 0 }
             </system-out>
             <system-err>
 Failed to load users: Error: Unexpected URL: /v1/api/users/all
-    at Object.&lt;anonymous&gt; (/home/sngvahmed/workspace/stockly/webapp/src/__tests__/alerts-page.test.tsx:466:29)
+    at Object.&lt;anonymous&gt; (/home/sngvahmed/workspace/stockly/webapp/src/__tests__/alerts-page.test.tsx:469:29)
     at Object.Mock [as get] (file:///home/sngvahmed/workspace/stockly/webapp/node_modules/@vitest/spy/dist/index.js:280:34)
     at loadAllUsers (/home/sngvahmed/workspace/stockly/webapp/src/components/MonitoringSection.tsx:267:42)
-    at /home/sngvahmed/workspace/stockly/webapp/src/components/MonitoringSection.tsx:343:7
+    at /home/sngvahmed/workspace/stockly/webapp/src/components/MonitoringSection.tsx:386:7
     at Object.react_stack_bottom_frame (/home/sngvahmed/workspace/stockly/webapp/node_modules/react-dom/cjs/react-dom-client.development.js:25989:20)
     at runWithFiberInDEV (/home/sngvahmed/workspace/stockly/webapp/node_modules/react-dom/cjs/react-dom-client.development.js:874:13)
     at commitHookEffectListMount (/home/sngvahmed/workspace/stockly/webapp/node_modules/react-dom/cjs/react-dom-client.development.js:13249:29)
@@ -140,88 +140,88 @@ Failed to load users: Error: Unexpected URL: /v1/api/users/all
             </system-err>
         </testcase>
     </testsuite>
-    <testsuite name="src/__tests__/api-client.test.ts" timestamp="2025-12-20T12:12:06.873Z" hostname="sngvahmed" tests="4" failures="0" errors="0" skipped="0" time="0.004480008">
-        <testcase classname="src/__tests__/api-client.test.ts" name="api client &gt; skips search when query is too short" time="0.002082357">
+    <testsuite name="src/__tests__/api-client.test.ts" timestamp="2025-12-20T13:54:44.284Z" hostname="sngvahmed" tests="4" failures="0" errors="0" skipped="0" time="0.005342548">
+        <testcase classname="src/__tests__/api-client.test.ts" name="api client &gt; skips search when query is too short" time="0.002362913">
         </testcase>
-        <testcase classname="src/__tests__/api-client.test.ts" name="api client &gt; requests search results when query is long enough" time="0.000610712">
+        <testcase classname="src/__tests__/api-client.test.ts" name="api client &gt; requests search results when query is long enough" time="0.000885098">
         </testcase>
-        <testcase classname="src/__tests__/api-client.test.ts" name="api client &gt; skips fetchStocks when no symbols provided" time="0.00023363">
+        <testcase classname="src/__tests__/api-client.test.ts" name="api client &gt; skips fetchStocks when no symbols provided" time="0.000382781">
         </testcase>
-        <testcase classname="src/__tests__/api-client.test.ts" name="api client &gt; fetches stocks when symbols exist" time="0.000490765">
-        </testcase>
-    </testsuite>
-    <testsuite name="src/__tests__/api-modules.test.ts" timestamp="2025-12-20T12:12:06.874Z" hostname="sngvahmed" tests="30" failures="0" errors="0" skipped="0" time="0.022057923">
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; favoriteStocks &gt; getFavoriteStocks should return stocks on success" time="0.002404995">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; favoriteStocks &gt; getFavoriteStocks should return empty on 401" time="0.000482289">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; favoriteStocks &gt; getFavoriteStocks should throw on other errors" time="0.001538762">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; favoriteStocks &gt; updateFavoriteStocks should success" time="0.000547974">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; favoriteStocks &gt; updateFavoriteStocks should throw on error" time="0.000478713">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; favoriteStocks &gt; deleteFavoriteStock should success" time="0.002463526">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; favoriteStocks &gt; deleteFavoriteStock should throw on error" time="0.0005732">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; news &gt; fetchStockNews should build URL and return news" time="0.001015675">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; news &gt; fetchStockNews should handle JSON errors" time="0.000786814">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; news &gt; fetchStockNews should handle non-JSON errors" time="0.000541611">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; news &gt; fetchStockNews should handle empty error text" time="0.000417978">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; news &gt; fetchMultipleStockNews returns empty for 0 symbols" time="0.000829354">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; news &gt; fetchMultipleStockNews throws for &gt;10 symbols" time="0.000337957">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; news &gt; fetchMultipleStockNews handles success" time="0.00041915">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; news &gt; fetchMultipleStockNews handles JSON error" time="0.0005146">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; news &gt; fetchMultipleStockNews handles text error" time="0.00066811">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; stockDetails &gt; fetchStockDetails success" time="0.000382511">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; stockDetails &gt; fetchStockDetails JSON error" time="0.000441212">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; stockDetails &gt; fetchStockDetails text error" time="0.000379455">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; stockDetails &gt; fetchStockDetails abort error" time="0.000393482">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; stockDetails &gt; fetchStockDetails generic network error" time="0.000329992">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; adminConfig &gt; getAdminConfig success" time="0.000923552">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; adminConfig &gt; getAdminConfig failure falls back to default" time="0.000383783">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; adminConfig &gt; updateAdminConfig success" time="0.000321847">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; adminConfig &gt; getMonitoringSnapshot success" time="0.000507186">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; adminConfig &gt; getMonitoringSnapshot failure falls back" time="0.000336084">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; adminConfig &gt; fetchOpenApiSpec success" time="0.000276432">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; adminConfig &gt; fetchOpenApiSpec failure throws" time="0.000331305">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; adminConfig &gt; simulateProviderFailure success" time="0.000349639">
-        </testcase>
-        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; adminConfig &gt; disableProviderFailure success" time="0.000357684">
+        <testcase classname="src/__tests__/api-client.test.ts" name="api client &gt; fetches stocks when symbols exist" time="0.000463965">
         </testcase>
     </testsuite>
-    <testsuite name="src/__tests__/auth-context.test.tsx" timestamp="2025-12-20T12:12:06.881Z" hostname="sngvahmed" tests="11" failures="0" errors="0" skipped="0" time="0.593996421">
-        <testcase classname="src/__tests__/auth-context.test.tsx" name="AuthContext &gt; checkAuth should set user if authenticated" time="0.085297729">
+    <testsuite name="src/__tests__/api-modules.test.ts" timestamp="2025-12-20T13:54:44.285Z" hostname="sngvahmed" tests="30" failures="0" errors="0" skipped="0" time="0.069682085">
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; favoriteStocks &gt; getFavoriteStocks should return stocks on success" time="0.011598177">
         </testcase>
-        <testcase classname="src/__tests__/auth-context.test.tsx" name="AuthContext &gt; checkAuth should clear state if 401" time="0.055559624">
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; favoriteStocks &gt; getFavoriteStocks should return empty on 401" time="0.000529518">
         </testcase>
-        <testcase classname="src/__tests__/auth-context.test.tsx" name="AuthContext &gt; checkAuth should set requiresUsername if missing username" time="0.055560246">
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; favoriteStocks &gt; getFavoriteStocks should throw on other errors" time="0.017290704">
         </testcase>
-        <testcase classname="src/__tests__/auth-context.test.tsx" name="AuthContext &gt; handleGoogleSignIn should login and redirect" time="0.056077941">
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; favoriteStocks &gt; updateFavoriteStocks should success" time="0.000655556">
         </testcase>
-        <testcase classname="src/__tests__/auth-context.test.tsx" name="AuthContext &gt; handleGoogleSignIn should handle failure" time="0.060532451">
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; favoriteStocks &gt; updateFavoriteStocks should throw on error" time="0.000602766">
+        </testcase>
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; favoriteStocks &gt; deleteFavoriteStock should success" time="0.014638836">
+        </testcase>
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; favoriteStocks &gt; deleteFavoriteStock should throw on error" time="0.000623325">
+        </testcase>
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; news &gt; fetchStockNews should build URL and return news" time="0.00998138">
+        </testcase>
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; news &gt; fetchStockNews should handle JSON errors" time="0.000915545">
+        </testcase>
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; news &gt; fetchStockNews should handle non-JSON errors" time="0.000562921">
+        </testcase>
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; news &gt; fetchStockNews should handle empty error text" time="0.00042995">
+        </testcase>
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; news &gt; fetchMultipleStockNews returns empty for 0 symbols" time="0.001836912">
+        </testcase>
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; news &gt; fetchMultipleStockNews throws for &gt;10 symbols" time="0.000437184">
+        </testcase>
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; news &gt; fetchMultipleStockNews handles success" time="0.000451581">
+        </testcase>
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; news &gt; fetchMultipleStockNews handles JSON error" time="0.000586516">
+        </testcase>
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; news &gt; fetchMultipleStockNews handles text error" time="0.000586305">
+        </testcase>
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; stockDetails &gt; fetchStockDetails success" time="0.000443065">
+        </testcase>
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; stockDetails &gt; fetchStockDetails JSON error" time="0.000873526">
+        </testcase>
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; stockDetails &gt; fetchStockDetails text error" time="0.000414201">
+        </testcase>
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; stockDetails &gt; fetchStockDetails abort error" time="0.000311136">
+        </testcase>
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; stockDetails &gt; fetchStockDetails generic network error" time="0.000294956">
+        </testcase>
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; adminConfig &gt; getAdminConfig success" time="0.00071614">
+        </testcase>
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; adminConfig &gt; getAdminConfig failure falls back to default" time="0.000262625">
+        </testcase>
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; adminConfig &gt; updateAdminConfig success" time="0.000275519">
+        </testcase>
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; adminConfig &gt; getMonitoringSnapshot success" time="0.000295487">
+        </testcase>
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; adminConfig &gt; getMonitoringSnapshot failure falls back" time="0.000425452">
+        </testcase>
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; adminConfig &gt; fetchOpenApiSpec success" time="0.000326625">
+        </testcase>
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; adminConfig &gt; fetchOpenApiSpec failure throws" time="0.00024444">
+        </testcase>
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; adminConfig &gt; simulateProviderFailure success" time="0.000324411">
+        </testcase>
+        <testcase classname="src/__tests__/api-modules.test.ts" name="API Modules &gt; adminConfig &gt; disableProviderFailure success" time="0.000330913">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/__tests__/auth-context.test.tsx" timestamp="2025-12-20T13:54:44.289Z" hostname="sngvahmed" tests="11" failures="0" errors="0" skipped="0" time="0.575213758">
+        <testcase classname="src/__tests__/auth-context.test.tsx" name="AuthContext &gt; checkAuth should set user if authenticated" time="0.067968836">
+        </testcase>
+        <testcase classname="src/__tests__/auth-context.test.tsx" name="AuthContext &gt; checkAuth should clear state if 401" time="0.055301114">
+        </testcase>
+        <testcase classname="src/__tests__/auth-context.test.tsx" name="AuthContext &gt; checkAuth should set requiresUsername if missing username" time="0.056484473">
+        </testcase>
+        <testcase classname="src/__tests__/auth-context.test.tsx" name="AuthContext &gt; handleGoogleSignIn should login and redirect" time="0.056090431">
+        </testcase>
+        <testcase classname="src/__tests__/auth-context.test.tsx" name="AuthContext &gt; handleGoogleSignIn should handle failure" time="0.059822434">
             <system-err>
 Login error: Error: Auth Failed
     at Object.handleGoogleSignIn (/home/sngvahmed/workspace/stockly/webapp/src/state/AuthContext.tsx:131:15)
@@ -229,13 +229,13 @@ Login error: Error: Auth Failed
 
             </system-err>
         </testcase>
-        <testcase classname="src/__tests__/auth-context.test.tsx" name="AuthContext &gt; logout should clear state and redirect" time="0.054626545">
+        <testcase classname="src/__tests__/auth-context.test.tsx" name="AuthContext &gt; logout should clear state and redirect" time="0.054218524">
         </testcase>
-        <testcase classname="src/__tests__/auth-context.test.tsx" name="AuthContext &gt; setUsername should update user" time="0.053900686">
+        <testcase classname="src/__tests__/auth-context.test.tsx" name="AuthContext &gt; setUsername should update user" time="0.05363839">
         </testcase>
-        <testcase classname="src/__tests__/auth-context.test.tsx" name="AuthContext &gt; setUsername handles 409 by refreshing auth" time="0.054687651">
+        <testcase classname="src/__tests__/auth-context.test.tsx" name="AuthContext &gt; setUsername handles 409 by refreshing auth" time="0.054437927">
         </testcase>
-        <testcase classname="src/__tests__/auth-context.test.tsx" name="AuthContext &gt; setUsername handles generic error" time="0.055592907">
+        <testcase classname="src/__tests__/auth-context.test.tsx" name="AuthContext &gt; setUsername handles generic error" time="0.055105204">
             <system-err>
 Set username error: Error: Network Fail
     at /home/sngvahmed/workspace/stockly/webapp/src/__tests__/auth-context.test.tsx:177:37
@@ -243,7 +243,7 @@ Set username error: Error: Network Fail
 
             </system-err>
         </testcase>
-        <testcase classname="src/__tests__/auth-context.test.tsx" name="AuthContext &gt; logout handles error gracefully" time="0.054956878">
+        <testcase classname="src/__tests__/auth-context.test.tsx" name="AuthContext &gt; logout handles error gracefully" time="0.05495949">
             <system-err>
 Logout error: Error: Logout Fail
     at /home/sngvahmed/workspace/stockly/webapp/src/__tests__/auth-context.test.tsx:190:37
@@ -251,23 +251,23 @@ Logout error: Error: Logout Fail
 
             </system-err>
         </testcase>
-        <testcase classname="src/__tests__/auth-context.test.tsx" name="AuthContext &gt; useAuth throws if used outside provider" time="0.005113152">
+        <testcase classname="src/__tests__/auth-context.test.tsx" name="AuthContext &gt; useAuth throws if used outside provider" time="0.005205068">
         </testcase>
     </testsuite>
-    <testsuite name="src/__tests__/axios-client.test.ts" timestamp="2025-12-20T12:12:06.885Z" hostname="sngvahmed" tests="5" failures="0" errors="0" skipped="0" time="0.006267408">
-        <testcase classname="src/__tests__/axios-client.test.ts" name="axios-client &gt; should have interceptors registered" time="0.000983084">
+    <testsuite name="src/__tests__/axios-client.test.ts" timestamp="2025-12-20T13:54:44.291Z" hostname="sngvahmed" tests="5" failures="0" errors="0" skipped="0" time="0.008603493">
+        <testcase classname="src/__tests__/axios-client.test.ts" name="axios-client &gt; should have interceptors registered" time="0.002465677">
         </testcase>
-        <testcase classname="src/__tests__/axios-client.test.ts" name="axios-client &gt; should refresh token on 401" time="0.00221693">
+        <testcase classname="src/__tests__/axios-client.test.ts" name="axios-client &gt; should refresh token on 401" time="0.002417936">
         </testcase>
-        <testcase classname="src/__tests__/axios-client.test.ts" name="axios-client &gt; should queue requests while refreshing" time="0.000775001">
+        <testcase classname="src/__tests__/axios-client.test.ts" name="axios-client &gt; should queue requests while refreshing" time="0.000803013">
         </testcase>
-        <testcase classname="src/__tests__/axios-client.test.ts" name="axios-client &gt; should redirect to login on refresh failure" time="0.000755164">
+        <testcase classname="src/__tests__/axios-client.test.ts" name="axios-client &gt; should redirect to login on refresh failure" time="0.000740265">
         </testcase>
-        <testcase classname="src/__tests__/axios-client.test.ts" name="axios-client &gt; should redirect to login on refresh network error" time="0.000352574">
+        <testcase classname="src/__tests__/axios-client.test.ts" name="axios-client &gt; should redirect to login on refresh network error" time="0.000400495">
         </testcase>
     </testsuite>
-    <testsuite name="src/__tests__/monitoring-section.test.tsx" timestamp="2025-12-20T12:12:06.889Z" hostname="sngvahmed" tests="7" failures="0" errors="0" skipped="0" time="0.234186066">
-        <testcase classname="src/__tests__/monitoring-section.test.tsx" name="MonitoringSection &gt; renders monitoring section with tabs" time="0.069871411">
+    <testsuite name="src/__tests__/monitoring-section.test.tsx" timestamp="2025-12-20T13:54:44.291Z" hostname="sngvahmed" tests="7" failures="0" errors="0" skipped="0" time="0.227539393">
+        <testcase classname="src/__tests__/monitoring-section.test.tsx" name="MonitoringSection &gt; renders monitoring section with tabs" time="0.063367304">
             <system-out>
 Loaded 0 user(s) from API { total: 0, users: [] }
 Loaded 0 device(s) { total: 0, withUsername: 0, withoutUsername: 0 }
@@ -317,7 +317,7 @@ This ensures that you&apos;re testing the behavior the user would see in the bro
 
             </system-err>
         </testcase>
-        <testcase classname="src/__tests__/monitoring-section.test.tsx" name="MonitoringSection &gt; defaults to users tab" time="0.015700185">
+        <testcase classname="src/__tests__/monitoring-section.test.tsx" name="MonitoringSection &gt; defaults to users tab" time="0.014911601">
             <system-out>
 Loaded 0 user(s) from API { total: 0, users: [] }
 Loaded 0 device(s) { total: 0, withUsername: 0, withoutUsername: 0 }
@@ -367,7 +367,7 @@ This ensures that you&apos;re testing the behavior the user would see in the bro
 
             </system-err>
         </testcase>
-        <testcase classname="src/__tests__/monitoring-section.test.tsx" name="MonitoringSection &gt; switches tabs when clicked" time="0.029394537">
+        <testcase classname="src/__tests__/monitoring-section.test.tsx" name="MonitoringSection &gt; switches tabs when clicked" time="0.030340366">
             <system-out>
 Loaded 0 user(s) from API { total: 0, users: [] }
 Loaded 0 device(s) { total: 0, withUsername: 0, withoutUsername: 0 }
@@ -387,7 +387,7 @@ This ensures that you&apos;re testing the behavior the user would see in the bro
 
             </system-err>
         </testcase>
-        <testcase classname="src/__tests__/monitoring-section.test.tsx" name="MonitoringSection &gt; loads users data when users tab is active" time="0.026476585">
+        <testcase classname="src/__tests__/monitoring-section.test.tsx" name="MonitoringSection &gt; loads users data when users tab is active" time="0.024162523">
             <system-out>
 Loaded 1 user(s) from API {
   total: 1,
@@ -404,7 +404,7 @@ Loaded 0 device(s) { total: 0, withUsername: 0, withoutUsername: 0 }
 
             </system-out>
         </testcase>
-        <testcase classname="src/__tests__/monitoring-section.test.tsx" name="MonitoringSection &gt; shows loading state" time="0.021696772">
+        <testcase classname="src/__tests__/monitoring-section.test.tsx" name="MonitoringSection &gt; shows loading state" time="0.023436045">
             <system-out>
 Loaded 0 user(s) from API { total: 0, users: [] }
 Loaded 0 device(s) { total: 0, withUsername: 0, withoutUsername: 0 }
@@ -424,14 +424,14 @@ This ensures that you&apos;re testing the behavior the user would see in the bro
 
             </system-err>
         </testcase>
-        <testcase classname="src/__tests__/monitoring-section.test.tsx" name="MonitoringSection &gt; supports username grouping toggle" time="0.029685155">
+        <testcase classname="src/__tests__/monitoring-section.test.tsx" name="MonitoringSection &gt; supports username grouping toggle" time="0.034031001">
             <system-out>
 Loaded 0 user(s) from API { total: 0, users: [] }
 Loaded 0 device(s) { total: 0, withUsername: 0, withoutUsername: 0 }
 
             </system-out>
         </testcase>
-        <testcase classname="src/__tests__/monitoring-section.test.tsx" name="MonitoringSection &gt; shows error state" time="0.039331173">
+        <testcase classname="src/__tests__/monitoring-section.test.tsx" name="MonitoringSection &gt; shows error state" time="0.035761702">
             <system-out>
 Loaded 0 user(s) from API { total: 0, users: [] }
 Loaded 0 device(s) { total: 0, withUsername: 0, withoutUsername: 0 }
@@ -452,69 +452,69 @@ This ensures that you&apos;re testing the behavior the user would see in the bro
             </system-err>
         </testcase>
     </testsuite>
-    <testsuite name="src/__tests__/settings-context.test.tsx" timestamp="2025-12-20T12:12:06.892Z" hostname="sngvahmed" tests="12" failures="0" errors="0" skipped="0" time="0.160473012">
-        <testcase classname="src/__tests__/settings-context.test.tsx" name="SettingsProvider &gt; provides default values" time="0.055416124">
+    <testsuite name="src/__tests__/settings-context.test.tsx" timestamp="2025-12-20T13:54:44.294Z" hostname="sngvahmed" tests="12" failures="0" errors="0" skipped="0" time="0.158185337">
+        <testcase classname="src/__tests__/settings-context.test.tsx" name="SettingsProvider &gt; provides default values" time="0.042099746">
         </testcase>
-        <testcase classname="src/__tests__/settings-context.test.tsx" name="SettingsProvider &gt; persists refresh interval changes" time="0.025202272">
+        <testcase classname="src/__tests__/settings-context.test.tsx" name="SettingsProvider &gt; persists refresh interval changes" time="0.037238125">
         </testcase>
-        <testcase classname="src/__tests__/settings-context.test.tsx" name="SettingsProvider &gt; persists cache stale time changes" time="0.013123336">
+        <testcase classname="src/__tests__/settings-context.test.tsx" name="SettingsProvider &gt; persists cache stale time changes" time="0.011832377">
         </testcase>
-        <testcase classname="src/__tests__/settings-context.test.tsx" name="SettingsProvider &gt; persists cache GC time changes" time="0.008563397">
+        <testcase classname="src/__tests__/settings-context.test.tsx" name="SettingsProvider &gt; persists cache GC time changes" time="0.00802916">
         </testcase>
-        <testcase classname="src/__tests__/settings-context.test.tsx" name="SettingsProvider &gt; clamps refresh interval to valid range" time="0.007959619">
+        <testcase classname="src/__tests__/settings-context.test.tsx" name="SettingsProvider &gt; clamps refresh interval to valid range" time="0.006796648">
         </testcase>
-        <testcase classname="src/__tests__/settings-context.test.tsx" name="SettingsProvider &gt; clamps cache stale time to valid range" time="0.006033807">
+        <testcase classname="src/__tests__/settings-context.test.tsx" name="SettingsProvider &gt; clamps cache stale time to valid range" time="0.006056503">
         </testcase>
-        <testcase classname="src/__tests__/settings-context.test.tsx" name="SettingsProvider &gt; clamps cache GC time to valid range" time="0.011040979">
+        <testcase classname="src/__tests__/settings-context.test.tsx" name="SettingsProvider &gt; clamps cache GC time to valid range" time="0.006116647">
         </testcase>
-        <testcase classname="src/__tests__/settings-context.test.tsx" name="SettingsProvider &gt; loads settings from localStorage on mount" time="0.004280812">
+        <testcase classname="src/__tests__/settings-context.test.tsx" name="SettingsProvider &gt; loads settings from localStorage on mount" time="0.005232431">
         </testcase>
-        <testcase classname="src/__tests__/settings-context.test.tsx" name="SettingsProvider &gt; persists all settings together" time="0.009304054">
+        <testcase classname="src/__tests__/settings-context.test.tsx" name="SettingsProvider &gt; persists all settings together" time="0.009020138">
         </testcase>
-        <testcase classname="src/__tests__/settings-context.test.tsx" name="SettingsProvider &gt; handles corrupted settings in localStorage" time="0.005761784">
+        <testcase classname="src/__tests__/settings-context.test.tsx" name="SettingsProvider &gt; handles corrupted settings in localStorage" time="0.006322725">
         </testcase>
-        <testcase classname="src/__tests__/settings-context.test.tsx" name="SettingsProvider &gt; handles partial settings in localStorage" time="0.003938417">
+        <testcase classname="src/__tests__/settings-context.test.tsx" name="SettingsProvider &gt; handles partial settings in localStorage" time="0.006455014">
         </testcase>
-        <testcase classname="src/__tests__/settings-context.test.tsx" name="SettingsProvider &gt; throws if useSettings is used outside provider" time="0.006716214">
-        </testcase>
-    </testsuite>
-    <testsuite name="src/__tests__/theme-context.test.tsx" timestamp="2025-12-20T12:12:06.893Z" hostname="sngvahmed" tests="6" failures="0" errors="0" skipped="0" time="0.049455274">
-        <testcase classname="src/__tests__/theme-context.test.tsx" name="ThemeContext &gt; uses system preference (light) by default if no storage" time="0.020920699">
-        </testcase>
-        <testcase classname="src/__tests__/theme-context.test.tsx" name="ThemeContext &gt; uses system preference (dark) if matches" time="0.004456583">
-        </testcase>
-        <testcase classname="src/__tests__/theme-context.test.tsx" name="ThemeContext &gt; reads from local storage" time="0.003827367">
-        </testcase>
-        <testcase classname="src/__tests__/theme-context.test.tsx" name="ThemeContext &gt; toggles theme" time="0.006606928">
-        </testcase>
-        <testcase classname="src/__tests__/theme-context.test.tsx" name="ThemeContext &gt; sets specific theme" time="0.003936222">
-        </testcase>
-        <testcase classname="src/__tests__/theme-context.test.tsx" name="ThemeContext &gt; throws if used outside provider" time="0.00771118">
+        <testcase classname="src/__tests__/settings-context.test.tsx" name="SettingsProvider &gt; throws if useSettings is used outside provider" time="0.010543519">
         </testcase>
     </testsuite>
-    <testsuite name="src/__tests__/useAdminConfig.test.tsx" timestamp="2025-12-20T12:12:06.894Z" hostname="sngvahmed" tests="1" failures="0" errors="0" skipped="0" time="0.085178755">
-        <testcase classname="src/__tests__/useAdminConfig.test.tsx" name="useAdminConfig &gt; loads admin config and saves updates" time="0.083083183">
+    <testsuite name="src/__tests__/theme-context.test.tsx" timestamp="2025-12-20T13:54:44.295Z" hostname="sngvahmed" tests="6" failures="0" errors="0" skipped="0" time="0.05617996">
+        <testcase classname="src/__tests__/theme-context.test.tsx" name="ThemeContext &gt; uses system preference (light) by default if no storage" time="0.023728386">
+        </testcase>
+        <testcase classname="src/__tests__/theme-context.test.tsx" name="ThemeContext &gt; uses system preference (dark) if matches" time="0.004412195">
+        </testcase>
+        <testcase classname="src/__tests__/theme-context.test.tsx" name="ThemeContext &gt; reads from local storage" time="0.004222477">
+        </testcase>
+        <testcase classname="src/__tests__/theme-context.test.tsx" name="ThemeContext &gt; toggles theme" time="0.006474802">
+        </testcase>
+        <testcase classname="src/__tests__/theme-context.test.tsx" name="ThemeContext &gt; sets specific theme" time="0.003580848">
+        </testcase>
+        <testcase classname="src/__tests__/theme-context.test.tsx" name="ThemeContext &gt; throws if used outside provider" time="0.011024325">
         </testcase>
     </testsuite>
-    <testsuite name="src/__tests__/useMonitoringSnapshot.test.tsx" timestamp="2025-12-20T12:12:06.895Z" hostname="sngvahmed" tests="1" failures="0" errors="0" skipped="0" time="0.090472146">
-        <testcase classname="src/__tests__/useMonitoringSnapshot.test.tsx" name="useMonitoringSnapshot &gt; loads monitoring data" time="0.08864492">
+    <testsuite name="src/__tests__/useAdminConfig.test.tsx" timestamp="2025-12-20T13:54:44.296Z" hostname="sngvahmed" tests="1" failures="0" errors="0" skipped="0" time="0.087558543">
+        <testcase classname="src/__tests__/useAdminConfig.test.tsx" name="useAdminConfig &gt; loads admin config and saves updates" time="0.084594988">
         </testcase>
     </testsuite>
-    <testsuite name="src/__tests__/useOpenApiSpec.test.tsx" timestamp="2025-12-20T12:12:06.895Z" hostname="sngvahmed" tests="1" failures="0" errors="0" skipped="0" time="0.089854411">
-        <testcase classname="src/__tests__/useOpenApiSpec.test.tsx" name="useOpenApiSpec &gt; ensures openapi version exists" time="0.084668653">
+    <testsuite name="src/__tests__/useMonitoringSnapshot.test.tsx" timestamp="2025-12-20T13:54:44.296Z" hostname="sngvahmed" tests="1" failures="0" errors="0" skipped="0" time="0.085937968">
+        <testcase classname="src/__tests__/useMonitoringSnapshot.test.tsx" name="useMonitoringSnapshot &gt; loads monitoring data" time="0.084127115">
         </testcase>
     </testsuite>
-    <testsuite name="src/__tests__/user-card.test.tsx" timestamp="2025-12-20T12:12:06.896Z" hostname="sngvahmed" tests="4" failures="0" errors="0" skipped="0" time="0.133954808">
-        <testcase classname="src/__tests__/user-card.test.tsx" name="UserCard &gt; renders user information correctly" time="0.075390698">
-        </testcase>
-        <testcase classname="src/__tests__/user-card.test.tsx" name="UserCard &gt; calls onClick when card is clicked" time="0.019158265">
-        </testcase>
-        <testcase classname="src/__tests__/user-card.test.tsx" name="UserCard &gt; renders without email when not provided" time="0.021693506">
-        </testcase>
-        <testcase classname="src/__tests__/user-card.test.tsx" name="UserCard &gt; displays zero counts correctly" time="0.015817997">
+    <testsuite name="src/__tests__/useOpenApiSpec.test.tsx" timestamp="2025-12-20T13:54:44.297Z" hostname="sngvahmed" tests="1" failures="0" errors="0" skipped="0" time="0.035751603">
+        <testcase classname="src/__tests__/useOpenApiSpec.test.tsx" name="useOpenApiSpec &gt; ensures openapi version exists" time="0.034024108">
         </testcase>
     </testsuite>
-    <testsuite name="src/__tests__/user-detail-page.test.tsx" timestamp="2025-12-20T12:12:06.896Z" hostname="sngvahmed" tests="8" failures="0" errors="0" skipped="8" time="0">
+    <testsuite name="src/__tests__/user-card.test.tsx" timestamp="2025-12-20T13:54:44.297Z" hostname="sngvahmed" tests="4" failures="0" errors="0" skipped="0" time="0.117275262">
+        <testcase classname="src/__tests__/user-card.test.tsx" name="UserCard &gt; renders user information correctly" time="0.07765535">
+        </testcase>
+        <testcase classname="src/__tests__/user-card.test.tsx" name="UserCard &gt; calls onClick when card is clicked" time="0.016332699">
+        </testcase>
+        <testcase classname="src/__tests__/user-card.test.tsx" name="UserCard &gt; renders without email when not provided" time="0.011758378">
+        </testcase>
+        <testcase classname="src/__tests__/user-card.test.tsx" name="UserCard &gt; displays zero counts correctly" time="0.009802152">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/__tests__/user-detail-page.test.tsx" timestamp="2025-12-20T13:54:44.298Z" hostname="sngvahmed" tests="8" failures="0" errors="0" skipped="8" time="0">
         <testcase classname="src/__tests__/user-detail-page.test.tsx" name="UserDetailPage &gt; renders loading state initially" time="0">
             <skipped/>
         </testcase>
@@ -540,60 +540,60 @@ This ensures that you&apos;re testing the behavior the user would see in the bro
             <skipped/>
         </testcase>
     </testsuite>
-    <testsuite name="src/__tests__/user-settings-api.test.ts" timestamp="2025-12-20T12:12:06.897Z" hostname="sngvahmed" tests="11" failures="0" errors="0" skipped="0" time="0.03845935">
-        <testcase classname="src/__tests__/user-settings-api.test.ts" name="User Settings API &gt; getUserSettings &gt; should fetch and return user settings" time="0.018064453">
+    <testsuite name="src/__tests__/user-settings-api.test.ts" timestamp="2025-12-20T13:54:44.299Z" hostname="sngvahmed" tests="11" failures="0" errors="0" skipped="0" time="0.039271756">
+        <testcase classname="src/__tests__/user-settings-api.test.ts" name="User Settings API &gt; getUserSettings &gt; should fetch and return user settings" time="0.010847602">
         </testcase>
-        <testcase classname="src/__tests__/user-settings-api.test.ts" name="User Settings API &gt; getUserSettings &gt; should return default settings when user not found (404)" time="0.0008963">
+        <testcase classname="src/__tests__/user-settings-api.test.ts" name="User Settings API &gt; getUserSettings &gt; should return default settings when user not found (404)" time="0.000796681">
         </testcase>
-        <testcase classname="src/__tests__/user-settings-api.test.ts" name="User Settings API &gt; getUserSettings &gt; should handle missing cache settings with defaults" time="0.000736659">
+        <testcase classname="src/__tests__/user-settings-api.test.ts" name="User Settings API &gt; getUserSettings &gt; should handle missing cache settings with defaults" time="0.000606112">
         </testcase>
-        <testcase classname="src/__tests__/user-settings-api.test.ts" name="User Settings API &gt; getUserSettings &gt; should handle network errors gracefully" time="0.00960409">
+        <testcase classname="src/__tests__/user-settings-api.test.ts" name="User Settings API &gt; getUserSettings &gt; should handle network errors gracefully" time="0.007796622">
             <system-err>
 Network error accessing https://stockly-api.ahmednasser1993.workers.dev/v1/api/settings, treating as not found (using defaults)
 
             </system-err>
         </testcase>
-        <testcase classname="src/__tests__/user-settings-api.test.ts" name="User Settings API &gt; updateUserSettings &gt; should update user settings with all fields" time="0.001819651">
+        <testcase classname="src/__tests__/user-settings-api.test.ts" name="User Settings API &gt; updateUserSettings &gt; should update user settings with all fields" time="0.001552876">
         </testcase>
-        <testcase classname="src/__tests__/user-settings-api.test.ts" name="User Settings API &gt; updateUserSettings &gt; should update user settings with only refresh interval" time="0.000611553">
+        <testcase classname="src/__tests__/user-settings-api.test.ts" name="User Settings API &gt; updateUserSettings &gt; should update user settings with only refresh interval" time="0.000513819">
         </testcase>
-        <testcase classname="src/__tests__/user-settings-api.test.ts" name="User Settings API &gt; updateUserSettings &gt; should throw error on failed request" time="0.001626137">
+        <testcase classname="src/__tests__/user-settings-api.test.ts" name="User Settings API &gt; updateUserSettings &gt; should throw error on failed request" time="0.003154274">
         </testcase>
-        <testcase classname="src/__tests__/user-settings-api.test.ts" name="User Settings API &gt; getUserPreferences &gt; should fetch and return user preferences" time="0.000681946">
+        <testcase classname="src/__tests__/user-settings-api.test.ts" name="User Settings API &gt; getUserPreferences &gt; should fetch and return user preferences" time="0.00061014">
         </testcase>
-        <testcase classname="src/__tests__/user-settings-api.test.ts" name="User Settings API &gt; getUserPreferences &gt; should return default preferences when user not found" time="0.00067883">
+        <testcase classname="src/__tests__/user-settings-api.test.ts" name="User Settings API &gt; getUserPreferences &gt; should return default preferences when user not found" time="0.00061556">
         </testcase>
-        <testcase classname="src/__tests__/user-settings-api.test.ts" name="User Settings API &gt; updateUserPreferences &gt; should update user preferences" time="0.000918161">
+        <testcase classname="src/__tests__/user-settings-api.test.ts" name="User Settings API &gt; updateUserPreferences &gt; should update user preferences" time="0.006088984">
         </testcase>
-        <testcase classname="src/__tests__/user-settings-api.test.ts" name="User Settings API &gt; updateUserPreferences &gt; should throw error on failed request" time="0.00050921">
-        </testcase>
-    </testsuite>
-    <testsuite name="src/__tests__/components/AlertForm.test.tsx" timestamp="2025-12-20T12:12:06.899Z" hostname="sngvahmed" tests="5" failures="0" errors="0" skipped="0" time="0.67738985">
-        <testcase classname="src/__tests__/components/AlertForm.test.tsx" name="AlertForm &gt; should render form with all fields" time="0.073898965">
-        </testcase>
-        <testcase classname="src/__tests__/components/AlertForm.test.tsx" name="AlertForm &gt; should validate required fields" time="0.20650004">
-        </testcase>
-        <testcase classname="src/__tests__/components/AlertForm.test.tsx" name="AlertForm &gt; should submit form with valid data" time="0.334003333">
-        </testcase>
-        <testcase classname="src/__tests__/components/AlertForm.test.tsx" name="AlertForm &gt; should pre-fill form when editing" time="0.011109388">
-        </testcase>
-        <testcase classname="src/__tests__/components/AlertForm.test.tsx" name="AlertForm &gt; should handle cancel action" time="0.046516753">
+        <testcase classname="src/__tests__/user-settings-api.test.ts" name="User Settings API &gt; updateUserPreferences &gt; should throw error on failed request" time="0.000521743">
         </testcase>
     </testsuite>
-    <testsuite name="src/__tests__/components/StockCard.test.tsx" timestamp="2025-12-20T12:12:06.900Z" hostname="sngvahmed" tests="3" failures="0" errors="0" skipped="0" time="0.103496525">
-        <testcase classname="src/__tests__/components/StockCard.test.tsx" name="StockCard &gt; should render stock information" time="0.076949478">
+    <testsuite name="src/__tests__/components/AlertForm.test.tsx" timestamp="2025-12-20T13:54:44.300Z" hostname="sngvahmed" tests="5" failures="0" errors="0" skipped="0" time="0.701794565">
+        <testcase classname="src/__tests__/components/AlertForm.test.tsx" name="AlertForm &gt; should render form with all fields" time="0.062321774">
         </testcase>
-        <testcase classname="src/__tests__/components/StockCard.test.tsx" name="StockCard &gt; should display range percentage correctly" time="0.011849995">
+        <testcase classname="src/__tests__/components/AlertForm.test.tsx" name="AlertForm &gt; should validate required fields" time="0.211157752">
         </testcase>
-        <testcase classname="src/__tests__/components/StockCard.test.tsx" name="StockCard &gt; should render as a link to stock details" time="0.012941763">
+        <testcase classname="src/__tests__/components/AlertForm.test.tsx" name="AlertForm &gt; should submit form with valid data" time="0.36380381">
+        </testcase>
+        <testcase classname="src/__tests__/components/AlertForm.test.tsx" name="AlertForm &gt; should pre-fill form when editing" time="0.011391978">
+        </testcase>
+        <testcase classname="src/__tests__/components/AlertForm.test.tsx" name="AlertForm &gt; should handle cancel action" time="0.050905139">
         </testcase>
     </testsuite>
-    <testsuite name="src/__tests__/hooks/useAlerts.test.tsx" timestamp="2025-12-20T12:12:06.901Z" hostname="sngvahmed" tests="3" failures="0" errors="0" skipped="0" time="0.213829431">
-        <testcase classname="src/__tests__/hooks/useAlerts.test.tsx" name="useAlerts &gt; should fetch alerts on mount" time="0.079372907">
+    <testsuite name="src/__tests__/components/StockCard.test.tsx" timestamp="2025-12-20T13:54:44.301Z" hostname="sngvahmed" tests="3" failures="0" errors="0" skipped="0" time="0.099708989">
+        <testcase classname="src/__tests__/components/StockCard.test.tsx" name="StockCard &gt; should render stock information" time="0.080500512">
         </testcase>
-        <testcase classname="src/__tests__/hooks/useAlerts.test.tsx" name="useAlerts &gt; should handle create alert mutation" time="0.063428853">
+        <testcase classname="src/__tests__/components/StockCard.test.tsx" name="StockCard &gt; should display range percentage correctly" time="0.008502232">
         </testcase>
-        <testcase classname="src/__tests__/hooks/useAlerts.test.tsx" name="useAlerts &gt; should handle delete alert mutation" time="0.062985116">
+        <testcase classname="src/__tests__/components/StockCard.test.tsx" name="StockCard &gt; should render as a link to stock details" time="0.009341313">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/__tests__/hooks/useAlerts.test.tsx" timestamp="2025-12-20T13:54:44.302Z" hostname="sngvahmed" tests="3" failures="0" errors="0" skipped="0" time="0.191347931">
+        <testcase classname="src/__tests__/hooks/useAlerts.test.tsx" name="useAlerts &gt; should fetch alerts on mount" time="0.074686144">
+        </testcase>
+        <testcase classname="src/__tests__/hooks/useAlerts.test.tsx" name="useAlerts &gt; should handle create alert mutation" time="0.057838375">
+        </testcase>
+        <testcase classname="src/__tests__/hooks/useAlerts.test.tsx" name="useAlerts &gt; should handle delete alert mutation" time="0.057277869">
         </testcase>
     </testsuite>
 </testsuites>

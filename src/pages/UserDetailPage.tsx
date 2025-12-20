@@ -10,8 +10,11 @@ import type { Alert, CreateAlertRequest, UpdateAlertRequest } from "../types";
 import { ArrowLeft, TrendingUp, Bell, Smartphone, Edit, Trash2, TestTube } from "lucide-react";
 
 interface UserDevice {
+  deviceId?: number;
+  userId?: string | null;
   username: string | null;
-  pushToken: string;
+  pushTokens: string[]; // Array of push tokens (new schema)
+  pushToken?: string; // Legacy support (old schema)
   deviceInfo: string | null;
   deviceType: string | null;
   alertCount?: number;
@@ -231,23 +234,49 @@ export function UserDetailPage() {
   };
 
   const parseDeviceInfo = (deviceInfo: string | null, deviceType: string | null): string => {
-    if (deviceType) return deviceType;
+    // First, try to parse deviceInfo JSON to get detailed model information
     if (deviceInfo) {
       try {
         const parsed = JSON.parse(deviceInfo);
-        if (parsed.platform && parsed.model) {
-          return `${parsed.platform} ${parsed.model}`;
-        } else if (parsed.platform) {
+        // Try to build a descriptive device name
+        const parts: string[] = [];
+        
+        if (parsed.platform) {
+          parts.push(parsed.platform);
+        }
+        if (parsed.model) {
+          parts.push(parsed.model);
+        }
+        if (parsed.manufacturer) {
+          parts.push(parsed.manufacturer);
+        }
+        
+        if (parts.length > 0) {
+          return parts.join(" ");
+        }
+        
+        // If we have platform but no model, still return it
+        if (parsed.platform) {
           return parsed.platform;
-        } else if (typeof deviceInfo === "string" && !deviceInfo.startsWith("{")) {
+        }
+        
+        // If it's a plain string (not JSON), return it
+        if (typeof deviceInfo === "string" && !deviceInfo.startsWith("{")) {
           return deviceInfo;
         }
       } catch {
+        // If parsing fails but it's a string, return it
         if (typeof deviceInfo === "string") {
           return deviceInfo;
         }
       }
     }
+    
+    // Fall back to deviceType if deviceInfo is not available or doesn't have details
+    if (deviceType) {
+      return deviceType.charAt(0).toUpperCase() + deviceType.slice(1);
+    }
+    
     return "Unknown Device";
   };
 
@@ -692,107 +721,126 @@ export function UserDetailPage() {
           }}>
             {devices.length > 0 ? (
               <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                {devices.map((device) => (
-                  <div
-                    key={device.pushToken}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      padding: "1rem",
-                      borderRadius: "0.5rem",
-                      background: "rgba(245, 158, 11, 0.05)",
-                      border: "1px solid rgba(245, 158, 11, 0.2)",
-                      transition: "all 0.2s ease",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = "translateX(4px)";
-                      e.currentTarget.style.borderColor = "#f59e0b";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = "translateX(0)";
-                      e.currentTarget.style.borderColor = "rgba(245, 158, 11, 0.2)";
-                    }}
-                  >
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: "600", fontSize: "1rem", marginBottom: "0.5rem", color: "var(--text-primary)" }}>
-                        {parseDeviceInfo(device.deviceInfo, device.deviceType)}
-                      </div>
-                      <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontFamily: "monospace", wordBreak: "break-all", marginBottom: "0.25rem" }}>
-                        {device.pushToken.substring(0, 50)}...
-                      </div>
-                      {device.activeAlertCount !== undefined && device.alertCount !== undefined && (
-                        <div style={{ fontSize: "0.875rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>
-                          {device.activeAlertCount} active / {device.alertCount} total alerts
+                {devices.map((device, deviceIndex) => {
+                  // Get push tokens - support both new schema (pushTokens array) and old schema (pushToken string)
+                  // pushTokens can be an array of strings or array of objects with pushToken property
+                  let pushTokens: string[] = [];
+                  if (device.pushTokens && Array.isArray(device.pushTokens)) {
+                    pushTokens = device.pushTokens.map((token: string | { pushToken: string }) => 
+                      typeof token === "string" ? token : token.pushToken
+                    );
+                  } else if (device.pushToken) {
+                    pushTokens = [device.pushToken];
+                  }
+                  const deviceKey = device.deviceId || device.pushToken || `device-${deviceIndex}`;
+                  
+                  return pushTokens.map((pushToken, tokenIndex) => (
+                    <div
+                      key={`${deviceKey}-${tokenIndex}`}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        padding: "1rem",
+                        borderRadius: "0.5rem",
+                        background: "rgba(245, 158, 11, 0.05)",
+                        border: "1px solid rgba(245, 158, 11, 0.2)",
+                        transition: "all 0.2s ease",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = "translateX(4px)";
+                        e.currentTarget.style.borderColor = "#f59e0b";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = "translateX(0)";
+                        e.currentTarget.style.borderColor = "rgba(245, 158, 11, 0.2)";
+                      }}
+                    >
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: "600", fontSize: "1rem", marginBottom: "0.5rem", color: "var(--text-primary)" }}>
+                          {parseDeviceInfo(device.deviceInfo, device.deviceType)}
+                          {pushTokens.length > 1 && (
+                            <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginLeft: "0.5rem" }}>
+                              (Token {tokenIndex + 1} of {pushTokens.length})
+                            </span>
+                          )}
                         </div>
-                      )}
+                        <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontFamily: "monospace", wordBreak: "break-all", marginBottom: "0.25rem" }}>
+                          {pushToken ? `${pushToken.substring(0, 50)}...` : "No push token"}
+                        </div>
+                        {device.activeAlertCount !== undefined && device.alertCount !== undefined && (
+                          <div style={{ fontSize: "0.875rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>
+                            {device.activeAlertCount} active / {device.alertCount} total alerts
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ display: "flex", gap: "0.5rem" }}>
+                        <button
+                          type="button"
+                          onClick={() => handleSendTestNotification(pushToken)}
+                          disabled={testingDeviceId === pushToken}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.375rem",
+                            padding: "0.5rem 0.75rem",
+                            background: "linear-gradient(135deg, rgba(147, 51, 234, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%)",
+                            border: "1px solid rgba(147, 51, 234, 0.3)",
+                            borderRadius: "0.375rem",
+                            color: "#9333ea",
+                            cursor: testingDeviceId === pushToken ? "not-allowed" : "pointer",
+                            fontSize: "0.875rem",
+                            fontWeight: "600",
+                            transition: "all 0.2s ease",
+                            opacity: testingDeviceId === pushToken ? 0.6 : 1,
+                          }}
+                          onMouseEnter={(e) => {
+                            if (testingDeviceId !== pushToken) {
+                              e.currentTarget.style.background = "linear-gradient(135deg, rgba(147, 51, 234, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%)";
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = "linear-gradient(135deg, rgba(147, 51, 234, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%)";
+                          }}
+                        >
+                          <TestTube style={{ width: "14px", height: "14px" }} />
+                          {testingDeviceId === pushToken ? "Sending..." : "Test"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteDevice(pushToken)}
+                          disabled={deletingDeviceId === pushToken}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.375rem",
+                            padding: "0.5rem 0.75rem",
+                            background: "rgba(239, 68, 68, 0.1)",
+                            border: "1px solid rgba(239, 68, 68, 0.3)",
+                            borderRadius: "0.375rem",
+                            color: "#ef4444",
+                            cursor: deletingDeviceId === pushToken ? "not-allowed" : "pointer",
+                            fontSize: "0.875rem",
+                            fontWeight: "600",
+                            transition: "all 0.2s ease",
+                            opacity: deletingDeviceId === pushToken ? 0.6 : 1,
+                          }}
+                          onMouseEnter={(e) => {
+                            if (deletingDeviceId !== pushToken) {
+                              e.currentTarget.style.background = "rgba(239, 68, 68, 0.2)";
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = "rgba(239, 68, 68, 0.1)";
+                          }}
+                        >
+                          <Trash2 style={{ width: "14px", height: "14px" }} />
+                          Delete
+                        </button>
+                      </div>
                     </div>
-                    <div style={{ display: "flex", gap: "0.5rem" }}>
-                      <button
-                        type="button"
-                        onClick={() => handleSendTestNotification(device.pushToken)}
-                        disabled={testingDeviceId === device.pushToken}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.375rem",
-                          padding: "0.5rem 0.75rem",
-                          background: "linear-gradient(135deg, rgba(147, 51, 234, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%)",
-                          border: "1px solid rgba(147, 51, 234, 0.3)",
-                          borderRadius: "0.375rem",
-                          color: "#9333ea",
-                          cursor: testingDeviceId === device.pushToken ? "not-allowed" : "pointer",
-                          fontSize: "0.875rem",
-                          fontWeight: "600",
-                          transition: "all 0.2s ease",
-                          opacity: testingDeviceId === device.pushToken ? 0.6 : 1,
-                        }}
-                        onMouseEnter={(e) => {
-                          if (testingDeviceId !== device.pushToken) {
-                            e.currentTarget.style.background = "linear-gradient(135deg, rgba(147, 51, 234, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%)";
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = "linear-gradient(135deg, rgba(147, 51, 234, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%)";
-                        }}
-                      >
-                        <TestTube style={{ width: "14px", height: "14px" }} />
-                        {testingDeviceId === device.pushToken ? "Sending..." : "Test"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteDevice(device.pushToken)}
-                        disabled={deletingDeviceId === device.pushToken}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.375rem",
-                          padding: "0.5rem 0.75rem",
-                          background: "rgba(239, 68, 68, 0.1)",
-                          border: "1px solid rgba(239, 68, 68, 0.3)",
-                          borderRadius: "0.375rem",
-                          color: "#ef4444",
-                          cursor: deletingDeviceId === device.pushToken ? "not-allowed" : "pointer",
-                          fontSize: "0.875rem",
-                          fontWeight: "600",
-                          transition: "all 0.2s ease",
-                          opacity: deletingDeviceId === device.pushToken ? 0.6 : 1,
-                        }}
-                        onMouseEnter={(e) => {
-                          if (deletingDeviceId !== device.pushToken) {
-                            e.currentTarget.style.background = "rgba(239, 68, 68, 0.2)";
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = "rgba(239, 68, 68, 0.1)";
-                        }}
-                      >
-                        <Trash2 style={{ width: "14px", height: "14px" }} />
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  ));
+                })}
               </div>
             ) : (
               <div style={{

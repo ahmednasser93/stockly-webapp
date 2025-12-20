@@ -299,23 +299,66 @@ export function MonitoringSection() {
     try {
       const response = await axiosClient.get(`/v1/api/devices`);
 
-      let devicesList: Device[] = [];
+      let apiDevices: Array<{
+        pushTokens?: string[];
+        username?: string | null;
+        deviceInfo?: string | null;
+        deviceType?: string | null;
+        alertCount?: number;
+        activeAlertCount?: number;
+        createdAt?: string;
+        updatedAt?: string;
+      }> = [];
 
       if (response.data) {
         if (Array.isArray(response.data)) {
-          devicesList = response.data;
+          apiDevices = response.data;
         } else if (response.data.devices && Array.isArray(response.data.devices)) {
-          devicesList = response.data.devices;
+          apiDevices = response.data.devices;
         } else if (response.data.data && Array.isArray(response.data.data)) {
-          devicesList = response.data.data;
+          apiDevices = response.data.data;
         } else if (response.data.results && Array.isArray(response.data.results)) {
-          devicesList = response.data.results;
+          apiDevices = response.data.results;
         } else if (response.data.items && Array.isArray(response.data.items)) {
-          devicesList = response.data.items;
+          apiDevices = response.data.items;
         }
       }
 
-      setDevices(Array.isArray(devicesList) ? devicesList : []);
+      // Transform API response: API returns devices with pushTokens array,
+      // but frontend expects one device per pushToken
+      const devicesList: Device[] = [];
+      for (const apiDevice of apiDevices) {
+        const pushTokens = apiDevice.pushTokens || [];
+        // If no push tokens, create one entry with empty pushToken (shouldn't happen, but handle gracefully)
+        if (pushTokens.length === 0) {
+          devicesList.push({
+            username: apiDevice.username || null,
+            pushToken: "", // Will be handled in render
+            deviceInfo: apiDevice.deviceInfo || null,
+            deviceType: apiDevice.deviceType || null,
+            alertCount: apiDevice.alertCount || 0,
+            activeAlertCount: apiDevice.activeAlertCount || 0,
+            createdAt: apiDevice.createdAt || "",
+            updatedAt: apiDevice.updatedAt || "",
+          });
+        } else {
+          // Create one device entry per push token
+          for (const pushToken of pushTokens) {
+            devicesList.push({
+              username: apiDevice.username || null,
+              pushToken: pushToken,
+              deviceInfo: apiDevice.deviceInfo || null,
+              deviceType: apiDevice.deviceType || null,
+              alertCount: apiDevice.alertCount || 0,
+              activeAlertCount: apiDevice.activeAlertCount || 0,
+              createdAt: apiDevice.createdAt || "",
+              updatedAt: apiDevice.updatedAt || "",
+            });
+          }
+        }
+      }
+
+      setDevices(devicesList);
       console.log(`Loaded ${devicesList.length} device(s)`, {
         total: devicesList.length,
         withUsername: devicesList.filter(d => d.username).length,
@@ -519,23 +562,49 @@ export function MonitoringSection() {
   };
 
   const parseDeviceInfo = (deviceInfo: string | null, deviceType: string | null): string => {
-    if (deviceType) return deviceType;
+    // First, try to parse deviceInfo JSON to get detailed model information
     if (deviceInfo) {
       try {
         const parsed = JSON.parse(deviceInfo);
-        if (parsed.platform && parsed.model) {
-          return `${parsed.platform} ${parsed.model}`;
-        } else if (parsed.platform) {
+        // Try to build a descriptive device name
+        const parts: string[] = [];
+        
+        if (parsed.platform) {
+          parts.push(parsed.platform);
+        }
+        if (parsed.model) {
+          parts.push(parsed.model);
+        }
+        if (parsed.manufacturer) {
+          parts.push(parsed.manufacturer);
+        }
+        
+        if (parts.length > 0) {
+          return parts.join(" ");
+        }
+        
+        // If we have platform but no model, still return it
+        if (parsed.platform) {
           return parsed.platform;
-        } else if (typeof deviceInfo === "string" && !deviceInfo.startsWith("{")) {
+        }
+        
+        // If it's a plain string (not JSON), return it
+        if (typeof deviceInfo === "string" && !deviceInfo.startsWith("{")) {
           return deviceInfo;
         }
       } catch {
+        // If parsing fails but it's a string, return it
         if (typeof deviceInfo === "string") {
           return deviceInfo;
         }
       }
     }
+    
+    // Fall back to deviceType if deviceInfo is not available or doesn't have details
+    if (deviceType) {
+      return deviceType.charAt(0).toUpperCase() + deviceType.slice(1);
+    }
+    
     return "Unknown Device";
   };
 
@@ -639,7 +708,7 @@ export function MonitoringSection() {
 
     return (
       <tr
-        key={device.pushToken}
+        key={device.pushToken || `device-${device.username || 'unknown'}-${device.updatedAt}`}
         style={!device.username ? {
           background: "rgba(245, 158, 11, 0.05)",
           borderLeft: "3px solid #f59e0b"
@@ -670,7 +739,7 @@ export function MonitoringSection() {
         </td>
         <td>
           <span style={{ fontSize: "0.75rem", fontFamily: "monospace", color: "var(--text-muted)" }}>
-            {device.pushToken.substring(0, 40)}...
+            {device.pushToken ? `${device.pushToken.substring(0, 40)}...` : "—"}
           </span>
         </td>
         <td>
@@ -687,19 +756,19 @@ export function MonitoringSection() {
           <div style={{ display: "flex", gap: "0.5rem" }}>
             <button
               type="button"
-              onClick={() => handleSendTestNotification(device.pushToken)}
-              disabled={testingDeviceId === device.pushToken}
+              onClick={() => device.pushToken && handleSendTestNotification(device.pushToken)}
+              disabled={!device.pushToken || testingDeviceId === device.pushToken}
               className="btn-edit"
-              style={{ fontSize: "0.875rem", padding: "0.25rem 0.5rem" }}
+              style={{ fontSize: "0.875rem", padding: "0.25rem 0.5rem", opacity: !device.pushToken ? 0.5 : 1 }}
             >
               {testingDeviceId === device.pushToken ? "Sending..." : "Test"}
             </button>
             <button
               type="button"
-              onClick={() => handleDeleteDevice(device.pushToken)}
-              disabled={deletingDeviceId === device.pushToken}
+              onClick={() => device.pushToken && handleDeleteDevice(device.pushToken)}
+              disabled={!device.pushToken || deletingDeviceId === device.pushToken}
               className="btn-delete"
-              style={{ fontSize: "0.875rem", padding: "0.25rem 0.5rem", opacity: deletingDeviceId === device.pushToken ? 0.6 : 1 }}
+              style={{ fontSize: "0.875rem", padding: "0.25rem 0.5rem", opacity: (!device.pushToken || deletingDeviceId === device.pushToken) ? 0.6 : 1 }}
             >
               {deletingDeviceId === device.pushToken ? "Deleting..." : "Delete"}
             </button>
@@ -1146,7 +1215,7 @@ export function MonitoringSection() {
                             </td>
                             <td className="target-cell">
                               <span className="truncate" style={{ maxWidth: "120px" }}>
-                                {notification.pushToken.substring(0, 20)}...
+                                {notification.pushToken ? `${notification.pushToken.substring(0, 20)}...` : "—"}
                               </span>
                             </td>
                             <td className="date-cell">
