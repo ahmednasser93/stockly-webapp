@@ -383,7 +383,79 @@ const DEFAULT_REFRESH_INTERVAL = 60; // 60 seconds
 
 ---
 
-## 7. Admin Panel
+## 7. Monitoring Dashboard
+
+### 📍 Location
+- **Page**: `src/pages/SettingsPage.tsx` (Monitoring tab)
+- **Component**: `src/components/MonitoringSection.tsx`
+- **Components**: `UserCard.tsx`, `UserDetailDialog.tsx`, `Badge.tsx`
+- **Route**: `/settings` (Monitoring tab)
+
+### 🎯 Features
+- Unified monitoring dashboard merged into Settings page
+- Card-based user interface with modern design
+- User detail popup showing comprehensive information
+- Alerts management (create, edit, delete, filter, sort)
+- Notification logs (view recent/failed, retry failed notifications)
+- Device management (view all devices, test notifications, delete devices)
+- User favorite stocks viewing
+- All monitoring functionality in one place
+
+### 🔧 How It Works
+```typescript
+// MonitoringSection component consolidates all monitoring functionality
+<MonitoringSection />
+
+// User cards display user information
+<UserCard
+  user={{
+    username: "user1",
+    stocks: ["AAPL", "MSFT"],
+    alerts: 3,
+    devices: 2,
+  }}
+  onClick={() => openUserDetail(user)}
+/>
+
+// User detail dialog shows comprehensive information
+<UserDetailDialog
+  user={selectedUser}
+  onClose={() => setSelectedUser(null)}
+  onEditAlert={handleEditAlert}
+  onDeleteAlert={handleDeleteAlert}
+  onTestDevice={handleTestDevice}
+  onDeleteDevice={handleDeleteDevice}
+/>
+```
+
+### 📝 Customization
+**Modify user card layout:**
+```typescript
+// src/components/UserCard.tsx
+// Adjust grid columns in MonitoringSection
+gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))"
+```
+
+**Add new monitoring tab:**
+```typescript
+// src/components/MonitoringSection.tsx
+type MonitoringTab = "alerts" | "logs" | "devices" | "users" | "newtab";
+```
+
+**Customize user detail dialog:**
+```typescript
+// src/components/UserDetailDialog.tsx
+// Add new sections in the dialog
+```
+
+### 🧪 Tests
+- `src/__tests__/user-card.test.tsx`
+- `src/__tests__/user-detail-dialog.test.tsx`
+- `src/__tests__/monitoring-section.test.tsx`
+
+---
+
+## 8. Admin Panel
 
 ### 📍 Location
 - **Pages**: 
@@ -443,7 +515,7 @@ export type AdminConfig = {
 
 ---
 
-## 8. API Documentation
+## 9. API Documentation
 
 ### 📍 Location
 - **Page**: `src/pages/DocsPage.tsx`

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAdminConfig } from "../hooks/useAdminConfig";
-import { useMonitoringSnapshot } from "../hooks/useMonitoringSnapshot";
 import { simulateProviderFailure, disableProviderFailure } from "../api/adminConfig";
 import { useAuth } from "../state/AuthContext";
 import {
@@ -12,14 +11,29 @@ import {
   updateNewsFavoriteSymbols,
 } from "../api/userSettings";
 import { getFavoriteStocks } from "../api/favoriteStocks";
+import { useSearchParams } from "react-router-dom";
 
-type SettingsTab = "settings" | "monitoring" | "developer" | "notifications";
+type SettingsTab = "settings" | "developer" | "notifications";
 
 const PROVIDER_OPTIONS = ["alpha-feed", "beta-feed", "gamma-fallback"];
 
 export function SettingsPage() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<SettingsTab>("settings");
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Check if there's a tab parameter in URL (e.g., /settings?tab=developer)
+  const tabFromUrl = searchParams.get("tab") as SettingsTab | null;
+  const initialTab = (tabFromUrl && ["settings", "developer", "notifications"].includes(tabFromUrl)) 
+    ? tabFromUrl 
+    : "settings";
+  
+  const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
+  
+  // Update URL when tab changes (for direct navigation support)
+  const handleTabChange = (tab: SettingsTab) => {
+    setActiveTab(tab);
+    setSearchParams({ tab });
+  };
   
   // Admin Settings
   const { config, loading: adminLoading, error: adminError, saveConfig } = useAdminConfig();
@@ -55,8 +69,7 @@ export function SettingsPage() {
   const [settingsStatus, setSettingsStatus] = useState<string>("");
   const [simulationStatus, setSimulationStatus] = useState<string>("");
 
-  // Monitoring
-  const { snapshot, loading: monitoringLoading, error: monitoringError } = useMonitoringSnapshot();
+  // Monitoring (removed - now handled by MonitoringSection component)
 
   // Load dashboard favorite stocks
   const dashboardStocksQuery = useQuery({
@@ -274,7 +287,7 @@ export function SettingsPage() {
           <div>
             <h1>Settings</h1>
             <p className="muted">
-              Configure app preferences, admin settings, and view system monitoring
+              Configure app preferences, admin settings, and notification preferences
             </p>
           </div>
         </div>
@@ -284,28 +297,21 @@ export function SettingsPage() {
           <button
             type="button"
             className={activeTab === "settings" ? "active" : ""}
-            onClick={() => setActiveTab("settings")}
+            onClick={() => handleTabChange("settings")}
           >
             Settings
           </button>
           <button
             type="button"
-            className={activeTab === "monitoring" ? "active" : ""}
-            onClick={() => setActiveTab("monitoring")}
-          >
-            Monitoring
-          </button>
-          <button
-            type="button"
             className={activeTab === "notifications" ? "active" : ""}
-            onClick={() => setActiveTab("notifications")}
+            onClick={() => handleTabChange("notifications")}
           >
             Push Notifications
           </button>
           <button
             type="button"
             className={activeTab === "developer" ? "active" : ""}
-            onClick={() => setActiveTab("developer")}
+            onClick={() => handleTabChange("developer")}
           >
             Developer Tools
           </button>
@@ -1147,53 +1153,6 @@ export function SettingsPage() {
           </div>
         )}
 
-        {/* Monitoring Tab */}
-        {activeTab === "monitoring" && (
-          <div>
-            {monitoringLoading ? (
-              <div className="loading-state">
-                <div className="spinner"></div>
-                <p>Loading monitoring data…</p>
-              </div>
-            ) : monitoringError ? (
-              <div className="error-banner" style={{ padding: "1rem", background: "rgba(248, 113, 113, 0.1)", border: "1px solid rgba(248, 113, 113, 0.3)", borderRadius: "8px" }}>
-                <p style={{ color: "#f87171", margin: 0 }}>❌ Failed to load monitoring: {monitoringError}</p>
-              </div>
-            ) : !snapshot ? (
-              <div className="empty-state">
-                <p>No monitoring data available</p>
-              </div>
-            ) : (
-              <>
-                <div className="card" style={{ marginBottom: "1rem" }}>
-                  <h2>Worker latency (ms)</h2>
-                  <p className="muted">p95 latency for recent polling windows.</p>
-                  <ul className="metric-list">
-                    {snapshot.latencyMs.map((value, index) => (
-                      <li key={`latency-${index}`}>Window {index + 1}: {value}ms</li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="card" style={{ marginBottom: "1rem" }}>
-                  <h2>Alert throughput (per min)</h2>
-                  <ul className="metric-list">
-                    {snapshot.throughputPerMin.map((value, index) => (
-                      <li key={`throughput-${index}`}>Minute {index + 1}: {value}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="card">
-                  <h2>Error rate</h2>
-                  <ul className="metric-list">
-                    {snapshot.errorRate.map((value, index) => (
-                      <li key={`error-${index}`}>Minute {index + 1}: {value}</li>
-                    ))}
-                  </ul>
-                </div>
-              </>
-            )}
-          </div>
-        )}
 
         {/* Push Notifications Tab */}
         {activeTab === "notifications" && (

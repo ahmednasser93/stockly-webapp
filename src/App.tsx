@@ -7,8 +7,9 @@ import { SettingsPage } from "./pages/SettingsPage";
 import { LoginPage } from "./pages/LoginPage";
 import { UsernameSelectionPage } from "./pages/UsernameSelectionPage";
 import { DocsPage } from "./pages/DocsPage";
-import { MonitoringPage } from "./pages/MonitoringPage";
 import { StockDetailsPage } from "./pages/StockDetailsPage";
+import { MonitoringPage } from "./pages/MonitoringPage";
+import { UserDetailPage } from "./pages/UserDetailPage";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
       >
         <Route path="/" element={<HomePage />} />
         <Route path="/monitoring" element={<MonitoringPage />} />
+        <Route path="/monitoring/users/:username" element={<UserDetailPage />} />
         <Route path="/docs" element={<DocsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/stocks/:symbol" element={<StockDetailsPage />} />

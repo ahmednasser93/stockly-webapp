@@ -18,6 +18,10 @@ stockly-webapp/
 │   ├── components/              # React components
 │   │   ├── AlertForm.tsx        # Alert create/edit modal
 │   │   ├── DeleteAlertDialog.tsx # Delete confirmation
+│   │   ├── UserCard.tsx         # User card component ⭐ NEW
+│   │   ├── UserDetailDialog.tsx # User detail popup ⭐ NEW
+│   │   ├── MonitoringSection.tsx # Unified monitoring section ⭐ NEW
+│   │   ├── Badge.tsx            # Badge component ⭐ NEW
 │   │   ├── AppLayout.tsx        # Main layout wrapper
 │   │   ├── Header.tsx           # Navigation header
 │   │   ├── ProtectedRoute.tsx   # Auth guard
@@ -37,7 +41,8 @@ stockly-webapp/
 │   │   ├── AlertsPage.tsx       # Alerts management ⭐ NEW
 │   │   ├── LoginPage.tsx        # Login form
 │   │   ├── DocsPage.tsx         # API docs
-│   │   ├── SettingsPage.tsx     # User settings
+│   │   ├── SettingsPage.tsx     # User settings (includes monitoring) ⭐ UPDATED
+│   │   ├── MonitoringPage.tsx   # Legacy monitoring page
 │   │   ├── AdminSettingsPage.tsx # Admin settings
 │   │   ├── AdminMonitoringPage.tsx # Monitoring
 │   │   └── AdminDocsPage.tsx    # Admin docs
@@ -46,8 +51,11 @@ stockly-webapp/
 │   │   ├── SettingsContext.tsx  # User settings
 │   │   └── ThemeContext.tsx     # Theme state
 │   ├── __tests__/               # Test files
-│   │   ├── alerts-api.test.ts   # Alerts API tests ⭐ NEW
-│   │   ├── alerts-page.test.tsx # Alerts page tests ⭐ NEW
+│   │   ├── alerts-api.test.ts   # Alerts API tests
+│   │   ├── alerts-page.test.tsx # Alerts page tests
+│   │   ├── user-card.test.tsx   # UserCard tests ⭐ NEW
+│   │   ├── user-detail-dialog.test.tsx # UserDetailDialog tests ⭐ NEW
+│   │   ├── monitoring-section.test.tsx # MonitoringSection tests ⭐ NEW
 │   │   ├── api-client.test.ts   # API client tests
 │   │   ├── auth-context.test.tsx # Auth tests
 │   │   ├── settings-context.test.tsx # Settings tests
@@ -105,7 +113,7 @@ stockly-webapp/
 6. **Admin Panel** - Configuration and monitoring tools
 7. **API Documentation** - Interactive Swagger UI
 
-### 🔔 Alerts Feature (NEW)
+### 🔔 Alerts Feature
 - Create/edit/delete price alerts
 - Set threshold prices (above/below)
 - Email or webhook notifications
@@ -114,6 +122,16 @@ stockly-webapp/
 - Distance to threshold calculations
 - Search and filter alerts
 - Sortable table view
+
+### 📊 Monitoring Feature (NEW)
+- Unified monitoring dashboard in Settings page
+- Card-based user interface
+- User detail popup with comprehensive information
+- Alerts management (create, edit, delete)
+- Notification logs (recent/failed, retry functionality)
+- Device management (view, test, delete)
+- User favorite stocks viewing
+- All monitoring tabs merged into Settings
 
 ---
 

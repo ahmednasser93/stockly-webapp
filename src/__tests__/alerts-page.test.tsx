@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MemoryRouter } from "react-router-dom";
 import { SettingsProvider } from "../state/SettingsContext";
 import { AuthProvider } from "../state/AuthContext";
-import { MonitoringPage } from "../pages/MonitoringPage";
+import { MonitoringSection } from "../components/MonitoringSection";
 import * as alertsApi from "../api/alerts";
 import * as clientApi from "../api/client";
 import axios from "axios";
@@ -32,7 +33,7 @@ vi.mock("../api/axios-client", () => {
 const mockListAlerts = vi.mocked(alertsApi.listAlerts);
 const mockFetchStocks = vi.mocked(clientApi.fetchStocks);
 
-describe("MonitoringPage", () => {
+describe("MonitoringSection (Legacy MonitoringPage Tests)", () => {
   let queryClient: QueryClient;
 
   const mockAlerts: Alert[] = [
@@ -126,7 +127,11 @@ describe("MonitoringPage", () => {
     return render(
       <AuthProvider>
         <SettingsProvider>
-          <QueryClientProvider client={queryClient}>{component}</QueryClientProvider>
+          <QueryClientProvider client={queryClient}>
+            <MemoryRouter>
+              {component}
+            </MemoryRouter>
+          </QueryClientProvider>
         </SettingsProvider>
       </AuthProvider>
     );
@@ -138,15 +143,29 @@ describe("MonitoringPage", () => {
     );
 
     await act(async () => {
-      renderWithProviders(<MonitoringPage />);
+      renderWithProviders(<MonitoringSection />);
     });
 
-    expect(screen.getByText(/loading alerts/i)).toBeInTheDocument();
+    // Click on Alerts Logs tab (MonitoringSection defaults to "users" tab)
+    await act(async () => {
+      const alertsTab = screen.getByText("Alerts Logs");
+      alertsTab.click();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(/loading alerts/i)).toBeInTheDocument();
+    });
   });
 
   it("should render alerts table with data", async () => {
     await act(async () => {
-      renderWithProviders(<MonitoringPage />);
+      renderWithProviders(<MonitoringSection />);
+    });
+
+    // Click on Alerts Logs tab (MonitoringSection defaults to "users" tab)
+    await act(async () => {
+      const alertsTab = screen.getByText("Alerts Logs");
+      alertsTab.click();
     });
 
     await waitFor(() => {
@@ -167,7 +186,13 @@ describe("MonitoringPage", () => {
     mockListAlerts.mockResolvedValue([]);
 
     await act(async () => {
-      renderWithProviders(<MonitoringPage />);
+      renderWithProviders(<MonitoringSection />);
+    });
+
+    // Click on Alerts Logs tab (MonitoringSection defaults to "users" tab)
+    await act(async () => {
+      const alertsTab = screen.getByText("Alerts Logs");
+      alertsTab.click();
     });
 
     await waitFor(() => {
@@ -179,7 +204,13 @@ describe("MonitoringPage", () => {
     mockListAlerts.mockRejectedValue(new Error("Network error"));
 
     await act(async () => {
-      renderWithProviders(<MonitoringPage />);
+      renderWithProviders(<MonitoringSection />);
+    });
+
+    // Click on Alerts Logs tab (MonitoringSection defaults to "users" tab)
+    await act(async () => {
+      const alertsTab = screen.getByText("Alerts Logs");
+      alertsTab.click();
     });
 
     await waitFor(() => {
@@ -190,7 +221,13 @@ describe("MonitoringPage", () => {
 
   it("should display current prices for symbols", async () => {
     await act(async () => {
-      renderWithProviders(<MonitoringPage />);
+      renderWithProviders(<MonitoringSection />);
+    });
+
+    // Click on Alerts Logs tab (MonitoringSection defaults to "users" tab)
+    await act(async () => {
+      const alertsTab = screen.getByText("Alerts Logs");
+      alertsTab.click();
     });
 
     await waitFor(() => {
@@ -201,7 +238,13 @@ describe("MonitoringPage", () => {
 
   it("should display threshold prices", async () => {
     await act(async () => {
-      renderWithProviders(<MonitoringPage />);
+      renderWithProviders(<MonitoringSection />);
+    });
+
+    // Click on Alerts Logs tab (MonitoringSection defaults to "users" tab)
+    await act(async () => {
+      const alertsTab = screen.getByText("Alerts Logs");
+      alertsTab.click();
     });
 
     await waitFor(() => {
@@ -212,7 +255,13 @@ describe("MonitoringPage", () => {
 
   it("should show filter tabs with correct counts", async () => {
     await act(async () => {
-      renderWithProviders(<MonitoringPage />);
+      renderWithProviders(<MonitoringSection />);
+    });
+
+    // Click on Alerts Logs tab (MonitoringSection defaults to "users" tab)
+    await act(async () => {
+      const alertsTab = screen.getByText("Alerts Logs");
+      alertsTab.click();
     });
 
     await waitFor(() => {
@@ -224,7 +273,13 @@ describe("MonitoringPage", () => {
 
   it("should display Create Alert button", async () => {
     await act(async () => {
-      renderWithProviders(<MonitoringPage />);
+      renderWithProviders(<MonitoringSection />);
+    });
+
+    // Click on Alerts Logs tab (MonitoringSection defaults to "users" tab)
+    await act(async () => {
+      const alertsTab = screen.getByText("Alerts Logs");
+      alertsTab.click();
     });
 
     await waitFor(() => {
@@ -235,7 +290,13 @@ describe("MonitoringPage", () => {
 
   it("should show channel badges", async () => {
     await act(async () => {
-      renderWithProviders(<MonitoringPage />);
+      renderWithProviders(<MonitoringSection />);
+    });
+
+    // Click on Alerts Logs tab (MonitoringSection defaults to "users" tab)
+    await act(async () => {
+      const alertsTab = screen.getByText("Alerts Logs");
+      alertsTab.click();
     });
 
     await waitFor(() => {
@@ -253,7 +314,7 @@ describe("MonitoringPage", () => {
     });
 
     await act(async () => {
-      renderWithProviders(<MonitoringPage />);
+      renderWithProviders(<MonitoringSection />);
     });
 
     await waitFor(() => {
@@ -304,10 +365,16 @@ describe("MonitoringPage", () => {
     });
 
     await act(async () => {
-      renderWithProviders(<MonitoringPage />);
+      renderWithProviders(<MonitoringSection />);
     });
 
-    // Wait for initial load
+    // Click on Alerts Logs tab first (MonitoringSection defaults to "users" tab)
+    await act(async () => {
+      const alertsTab = screen.getByText("Alerts Logs");
+      alertsTab.click();
+    });
+
+    // Wait for alerts to load
     await waitFor(() => {
       expect(screen.getByText("AAPL")).toBeInTheDocument();
     });
@@ -345,10 +412,16 @@ describe("MonitoringPage", () => {
     });
 
     await act(async () => {
-      renderWithProviders(<MonitoringPage />);
+      renderWithProviders(<MonitoringSection />);
     });
 
-    // Wait for initial load
+    // Click on Alerts Logs tab first (MonitoringSection defaults to "users" tab)
+    await act(async () => {
+      const alertsTab = screen.getByText("Alerts Logs");
+      alertsTab.click();
+    });
+
+    // Wait for alerts to load
     await waitFor(() => {
       expect(screen.getByText("AAPL")).toBeInTheDocument();
     });
@@ -398,10 +471,16 @@ describe("MonitoringPage", () => {
     });
 
     await act(async () => {
-      renderWithProviders(<MonitoringPage />);
+      renderWithProviders(<MonitoringSection />);
     });
 
-    // Wait for initial load
+    // Click on Alerts Logs tab first (MonitoringSection defaults to "users" tab)
+    await act(async () => {
+      const alertsTab = screen.getByText("Alerts Logs");
+      alertsTab.click();
+    });
+
+    // Wait for alerts to load
     await waitFor(() => {
       expect(screen.getByText("AAPL")).toBeInTheDocument();
     });

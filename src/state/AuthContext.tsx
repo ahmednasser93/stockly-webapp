@@ -79,6 +79,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     checkAuth();
   }, [checkAuth]);
 
+  // Proactive token refresh - refresh token every 10 minutes to prevent expiration
+  // Access tokens expire in 1 hour, so refreshing every 10 minutes ensures we stay authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return; // Don't refresh if not authenticated
+    }
+
+    const refreshInterval = setInterval(async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/v1/api/auth/refresh`, {
+          method: "POST",
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          console.warn("Token refresh failed, will retry on next API call");
+          // Don't log out immediately - let the axios interceptor handle it
+        } else {
+          console.debug("Token refreshed successfully");
+        }
+      } catch (err) {
+        console.error("Token refresh error:", err);
+        // Don't log out immediately - let the axios interceptor handle it
+      }
+    }, 10 * 60 * 1000); // Refresh every 10 minutes (600,000 ms)
+
+    return () => clearInterval(refreshInterval);
+  }, [isAuthenticated]);
+
   // Handle Google OAuth sign-in with ID token
   const handleGoogleSignIn = useCallback(async (idToken: string) => {
     try {
